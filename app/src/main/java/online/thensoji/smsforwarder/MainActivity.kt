@@ -1,5 +1,7 @@
 package online.thensoji.smsforwarder
 
+import dagger.hilt.android.AndroidEntryPoint
+
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
@@ -28,6 +30,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import online.thensoji.smsforwarder.ui.theme.SMSforwarderTheme
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
     private val permissionRequestCode = 101
@@ -91,22 +94,78 @@ fun MainScreen() {
             modifier = Modifier.padding(paddingValues)
         ) {
             composable("home") {
-                HomeScreen()
+                HomeScreen(onOpenQueue = { navController.navigate("queue") })
             }
             composable("settings") {
                 SettingsScreen()
+            }
+            composable("queue") {
+                QueuedMessagesScreen()
             }
         }
     }
 }
 
 @Composable
-fun HomeScreen() {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
+fun HomeScreen(onOpenQueue: () -> Unit) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
     ) {
         Text("Welcome!", style = MaterialTheme.typography.headlineLarge)
+        Spacer(modifier = Modifier.height(24.dp))
+        Button(onClick = onOpenQueue) {
+            Text("View queued messages")
+        }
+    }
+}
+
+@Composable
+fun QueuedMessagesScreen(viewModel: online.thensoji.smsforwarder.ui.MessageViewModel = androidx.hilt.navigation.compose.hiltViewModel()) {
+    val context = LocalContext.current
+    val unsent by viewModel.unsent.collectAsState()
+
+    LaunchedEffect(Unit) { viewModel.refreshUnsent() }
+
+    Column(modifier = Modifier.fillMaxSize().padding(8.dp)) {
+        Text("Queued Messages", style = MaterialTheme.typography.headlineSmall)
+        Spacer(modifier = Modifier.height(8.dp))
+        androidx.compose.foundation.lazy.LazyColumn {
+            androidx.compose.foundation.lazy.items(unsent) { msg ->
+                Card(modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(4.dp)) {
+                    Column(modifier = Modifier.padding(8.dp)) {
+                        Text(text = "From: ${msg.sender ?: "unknown"}")
+                        Text(text = "Time: ${java.util.Date(msg.timestamp)}")
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Text(text = msg.body, maxLines = 6)
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Row {
+                            Button(onClick = {
+                                // enqueue worker to retry sending this message
+                                val input = androidx.work.Data.Builder()
+                                    .putLong("messageId", msg.id)
+                                    .build()
+                                val work = androidx.work.OneTimeWorkRequestBuilder<SendWorker>()
+                                    .setInputData(input)
+                                    .build()
+                                androidx.work.WorkManager.getInstance(context).enqueue(work)
+                            }) {
+                                Text("Retry")
+                            }
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Button(onClick = {
+                                viewModel.markAsSent(msg.id, null)
+                            }) {
+                                Text("Mark as Sent")
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 
