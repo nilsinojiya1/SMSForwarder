@@ -8,26 +8,25 @@
 [![Retrofit](https://img.shields.io/badge/Retrofit-2.11.0-red.svg)](https://square.github.io/retrofit/)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-A robust, modern, and privacy-focused Android application that automatically captures incoming SMS text messages and forwards them in real-time to your private **Telegram** chat or group.
+A robust, modern, and privacy-first Android application that automatically captures incoming SMS text messages and forwards them in real-time to your private **Telegram** chat or group.
 
-Built using modern Android architecture principles (**Jetpack Compose**, **Material 3**, **Clean Architecture + MVVM**, **Dagger Hilt**, **Retrofit 2**, **Room SQLite Database**, and **WorkManager**), guaranteeing zero message loss, multi-part message integrity, offline queue recovery, multi-device identification, and 4-digit PIN security.
+Built using modern Android architecture principles (**Jetpack Compose**, **Material 3**, **Clean Architecture + MVVM**, **Dagger Hilt**, **Retrofit 2**, **Room SQLite Database**, and **WorkManager**), ensuring zero message loss, multi-part message reassembly, offline queue recovery, multi-device identification, and 4-digit PIN security.
 
 ---
 
 ## 🌟 Key Features
 
 - ⚡ **Real-Time SMS Forwarding:** Intercepts incoming SMS broadcasts instantly and forwards sender details, timestamp, SIM slot, and body to Telegram.
-- 🔒 **4-Digit App PIN Security:** Protects your app with a secure 4-digit PIN screen (SHA-256 hashed). Prompts for setup on first launch and unlocks seamlessly on subsequent opens.
-- 📱 **Multi-Device Identification:** Easily run the app on multiple phones forwarding to the same Telegram chat. Auto-detects device hardware model or lets you configure custom tags (e.g., `📱 [Pixel 7 (Work)]`).
+- 🔒 **4-Digit App PIN Security:** Protects app access with a secure 4-digit PIN screen (SHA-256 hashed). Prompts for setup on first launch and unlocks seamlessly on subsequent opens.
+- 📱 **Multi-Device Identification:** Easily run the app on multiple phones forwarding to the same Telegram chat with auto-detected hardware names or custom tags (e.g., `📱 [Pixel 7 (Work)]`).
 - 🧩 **Multi-Part Concatenated SMS Reassembly:** Binary UDH (User Data Header) parser stages and reassembles fragmented long carrier SMS messages into a single complete Telegram notification.
-- ⏳ **Forwarding Delay Tracking (> 1 min):** Automatically detects if a message was delayed due to airplane mode or network downtime and injects a delayed tag (e.g., `⏳ [Delayed by 15m]`).
+- ⏳ **Forwarding Delay Tracking (> 1 min):** Automatically detects if a message was delayed due to airplane mode or network downtime and injects a delayed badge (e.g., `⏳ [Delayed by 15m]`).
 - 📶 **Dual-SIM Slot Awareness:** Identifies and tags incoming messages by their active SIM slot (`SIM 1` vs `SIM 2`).
 - 🌐 **Offline Resilience & Auto-Drain:** When offline, messages queue in Room. WorkManager and real-time network callbacks automatically send pending messages once internet returns—with strict single-send idempotency.
-- 📋 **All Messages Screen with Live Filters:** View all incoming messages categorized with filter chips (**All**, **Pending**, **Sent**, **Delayed**) with compact number formatting (`1k`, `1Lc`, `1cr`) and automatic top-scrolling on new SMS.
+- 📋 **All Messages Screen with Live Filters:** View all incoming messages categorized with filter chips (**All**, **Pending**, **Sent**, **Delayed**) with compact number formatting (`1k`, `1Lc`, `1cr`) and automatic top-scrolling on new incoming SMS.
 - ⚙️ **In-App Bot Setup & Live Connection Test:** Configure and test your Telegram Bot Token & Chat ID directly within the app.
 - 🔄 **Boot Persistence:** Automatically resumes background listeners when the Android device reboots (`RECEIVE_BOOT_COMPLETED`).
 - 🎨 **Modular Material 3 Compose UI:** Modern, responsive UI with smooth loading spinners, edge-to-edge support, and small-device responsiveness.
-- 🚀 **Automated CI/CD & Email Releases:** GitHub Actions automatically builds signed release APKs, increments version codes/names, publishes GitHub Releases, and emails the APK directly to you.
 
 ---
 
@@ -72,7 +71,6 @@ Built using modern Android architecture principles (**Jetpack Compose**, **Mater
 | **Networking** | Retrofit 2.11.0, OkHttp 5.5.0, Gson Converter 2.11.0, Logging Interceptor |
 | **Concurrency** | Kotlin Coroutines & Flow (`StateFlow`, `SharingStarted`) |
 | **Security** | SHA-256 PIN Hashing, Private SharedPreferences |
-| **CI / CD** | GitHub Actions (Auto-versioning, JKS Signing, GitHub Releases, Email Dispatch) |
 
 ---
 
@@ -82,7 +80,7 @@ Built using modern Android architecture principles (**Jetpack Compose**, **Mater
 
 - **Android Studio** Ladybug (or newer recommended).
 - **JDK 17** configured as your Gradle JDK.
-- Android phone or emulator running **Android 8.0 (API 26)** or higher with active telephony capability.
+- Android device or emulator running **Android 8.0 (API 26)** or higher with active telephony capability.
 
 ### 1. Clone the Repository
 
@@ -113,44 +111,13 @@ cd SMSForwarder
 
 ---
 
-## 🤖 GitHub Actions CI/CD & Automated Release
-
-The project includes an automated GitHub Actions workflow (`.github/workflows/release.yml`) that:
-1. Automatically computes a monotonically increasing `versionCode` (`run_number`) and semantic `versionName` (e.g. `1.0.<run_number>` or git tag).
-2. Decodes your release keystore (`.jks`) from GitHub Secrets and signs the release APK and AAB bundle with R8 minification.
-3. Publishes a **GitHub Release** with direct download links.
-4. Emails the signed release `.apk` directly to your inbox as an attachment!
-
-### 🔑 Setting Up GitHub Secrets
-
-In your GitHub repository, go to **Settings > Secrets and variables > Actions > New repository secret** and add:
-
-#### Keystore / Release Signing Secrets:
-| Secret Name | Description | How to Obtain |
-|---|---|---|
-| `KEYSTORE_BASE64` | Base64-encoded `.jks` file | Windows: `[Convert]::ToBase64String([IO.File]::ReadAllBytes("path\to\your.jks")) \| Set-Clipboard`<br>Linux/Mac: `base64 -w 0 your.jks` |
-| `KEYSTORE_PASSWORD` | Password for the keystore file | Your keystore password |
-| `KEY_ALIAS` | Key alias in the keystore | Your key alias name |
-| `KEY_PASSWORD` | Password for the specific key | Your key password |
-
-#### Email Notification Secrets (Optional):
-| Secret Name | Description | Example |
-|---|---|---|
-| `MAIL_SERVER` | SMTP Server Host | `smtp.gmail.com` |
-| `MAIL_PORT` | SMTP Port | `465` (SSL) or `587` (TLS) |
-| `MAIL_USERNAME` | SMTP Username / Email | `your.email@gmail.com` |
-| `MAIL_PASSWORD` | SMTP App Password | Google App Password (16 chars) |
-| `MAIL_TO` | Recipient Email Address | `your.email@gmail.com` |
-
----
-
 ## 📱 Setup & Configuration
 
 ### 1. Create a Telegram Bot
 
 1. Open Telegram and message [@BotFather](https://t.me/BotFather).
-2. Send `/newbot` and follow the instructions to get your **Bot Token** (e.g. `123456789:ABCdefGhIJKlmNoPQRstuVWXyz`).
-3. Message [@userinfobot](https://t.me/userinfobot) to get your numeric **Chat ID** (e.g. `123456789`).
+2. Send `/newbot` and follow the instructions to get your **Bot Token** (e.g., `123456789:ABCdefGhIJKlmNoPQRstuVWXyz`).
+3. Message [@userinfobot](https://t.me/userinfobot) or [@RawDataBot](https://t.me/RawDataBot) to get your numeric **Chat ID** (e.g., `123456789` or group ID `-100123456789`).
 4. **Important:** Open your newly created bot in Telegram and tap **Start** (or send `/start`) so it has permission to message you.
 
 ### 2. In-App Configuration
@@ -177,9 +144,6 @@ To prevent OEM battery managers (Doze mode) from delaying background forwarders:
 
 ```text
 SMSforwarder/
-├── .github/
-│   └── workflows/
-│       └── release.yml                # CI/CD Release, Auto-versioning & Email Workflow
 ├── app/
 │   ├── src/main/java/online/thensoji/smsforwarder/
 │   │   ├── data/                      # Room Entities (ForwardedMessage, SmsPart) & DAOs
@@ -217,6 +181,12 @@ SMSforwarder/
 ## 🤝 Contributing
 
 Contributions, issues, and feature requests are welcome! Feel free to check the [issues page](https://github.com/nilsinojiya1/SMSForwarder/issues).
+
+1. Fork the Project.
+2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`).
+3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`).
+4. Push to the Branch (`git push origin feature/AmazingFeature`).
+5. Open a Pull Request.
 
 ---
 
