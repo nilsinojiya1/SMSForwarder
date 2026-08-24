@@ -10,18 +10,21 @@ import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import dagger.hilt.android.lifecycle.HiltViewModel
-import javax.inject.Inject
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import online.thensoji.smsforwarder.SendWorker
 import online.thensoji.smsforwarder.data.ForwardedMessage
 import online.thensoji.smsforwarder.domain.model.SendResult
 import online.thensoji.smsforwarder.domain.usecase.SendTelegramMessageUseCase
 import online.thensoji.smsforwarder.repository.MessageRepository
+import javax.inject.Inject
 
 @HiltViewModel
 class MessageViewModel @Inject constructor(
@@ -29,26 +32,42 @@ class MessageViewModel @Inject constructor(
     private val sendTelegramMessageUseCase: SendTelegramMessageUseCase
 ) : ViewModel() {
 
+    private val _isLoading = MutableStateFlow(true)
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+
+    private val _isRefreshing = MutableStateFlow(false)
+    val isRefreshing: StateFlow<Boolean> = _isRefreshing.asStateFlow()
+
+    private val _resendingMessageIds = MutableStateFlow<Set<Long>>(emptySet())
+    val resendingMessageIds: StateFlow<Set<Long>> = _resendingMessageIds.asStateFlow()
+
+    private val _isResendingAll = MutableStateFlow(false)
+    val isResendingAll: StateFlow<Boolean> = _isResendingAll.asStateFlow()
+
     val messages: StateFlow<List<ForwardedMessage>> = repository.getAllMessagesFlow()
+        .onEach {
+            _isLoading.value = false
+            _isRefreshing.value = false
+        }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = emptyList()
         )
 
-    private val _isRefreshing = MutableStateFlow(false)
-    val isRefreshing: StateFlow<Boolean> = _isRefreshing.asStateFlow()
-
     fun refreshMessages() {
         viewModelScope.launch {
             _isRefreshing.value = true
             repository.getAllMessages()
+            delay(300)
             _isRefreshing.value = false
         }
     }
 
     fun resendMessage(context: Context, messageId: Long) {
         viewModelScope.launch {
+            _resendingMessageIds.update { it + messageId }
+
             val constraints = Constraints.Builder()
                 .setRequiredNetworkType(NetworkType.CONNECTED)
                 .build()
@@ -67,11 +86,15 @@ class MessageViewModel @Inject constructor(
                 ExistingWorkPolicy.REPLACE,
                 work
             )
+
+            delay(800)
+            _resendingMessageIds.update { it - messageId }
         }
     }
 
     fun resendAllPending(context: Context) {
         viewModelScope.launch {
+            _isResendingAll.value = true
             val unsent = repository.getUnsentMessages()
             val workManager = WorkManager.getInstance(context)
             val constraints = Constraints.Builder()
@@ -93,6 +116,9 @@ class MessageViewModel @Inject constructor(
                     work
                 )
             }
+
+            delay(800)
+            _isResendingAll.value = false
         }
     }
 

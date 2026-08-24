@@ -25,7 +25,8 @@ fun MessageCard(
     onResend: () -> Unit,
     onMarkSent: () -> Unit,
     onDelete: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isResending: Boolean = false
 ) {
     val now = remember { System.currentTimeMillis() }
     val isDelayed = (msg.delayMillis ?: 0L) >= 60_000L
@@ -185,28 +186,49 @@ fun MessageCard(
                     Spacer(modifier = Modifier.width(6.dp))
                     Button(
                         onClick = onResend,
+                        enabled = !isResending,
                         contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp)
                     ) {
-                        Icon(
-                            Icons.AutoMirrored.Filled.Send,
-                            contentDescription = null,
-                            modifier = Modifier.size(16.dp)
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text("Send Now", style = MaterialTheme.typography.labelMedium)
+                        if (isResending) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(14.dp),
+                                strokeWidth = 2.dp,
+                                color = MaterialTheme.colorScheme.onPrimary
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("Sending...", style = MaterialTheme.typography.labelMedium)
+                        } else {
+                            Icon(
+                                Icons.AutoMirrored.Filled.Send,
+                                contentDescription = null,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("Send Now", style = MaterialTheme.typography.labelMedium)
+                        }
                     }
                 } else {
                     OutlinedButton(
                         onClick = onResend,
+                        enabled = !isResending,
                         contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp)
                     ) {
-                        Icon(
-                            Icons.Filled.Refresh,
-                            contentDescription = null,
-                            modifier = Modifier.size(16.dp)
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text("Resend", style = MaterialTheme.typography.labelMedium)
+                        if (isResending) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(14.dp),
+                                strokeWidth = 2.dp
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("Resending...", style = MaterialTheme.typography.labelMedium)
+                        } else {
+                            Icon(
+                                Icons.Filled.Refresh,
+                                contentDescription = null,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("Resend", style = MaterialTheme.typography.labelMedium)
+                        }
                     }
                     Spacer(modifier = Modifier.width(6.dp))
                     IconButton(onClick = onDelete, modifier = Modifier.size(36.dp)) {
@@ -221,4 +243,3 @@ fun MessageCard(
         }
     }
 }
-

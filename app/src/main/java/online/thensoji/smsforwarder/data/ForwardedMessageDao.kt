@@ -12,13 +12,13 @@ interface ForwardedMessageDao {
     @Update
     suspend fun update(message: ForwardedMessage)
 
-    @Query("SELECT * FROM forwarded_messages ORDER BY timestamp DESC")
+    @Query("SELECT * FROM forwarded_messages ORDER BY timestamp DESC, id DESC")
     fun getAllMessagesFlow(): Flow<List<ForwardedMessage>>
 
-    @Query("SELECT * FROM forwarded_messages ORDER BY timestamp DESC")
+    @Query("SELECT * FROM forwarded_messages ORDER BY timestamp DESC, id DESC")
     suspend fun getAllMessages(): List<ForwardedMessage>
 
-    @Query("SELECT * FROM forwarded_messages WHERE isSent = 0 ORDER BY timestamp ASC")
+    @Query("SELECT * FROM forwarded_messages WHERE isSent = 0 ORDER BY timestamp ASC, id ASC")
     suspend fun getUnsentMessages(): List<ForwardedMessage>
 
     @Query("SELECT * FROM forwarded_messages WHERE id = :id LIMIT 1")

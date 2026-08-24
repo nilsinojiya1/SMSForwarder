@@ -4,6 +4,7 @@ import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
@@ -26,7 +27,13 @@ fun AllMessagesScreen(
 ) {
     val context = LocalContext.current
     val messages by viewModel.messages.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
+    val isRefreshing by viewModel.isRefreshing.collectAsState()
+    val resendingIds by viewModel.resendingMessageIds.collectAsState()
+    val isResendingAll by viewModel.isResendingAll.collectAsState()
+
     var selectedTab by remember { mutableStateOf(MessageFilterTab.ALL) }
+    val listState = rememberLazyListState()
 
     LaunchedEffect(Unit) {
         viewModel.refreshMessages()
@@ -43,6 +50,14 @@ fun AllMessagesScreen(
         MessageFilterTab.DELAYED -> delayedList
     }
 
+    // Auto-scroll to the top whenever a new message is received or list changes
+    val topMessageId = filteredList.firstOrNull()?.id
+    LaunchedEffect(topMessageId) {
+        if (topMessageId != null && listState.firstVisibleItemIndex <= 2) {
+            listState.animateScrollToItem(0)
+        }
+    }
+
     val dateFormat = remember {
         SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
     }
@@ -52,7 +67,7 @@ fun AllMessagesScreen(
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        // Header Row
+        // Header Row with interactive refresh loading spinner
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -63,8 +78,19 @@ fun AllMessagesScreen(
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
             )
-            IconButton(onClick = { viewModel.refreshMessages() }) {
-                Icon(Icons.Filled.Refresh, contentDescription = "Refresh")
+            IconButton(
+                onClick = { viewModel.refreshMessages() },
+                enabled = !isRefreshing
+            ) {
+                if (isRefreshing) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(20.dp),
+                        strokeWidth = 2.dp,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                } else {
+                    Icon(Icons.Filled.Refresh, contentDescription = "Refresh")
+                }
             }
         }
 
@@ -85,6 +111,7 @@ fun AllMessagesScreen(
             Spacer(modifier = Modifier.height(8.dp))
             PendingBanner(
                 pendingCount = pendingList.size,
+                isResending = isResendingAll,
                 onSendNow = {
                     viewModel.resendAllPending(context)
                     Toast.makeText(context, "Retrying pending messages...", Toast.LENGTH_SHORT).show()
@@ -94,10 +121,14 @@ fun AllMessagesScreen(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        if (filteredList.isEmpty()) {
+        // Content Area: Loading / Empty / List
+        if (isLoading) {
+            LoadingMessagesView(message = "Loading messages from database...")
+        } else if (filteredList.isEmpty()) {
             EmptyMessagesView(selectedTab = selectedTab)
         } else {
             LazyColumn(
+                state = listState,
                 verticalArrangement = Arrangement.spacedBy(10.dp),
                 modifier = Modifier.fillMaxSize()
             ) {
@@ -105,6 +136,7 @@ fun AllMessagesScreen(
                     MessageCard(
                         msg = msg,
                         dateFormat = dateFormat,
+                        isResending = resendingIds.contains(msg.id),
                         onResend = {
                             viewModel.resendMessage(context, msg.id)
                             Toast.makeText(context, "Retrying message...", Toast.LENGTH_SHORT).show()
@@ -121,4 +153,3 @@ fun AllMessagesScreen(
         }
     }
 }
-

@@ -7,11 +7,13 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Smartphone
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -24,9 +26,11 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import online.thensoji.smsforwarder.ui.MessageViewModel
 import online.thensoji.smsforwarder.ui.components.TelegramGuideCard
 import online.thensoji.smsforwarder.util.MessageFormatter
+import online.thensoji.smsforwarder.util.PinManager
 
 @Composable
 fun SettingsScreen(
+    onChangePin: (() -> Unit)? = null,
     viewModel: MessageViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
@@ -148,8 +152,38 @@ fun SettingsScreen(
             }
         }
 
+        // Security / Change PIN Section
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+        ) {
+            Column(modifier = Modifier.padding(14.dp)) {
+                Text(
+                    text = "App Security",
+                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.titleMedium
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "4-digit PIN is active to secure your app access.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(modifier = Modifier.height(10.dp))
+                if (onChangePin != null) {
+                    OutlinedButton(
+                        onClick = onChangePin,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Icon(Icons.Filled.Lock, contentDescription = null, modifier = Modifier.size(16.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Change 4-Digit PIN")
+                    }
+                }
+            }
+        }
+
         // Credentials Help Guide
         TelegramGuideCard()
     }
 }
-
