@@ -63,7 +63,7 @@ class ForwardingService : Service() {
                 if (response.isSuccessful) {
                     Log.d("ForwardingService", "Message forwarded successfully")
                 } else {
-                    Log.e("ForwardingService", "Failed to forward message: ${response.body.string()}")
+                    Log.e("ForwardingService", "Failed to forward message: ${response.body?.string()}")
                 }
             } catch (e: Exception) {
                 Log.e("ForwardingService", "Error forwarding message", e)
