@@ -1,13 +1,23 @@
 package online.thensoji.smsforwarder.ui
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.work.Constraints
+import androidx.work.Data
+import androidx.work.ExistingWorkPolicy
+import androidx.work.NetworkType
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import online.thensoji.smsforwarder.SendWorker
 import online.thensoji.smsforwarder.data.ForwardedMessage
 import online.thensoji.smsforwarder.domain.model.SendResult
 import online.thensoji.smsforwarder.domain.usecase.SendTelegramMessageUseCase
@@ -19,26 +29,82 @@ class MessageViewModel @Inject constructor(
     private val sendTelegramMessageUseCase: SendTelegramMessageUseCase
 ) : ViewModel() {
 
-    private val _unsent = MutableStateFlow<List<ForwardedMessage>>(emptyList())
-    val unsent: StateFlow<List<ForwardedMessage>> = _unsent.asStateFlow()
+    val messages: StateFlow<List<ForwardedMessage>> = repository.getAllMessagesFlow()
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
 
-    fun refreshUnsent() {
+    private val _isRefreshing = MutableStateFlow(false)
+    val isRefreshing: StateFlow<Boolean> = _isRefreshing.asStateFlow()
+
+    fun refreshMessages() {
         viewModelScope.launch {
-            _unsent.value = repository.getUnsentMessages()
+            _isRefreshing.value = true
+            repository.getAllMessages()
+            _isRefreshing.value = false
         }
     }
 
-    fun insertMessage(message: ForwardedMessage, onInserted: (Long) -> Unit = {}) {
+    fun resendMessage(context: Context, messageId: Long) {
         viewModelScope.launch {
-            val id = repository.insertMessage(message)
-            onInserted(id)
+            val constraints = Constraints.Builder()
+                .setRequiredNetworkType(NetworkType.CONNECTED)
+                .build()
+
+            val input = Data.Builder()
+                .putLong("messageId", messageId)
+                .build()
+
+            val work = OneTimeWorkRequestBuilder<SendWorker>()
+                .setConstraints(constraints)
+                .setInputData(input)
+                .build()
+
+            WorkManager.getInstance(context).enqueueUniqueWork(
+                "send_sms_$messageId",
+                ExistingWorkPolicy.REPLACE,
+                work
+            )
         }
     }
 
-    fun markAsSent(id: Long, telegramMessageId: String?) {
+    fun resendAllPending(context: Context) {
+        viewModelScope.launch {
+            val unsent = repository.getUnsentMessages()
+            val workManager = WorkManager.getInstance(context)
+            val constraints = Constraints.Builder()
+                .setRequiredNetworkType(NetworkType.CONNECTED)
+                .build()
+
+            for (msg in unsent) {
+                val input = Data.Builder()
+                    .putLong("messageId", msg.id)
+                    .build()
+                val work = OneTimeWorkRequestBuilder<SendWorker>()
+                    .setConstraints(constraints)
+                    .setInputData(input)
+                    .build()
+
+                workManager.enqueueUniqueWork(
+                    "send_sms_${msg.id}",
+                    ExistingWorkPolicy.KEEP,
+                    work
+                )
+            }
+        }
+    }
+
+    fun markAsSent(id: Long, telegramMessageId: String? = null) {
         viewModelScope.launch {
             repository.markAsSent(id, telegramMessageId)
-            refreshUnsent()
+        }
+    }
+
+    fun deleteMessage(id: Long) {
+        viewModelScope.launch {
+            repository.deleteMessage(id)
         }
     }
 

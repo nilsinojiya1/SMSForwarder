@@ -65,13 +65,22 @@ class AssembleFallbackWorker @AssistedInject constructor(
         val id = repository.insertMessage(forwarded)
         smsPartDao.deletePartsForRef(sender, refNumber)
 
+        val constraints = androidx.work.Constraints.Builder()
+            .setRequiredNetworkType(androidx.work.NetworkType.CONNECTED)
+            .build()
+
         val input = Data.Builder()
             .putLong("messageId", id)
             .build()
         val work = OneTimeWorkRequestBuilder<SendWorker>()
+            .setConstraints(constraints)
             .setInputData(input)
             .build()
-        WorkManager.getInstance(applicationContext).enqueue(work)
+        WorkManager.getInstance(applicationContext).enqueueUniqueWork(
+            "send_sms_$id",
+            androidx.work.ExistingWorkPolicy.KEEP,
+            work
+        )
 
         return Result.success()
     }

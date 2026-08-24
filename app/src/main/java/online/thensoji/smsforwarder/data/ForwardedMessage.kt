@@ -10,6 +10,9 @@ data class ForwardedMessage(
     val body: String,
     val timestamp: Long,
     val isSent: Boolean = false,
+    val sentTimestamp: Long? = null,
+    val delayMillis: Long? = null,
     val telegramMessageId: String? = null,
-    val partsGroupingId: String? = null
+    val partsGroupingId: String? = null,
+    val errorMessage: String? = null
 )

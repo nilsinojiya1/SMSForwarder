@@ -8,7 +8,10 @@ import android.provider.Telephony
 import android.telephony.SubscriptionManager
 import android.util.Log
 import androidx.annotation.RequiresPermission
+import androidx.work.Constraints
 import androidx.work.Data
+import androidx.work.ExistingWorkPolicy
+import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import dagger.hilt.android.AndroidEntryPoint
@@ -130,15 +133,24 @@ class SmsReceiver : BroadcastReceiver() {
     }
 
     private fun enqueueSendWorker(context: Context, messageId: Long) {
+        val constraints = Constraints.Builder()
+            .setRequiredNetworkType(NetworkType.CONNECTED)
+            .build()
+
         val input = Data.Builder()
             .putLong("messageId", messageId)
             .build()
 
         val work = OneTimeWorkRequestBuilder<SendWorker>()
+            .setConstraints(constraints)
             .setInputData(input)
             .build()
 
-        WorkManager.getInstance(context).enqueue(work)
+        WorkManager.getInstance(context).enqueueUniqueWork(
+            "send_sms_$messageId",
+            ExistingWorkPolicy.KEEP,
+            work
+        )
     }
 
     private fun enqueueFallbackAssemblyWorker(

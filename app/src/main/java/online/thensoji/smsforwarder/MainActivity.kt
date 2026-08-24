@@ -11,42 +11,41 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.Smartphone
-import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.material.icons.filled.VisibilityOff
-import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import online.thensoji.smsforwarder.util.MessageFormatter
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import androidx.core.content.edit
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import androidx.work.Data
-import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.WorkManager
 import dagger.hilt.android.AndroidEntryPoint
+import online.thensoji.smsforwarder.data.ForwardedMessage
 import online.thensoji.smsforwarder.ui.MessageViewModel
 import online.thensoji.smsforwarder.ui.theme.SMSforwarderTheme
+import online.thensoji.smsforwarder.util.MessageFormatter
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -105,7 +104,7 @@ fun MainScreen() {
 
     val title = when (currentRoute) {
         "settings" -> "Telegram Settings"
-        "queue" -> "Queued Messages"
+        "messages" -> "All Messages"
         else -> "SMS Forwarder"
     }
 
@@ -140,15 +139,15 @@ fun MainScreen() {
         ) {
             composable("home") {
                 HomeScreen(
-                    onOpenQueue = { navController.navigate("queue") },
+                    onOpenMessages = { navController.navigate("messages") },
                     onOpenSettings = { navController.navigate("settings") }
                 )
             }
             composable("settings") {
                 SettingsScreen()
             }
-            composable("queue") {
-                QueuedMessagesScreen()
+            composable("messages") {
+                AllMessagesScreen()
             }
         }
     }
@@ -156,8 +155,9 @@ fun MainScreen() {
 
 @Composable
 fun HomeScreen(
-    onOpenQueue: () -> Unit,
-    onOpenSettings: () -> Unit
+    onOpenMessages: () -> Unit,
+    onOpenSettings: () -> Unit,
+    viewModel: MessageViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
     var hasPermissions by remember { mutableStateOf(checkAllPermissions(context)) }
@@ -182,20 +182,28 @@ fun HomeScreen(
         mutableStateOf(MessageFormatter.getDeviceName(context))
     }
 
+    val messages by viewModel.messages.collectAsState()
+
     LaunchedEffect(Unit) {
         botToken = sharedPreferences.getString("bot_token", "") ?: ""
         chatId = sharedPreferences.getString("chat_id", "") ?: ""
         deviceName = MessageFormatter.getDeviceName(context)
         hasPermissions = checkAllPermissions(context)
+        viewModel.refreshMessages()
     }
 
     val isConfigured = botToken.isNotBlank() && chatId.isNotBlank()
+    val totalCount = messages.size
+    val pendingCount = messages.count { !it.isSent }
+    val sentCount = messages.count { it.isSent }
+    val delayedCount = messages.count { (it.delayMillis ?: 0L) >= 60_000L }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .verticalScroll(rememberScrollState())
             .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
         Text("Overview", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
 
@@ -209,7 +217,7 @@ fun HomeScreen(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp),
+                    .padding(14.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
@@ -220,12 +228,12 @@ fun HomeScreen(
                 Spacer(modifier = Modifier.width(12.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "Device: $deviceName",
+                        text = "Device Tag: $deviceName",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold
                     )
                     Text(
-                        text = "Attached to forwarded SMS so you can distinguish multiple devices.",
+                        text = "Identifies this device when multiple phones forward to the same chat.",
                         style = MaterialTheme.typography.bodySmall
                     )
                 }
@@ -242,7 +250,7 @@ fun HomeScreen(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp),
+                    .padding(14.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
@@ -271,7 +279,7 @@ fun HomeScreen(
                     onClick = { permissionLauncher.launch(getRequiredPermissions()) },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                        .padding(horizontal = 14.dp, vertical = 6.dp)
                 ) {
                     Text("Grant Permissions")
                 }
@@ -288,7 +296,7 @@ fun HomeScreen(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp),
+                    .padding(14.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
@@ -314,10 +322,39 @@ fun HomeScreen(
             }
         }
 
-        Spacer(modifier = Modifier.height(8.dp))
+        // Statistics Card: Messages Summary
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+        ) {
+            Column(modifier = Modifier.padding(14.dp)) {
+                Text("Messages Summary", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    SummaryItem(title = "Total", count = totalCount)
+                    SummaryItem(title = "Sent", count = sentCount, color = MaterialTheme.colorScheme.primary)
+                    SummaryItem(title = "Pending", count = pendingCount, color = if (pendingCount > 0) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant)
+                    SummaryItem(title = "Delayed", count = delayedCount, color = if (delayedCount > 0) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(4.dp))
 
         // Action Buttons
         Button(
+            onClick = onOpenMessages,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Icon(Icons.AutoMirrored.Filled.List, contentDescription = null)
+            Spacer(modifier = Modifier.width(8.dp))
+            Text("View All Messages (${MessageFormatter.formatCompactNumber(totalCount)})")
+        }
+
+        OutlinedButton(
             onClick = onOpenSettings,
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -325,25 +362,58 @@ fun HomeScreen(
             Spacer(modifier = Modifier.width(8.dp))
             Text("Configure Telegram Settings")
         }
-
-        OutlinedButton(
-            onClick = onOpenQueue,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("View Queued Messages")
-        }
     }
 }
 
 @Composable
-fun QueuedMessagesScreen(
+fun SummaryItem(
+    title: String,
+    count: Int,
+    color: androidx.compose.ui.graphics.Color = MaterialTheme.colorScheme.onSurface
+) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(
+            text = MessageFormatter.formatCompactNumber(count),
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+            color = color
+        )
+        Text(
+            text = title,
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
+}
+
+enum class MessageFilterTab(val label: String) {
+    ALL("All"),
+    PENDING("Pending"),
+    SENT("Sent"),
+    DELAYED("Delayed")
+}
+
+@Composable
+fun AllMessagesScreen(
     viewModel: MessageViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
-    val unsent by viewModel.unsent.collectAsState()
+    val messages by viewModel.messages.collectAsState()
+    var selectedTab by remember { mutableStateOf(MessageFilterTab.ALL) }
 
     LaunchedEffect(Unit) {
-        viewModel.refreshUnsent()
+        viewModel.refreshMessages()
+    }
+
+    val pendingList = remember(messages) { messages.filter { !it.isSent } }
+    val sentList = remember(messages) { messages.filter { it.isSent } }
+    val delayedList = remember(messages) { messages.filter { (it.delayMillis ?: 0L) >= 60_000L } }
+
+    val filteredList = when (selectedTab) {
+        MessageFilterTab.ALL -> messages
+        MessageFilterTab.PENDING -> pendingList
+        MessageFilterTab.SENT -> sentList
+        MessageFilterTab.DELAYED -> delayedList
     }
 
     val dateFormat = remember {
@@ -355,24 +425,115 @@ fun QueuedMessagesScreen(
             .fillMaxSize()
             .padding(16.dp)
     ) {
+        // Header Row
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                "Unsent Messages (${unsent.size})",
+                "All Messages (${MessageFormatter.formatCompactNumber(messages.size)})",
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
             )
-            IconButton(onClick = { viewModel.refreshUnsent() }) {
+            IconButton(onClick = { viewModel.refreshMessages() }) {
                 Icon(Icons.Filled.Refresh, contentDescription = "Refresh")
+            }
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // Horizontally Scrollable Filter Chips (clean layout on all screen sizes)
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .horizontalScroll(rememberScrollState()),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            FilterChip(
+                selected = selectedTab == MessageFilterTab.ALL,
+                onClick = { selectedTab = MessageFilterTab.ALL },
+                label = {
+                    Text(
+                        "All (${MessageFormatter.formatCompactNumber(messages.size)})",
+                        maxLines = 1
+                    )
+                }
+            )
+            FilterChip(
+                selected = selectedTab == MessageFilterTab.PENDING,
+                onClick = { selectedTab = MessageFilterTab.PENDING },
+                label = {
+                    Text(
+                        "Pending (${MessageFormatter.formatCompactNumber(pendingList.size)})",
+                        maxLines = 1
+                    )
+                }
+            )
+            FilterChip(
+                selected = selectedTab == MessageFilterTab.SENT,
+                onClick = { selectedTab = MessageFilterTab.SENT },
+                label = {
+                    Text(
+                        "Sent (${MessageFormatter.formatCompactNumber(sentList.size)})",
+                        maxLines = 1
+                    )
+                }
+            )
+            FilterChip(
+                selected = selectedTab == MessageFilterTab.DELAYED,
+                onClick = { selectedTab = MessageFilterTab.DELAYED },
+                label = {
+                    Text(
+                        "Delayed (${MessageFormatter.formatCompactNumber(delayedList.size)})",
+                        maxLines = 1
+                    )
+                }
+            )
+        }
+
+        // Action banner if pending messages exist
+        if (pendingList.isNotEmpty()) {
+            Spacer(modifier = Modifier.height(8.dp))
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 12.dp, vertical = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            "${MessageFormatter.formatCompactNumber(pendingList.size)} message(s) waiting for internet",
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        Text(
+                            "Auto-sends when connection is restored.",
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Button(
+                        onClick = {
+                            viewModel.resendAllPending(context)
+                            Toast.makeText(context, "Retrying pending messages...", Toast.LENGTH_SHORT).show()
+                        },
+                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp)
+                    ) {
+                        Text("Send Now", maxLines = 1)
+                    }
+                }
             }
         }
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        if (unsent.isEmpty()) {
+        if (filteredList.isEmpty()) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -381,20 +542,33 @@ fun QueuedMessagesScreen(
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Icon(
-                        Icons.Filled.CheckCircle,
+                        imageVector = when (selectedTab) {
+                            MessageFilterTab.PENDING -> Icons.Filled.CheckCircle
+                            else -> Icons.Filled.Inbox
+                        },
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(48.dp)
                     )
                     Spacer(modifier = Modifier.height(12.dp))
                     Text(
-                        "No queued messages",
+                        text = when (selectedTab) {
+                            MessageFilterTab.ALL -> "No messages yet"
+                            MessageFilterTab.PENDING -> "No pending messages"
+                            MessageFilterTab.SENT -> "No sent messages"
+                            MessageFilterTab.DELAYED -> "No delayed messages"
+                        },
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        "All incoming SMS messages have been forwarded.",
+                        text = when (selectedTab) {
+                            MessageFilterTab.ALL -> "Incoming SMS messages will appear here."
+                            MessageFilterTab.PENDING -> "All messages have been successfully sent to Telegram."
+                            MessageFilterTab.SENT -> "Messages forwarded to Telegram will appear here."
+                            MessageFilterTab.DELAYED -> "Messages with > 1 min forwarding delay will appear here."
+                        },
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -402,63 +576,187 @@ fun QueuedMessagesScreen(
             }
         } else {
             LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
                 modifier = Modifier.fillMaxSize()
             ) {
-                items(unsent, key = { it.id }) { msg ->
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceVariant
-                        )
-                    ) {
-                        Column(modifier = Modifier.padding(14.dp)) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Text(
-                                    text = "From: ${msg.sender ?: "Unknown"}",
-                                    fontWeight = FontWeight.Bold,
-                                    style = MaterialTheme.typography.bodyLarge
-                                )
-                                Text(
-                                    text = dateFormat.format(Date(msg.timestamp)),
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                            Spacer(modifier = Modifier.height(6.dp))
-                            Text(text = msg.body, style = MaterialTheme.typography.bodyMedium)
-                            Spacer(modifier = Modifier.height(10.dp))
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.End
-                            ) {
-                                OutlinedButton(
-                                    onClick = {
-                                        viewModel.markAsSent(msg.id, null)
-                                    }
-                                ) {
-                                    Text("Mark as Sent")
-                                }
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Button(
-                                    onClick = {
-                                        val input = Data.Builder()
-                                            .putLong("messageId", msg.id)
-                                            .build()
-                                        val work = OneTimeWorkRequestBuilder<SendWorker>()
-                                            .setInputData(input)
-                                            .build()
-                                        WorkManager.getInstance(context).enqueue(work)
-                                        Toast.makeText(context, "Retrying to forward...", Toast.LENGTH_SHORT).show()
-                                    }
-                                ) {
-                                    Text("Retry")
-                                }
-                            }
+                items(filteredList, key = { it.id }) { msg ->
+                    MessageCard(
+                        msg = msg,
+                        dateFormat = dateFormat,
+                        onResend = {
+                            viewModel.resendMessage(context, msg.id)
+                            Toast.makeText(context, "Retrying message...", Toast.LENGTH_SHORT).show()
+                        },
+                        onMarkSent = {
+                            viewModel.markAsSent(msg.id)
+                        },
+                        onDelete = {
+                            viewModel.deleteMessage(msg.id)
                         }
+                    )
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+fun MessageCard(
+    msg: ForwardedMessage,
+    dateFormat: SimpleDateFormat,
+    onResend: () -> Unit,
+    onMarkSent: () -> Unit,
+    onDelete: () -> Unit
+) {
+    val now = remember { System.currentTimeMillis() }
+    val isDelayed = (msg.delayMillis ?: 0L) >= 60_000L
+    val isPendingDelayed = !msg.isSent && (now - msg.timestamp) >= 60_000L
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
+        )
+    ) {
+        Column(modifier = Modifier.padding(14.dp)) {
+            // Top Row: Sender + Received Time (Responsive with overflow protection)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "From: ${msg.sender ?: "Unknown"}",
+                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.bodyMedium,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f, fill = false)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = dateFormat.format(Date(msg.timestamp)),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
+            Spacer(modifier = Modifier.height(6.dp))
+
+            // Status Badges Row
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                // Sent / Pending Badge
+                if (msg.isSent) {
+                    AssistChip(
+                        onClick = {},
+                        leadingIcon = {
+                            Icon(Icons.Filled.CheckCircle, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(16.dp))
+                        },
+                        label = { Text("Sent", style = MaterialTheme.typography.labelSmall) },
+                        colors = AssistChipDefaults.assistChipColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
+                    )
+                } else {
+                    AssistChip(
+                        onClick = {},
+                        leadingIcon = {
+                            Icon(Icons.Filled.HourglassEmpty, contentDescription = null, tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(16.dp))
+                        },
+                        label = { Text("Pending / Queued", style = MaterialTheme.typography.labelSmall) },
+                        colors = AssistChipDefaults.assistChipColors(containerColor = MaterialTheme.colorScheme.errorContainer)
+                    )
+                }
+
+                // Delayed Badge
+                if (isDelayed) {
+                    val delayText = MessageFormatter.formatDelayDuration(msg.delayMillis ?: 0L)
+                    AssistChip(
+                        onClick = {},
+                        leadingIcon = {
+                            Icon(Icons.Filled.Schedule, contentDescription = null, tint = MaterialTheme.colorScheme.tertiary, modifier = Modifier.size(16.dp))
+                        },
+                        label = { Text("Delayed by $delayText", style = MaterialTheme.typography.labelSmall) },
+                        colors = AssistChipDefaults.assistChipColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer)
+                    )
+                } else if (isPendingDelayed) {
+                    val pendingDelayText = MessageFormatter.formatDelayDuration(now - msg.timestamp)
+                    AssistChip(
+                        onClick = {},
+                        leadingIcon = {
+                            Icon(Icons.Filled.Schedule, contentDescription = null, tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(16.dp))
+                        },
+                        label = { Text("Offline for $pendingDelayText", style = MaterialTheme.typography.labelSmall) },
+                        colors = AssistChipDefaults.assistChipColors(containerColor = MaterialTheme.colorScheme.errorContainer)
+                    )
+                }
+
+                // Telegram ID Badge
+                if (!msg.telegramMessageId.isNullOrBlank()) {
+                    AssistChip(
+                        onClick = {},
+                        label = { Text("ID #${msg.telegramMessageId}", style = MaterialTheme.typography.labelSmall) }
+                    )
+                }
+            }
+
+            // Error info if any
+            if (!msg.errorMessage.isNullOrBlank() && !msg.isSent) {
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "⚠️ ${msg.errorMessage}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error
+                )
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Body
+            Text(
+                text = msg.body,
+                style = MaterialTheme.typography.bodyMedium
+            )
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            // Bottom Actions (FlowRow wrapped for small screens)
+            FlowRow(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End,
+                verticalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                if (!msg.isSent) {
+                    OutlinedButton(
+                        onClick = onMarkSent,
+                        contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp)
+                    ) {
+                        Text("Mark as Sent", style = MaterialTheme.typography.labelMedium)
+                    }
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Button(
+                        onClick = onResend,
+                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp)
+                    ) {
+                        Icon(Icons.AutoMirrored.Filled.Send, contentDescription = null, modifier = Modifier.size(16.dp))
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("Send Now", style = MaterialTheme.typography.labelMedium)
+                    }
+                } else {
+                    OutlinedButton(
+                        onClick = onResend,
+                        contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp)
+                    ) {
+                        Icon(Icons.Filled.Refresh, contentDescription = null, modifier = Modifier.size(16.dp))
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("Resend", style = MaterialTheme.typography.labelMedium)
+                    }
+                    Spacer(modifier = Modifier.width(6.dp))
+                    IconButton(onClick = onDelete, modifier = Modifier.size(36.dp)) {
+                        Icon(Icons.Filled.Delete, contentDescription = "Delete", tint = MaterialTheme.colorScheme.error)
                     }
                 }
             }
@@ -491,6 +789,7 @@ fun SettingsScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .verticalScroll(rememberScrollState())
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
@@ -545,11 +844,10 @@ fun SettingsScreen(
 
         Button(
             onClick = {
-                with(sharedPreferences.edit()) {
+                sharedPreferences.edit {
                     putString("device_name", deviceName.trim())
                     putString("bot_token", botToken.trim())
                     putString("chat_id", chatId.trim())
-                    apply()
                 }
                 Toast.makeText(context, "Settings saved successfully!", Toast.LENGTH_SHORT).show()
             },
