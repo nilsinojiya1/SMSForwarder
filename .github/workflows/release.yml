@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       version_name:
-        description: "Custom Version Name (e.g., 1.0.2). Leave empty for auto-generation."
+        description: "Custom Version Name (e.g. 26.85.0). Leave empty for auto-generation."
         required: false
         default: ""
       send_email:
@@ -15,47 +15,67 @@ on:
         type: boolean
         required: true
         default: true
+      build_bundle:
+        description: "Also build Play Store Bundle (.aab) [Slower]"
+        type: boolean
+        required: false
+        default: false
+
+# Concurrency: Cancel in-flight duplicate runs on the same branch
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: write
 
 jobs:
   build-and-release:
-    name: Build Signed Release & Dispatch
+    name: Fast Build Signed Release & Dispatch
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Code
+      - name: Fast Shallow Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 1
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
+          cache: 'gradle'
 
-      - name: Setup Gradle
+      - name: Setup Fast Gradle Engine
         uses: gradle/actions/setup-gradle@v3
+        with:
+          cache-read-only: false
+          gradle-home-cache-cleanup: true
 
-      - name: Determine Dynamic Version Code & Name
+      - name: Calculate Version Code & Dynamic Version Name (year.monthweek.build)
         id: versioning
         run: |
-          # Calculate monotonically increasing Version Code
+          # 1. Monotonically increasing integer Version Code for Android OS updates
           VERSION_CODE="${{ github.run_number }}"
           
-          # Calculate Version Name
+          # 2. Dynamic Version Name Formula: year.monthweek.build (e.g. 26.85.0)
+          YEAR=$(date +'%y')
+          MONTH=$(date +'%-m')
+          DAY=$(date +'%-d')
+          WEEK=$(( (DAY - 1) / 7 + 1 ))
+          
           if [ -n "${{ github.event.inputs.version_name }}" ]; then
             VERSION_NAME="${{ github.event.inputs.version_name }}"
           elif [[ "${{ github.ref }}" == refs/tags/v* ]]; then
             VERSION_NAME="${GITHUB_REF_NAME#v}"
           else
-            VERSION_NAME="1.0.${{ github.run_number }}"
+            # Format: 26.85.0 (year.month_numberweek_number.build_number)
+            VERSION_NAME="${YEAR}.${MONTH}${WEEK}.0"
           fi
           
-          echo "Computed VERSION_CODE: $VERSION_CODE"
-          echo "Computed VERSION_NAME: $VERSION_NAME"
+          echo "Generated VERSION_CODE: $VERSION_CODE"
+          echo "Generated VERSION_NAME: $VERSION_NAME"
           
           echo "VERSION_CODE=$VERSION_CODE" >> $GITHUB_ENV
           echo "VERSION_NAME=$VERSION_NAME" >> $GITHUB_ENV
@@ -71,13 +91,13 @@ jobs:
             echo "KEYSTORE_FILE=${RUNNER_TEMP}/release.jks" >> $GITHUB_ENV
             echo "Keystore successfully decoded."
           else
-            echo "No KEYSTORE_BASE64 secret provided. Proceeding without custom signing."
+            echo "No KEYSTORE_BASE64 secret provided."
           fi
 
       - name: Make Gradle Wrapper Executable
         run: chmod +x gradlew
 
-      - name: Build Release APK & Bundle
+      - name: High-Speed Release Assembly
         env:
           VERSION_CODE: ${{ env.VERSION_CODE }}
           VERSION_NAME: ${{ env.VERSION_NAME }}
@@ -85,8 +105,20 @@ jobs:
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          BUILD_BUNDLE: ${{ github.event.inputs.build_bundle }}
         run: |
-          ./gradlew assembleRelease bundleRelease --stacktrace
+          # Build target: assembleRelease for instant fast APK build, optionally bundleRelease if requested
+          GRADLE_TASKS=":app:assembleRelease"
+          if [ "$BUILD_BUNDLE" = "true" ]; then
+            GRADLE_TASKS="$GRADLE_TASKS :app:bundleRelease"
+          fi
+          
+          ./gradlew $GRADLE_TASKS \
+            --build-cache \
+            --parallel \
+            --max-workers=4 \
+            -Dorg.gradle.jvmargs="-Xmx5120m -XX:+UseParallelGC" \
+            -x lint -x test -x lintVitalRelease
 
       - name: Prepare Release Artifacts
         run: |
@@ -96,32 +128,20 @@ jobs:
             cp app/build/outputs/bundle/release/app-release.aab release_artifacts/SMSForwarder-v${{ env.VERSION_NAME }}.aab
           fi
 
-      - name: Upload Build Artifacts (GitHub Actions)
-        uses: actions/upload-artifact@v4
-        with:
-          name: SMSForwarder-v${{ env.VERSION_NAME }}-build
-          path: release_artifacts/*
-          retention-days: 14
-
-      - name: Create GitHub Release
+      - name: Publish GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: "v${{ env.VERSION_NAME }}"
           name: "SMS Forwarder v${{ env.VERSION_NAME }}"
           body: |
-            ## 🚀 SMS Forwarder Release v${{ env.VERSION_NAME }} (Build ${{ env.VERSION_CODE }})
+            ## 🚀 SMS Forwarder v${{ env.VERSION_NAME }} (Build ${{ env.VERSION_CODE }})
             
-            ### 📦 Changes in this release
             - **Commit:** `${{ github.sha }}`
-            - **Triggered by:** `${{ github.actor }}`
-            - **Branch/Tag:** `${{ github.ref_name }}`
+            - **Author:** `${{ github.actor }}`
             
             ### ⬇️ Download
-            - **APK (Direct Install):** `SMSForwarder-v${{ env.VERSION_NAME }}.apk`
-            - **AAB (Play Store Bundle):** `SMSForwarder-v${{ env.VERSION_NAME }}.aab`
-          files: |
-            release_artifacts/SMSForwarder-v${{ env.VERSION_NAME }}.apk
-            release_artifacts/SMSForwarder-v${{ env.VERSION_NAME }}.aab
+            - **Direct APK:** [`SMSForwarder-v${{ env.VERSION_NAME }}.apk`](https://github.com/${{ github.repository }}/releases/download/v${{ env.VERSION_NAME }}/SMSForwarder-v${{ env.VERSION_NAME }}.apk)
+          files: release_artifacts/*
           draft: false
           prerelease: false
         env:
@@ -139,18 +159,16 @@ jobs:
           server_port: ${{ secrets.MAIL_PORT || 465 }}
           username: ${{ secrets.MAIL_USERNAME }}
           password: ${{ secrets.MAIL_PASSWORD }}
-          subject: "🚀 SMS Forwarder v${{ env.VERSION_NAME }} (Build #${{ env.VERSION_CODE }}) Released"
+          subject: "🚀 SMS Forwarder v${{ env.VERSION_NAME }} Released"
           to: ${{ secrets.MAIL_TO }}
           from: ${{ secrets.MAIL_FROM || format('SMS Forwarder CI <{0}>', secrets.MAIL_USERNAME) }}
           html_body: |
             <h2>📱 SMS Forwarder v${{ env.VERSION_NAME }} is Ready!</h2>
-            <p>A new release build has been compiled and signed successfully.</p>
+            <p>Your signed release build has finished compiling.</p>
             <ul>
-              <li><strong>Version Name:</strong> ${{ env.VERSION_NAME }}</li>
-              <li><strong>Version Code:</strong> ${{ env.VERSION_CODE }}</li>
+              <li><strong>Version:</strong> ${{ env.VERSION_NAME }} (Build #${{ env.VERSION_CODE }})</li>
               <li><strong>Commit:</strong> <code>${{ github.sha }}</code></li>
-              <li><strong>Triggered By:</strong> ${{ github.actor }}</li>
             </ul>
-            <p>The signed release APK is attached to this email for direct installation.</p>
-            <p><a href="https://github.com/${{ github.repository }}/releases/tag/v${{ env.VERSION_NAME }}">View on GitHub Releases</a></p>
+            <p>Attached is your signed release APK for instant installation.</p>
+            <p><a href="https://github.com/${{ github.repository }}/releases/tag/v${{ env.VERSION_NAME }}">View GitHub Release</a></p>
           attachments: release_artifacts/SMSForwarder-v${{ env.VERSION_NAME }}.apk
