@@ -34,7 +34,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -43,16 +43,8 @@ import androidx.work.Data
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.RequestBody.Companion.toRequestBody
 import online.thensoji.smsforwarder.ui.MessageViewModel
 import online.thensoji.smsforwarder.ui.theme.SMSforwarderTheme
-import org.json.JSONObject
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -436,9 +428,10 @@ fun QueuedMessagesScreen(
 }
 
 @Composable
-fun SettingsScreen() {
+fun SettingsScreen(
+    viewModel: MessageViewModel = hiltViewModel()
+) {
     val context = LocalContext.current
-    val scope = rememberCoroutineScope()
     val sharedPreferences = remember {
         context.getSharedPreferences("sms_forwarder_prefs", Context.MODE_PRIVATE)
     }
@@ -516,30 +509,12 @@ fun SettingsScreen() {
                     return@OutlinedButton
                 }
                 isTestingConnection = true
-                scope.launch {
-                    val result = withContext(Dispatchers.IO) {
-                        try {
-                            val client = OkHttpClient()
-                            val jsonBody = JSONObject().apply {
-                                put("chat_id", chat)
-                                put("text", "🔔 Test message from SMS Forwarder app! Everything is set up correctly.")
-                            }
-                            val reqBody = jsonBody.toString().toRequestBody("application/json; charset=utf-8".toMediaType())
-                            val req = Request.Builder()
-                                .url("https://api.telegram.org/bot$token/sendMessage")
-                                .post(reqBody)
-                                .build()
-                            val res = client.newCall(req).execute()
-                            res.isSuccessful
-                        } catch (e: Exception) {
-                            false
-                        }
-                    }
+                viewModel.testTelegramConnection(token, chat) { isSuccess, errorMsg ->
                     isTestingConnection = false
-                    if (result) {
+                    if (isSuccess) {
                         Toast.makeText(context, "✅ Connection successful! Test message sent to Telegram.", Toast.LENGTH_LONG).show()
                     } else {
-                        Toast.makeText(context, "❌ Connection failed. Check Token, Chat ID, and internet connection.", Toast.LENGTH_LONG).show()
+                        Toast.makeText(context, "❌ Connection failed: ${errorMsg ?: "Check Token, Chat ID and connection."}", Toast.LENGTH_LONG).show()
                     }
                 }
             },

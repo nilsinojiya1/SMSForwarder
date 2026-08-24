@@ -8,13 +8,14 @@ import androidx.work.WorkerParameters
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import online.thensoji.smsforwarder.data.AppDatabase
-import online.thensoji.smsforwarder.network.TelegramSender
+import online.thensoji.smsforwarder.domain.model.SendResult
+import online.thensoji.smsforwarder.domain.usecase.SendTelegramMessageUseCase
 
 @HiltWorker
 class SendWorker @AssistedInject constructor(
     @Assisted appContext: Context,
     @Assisted params: WorkerParameters,
-    private val telegramSender: TelegramSender,
+    private val sendTelegramMessageUseCase: SendTelegramMessageUseCase,
     private val db: AppDatabase
 ) : CoroutineWorker(appContext, params) {
 
@@ -36,12 +37,15 @@ class SendWorker @AssistedInject constructor(
         }
 
         return try {
-            val (ok, telegramId) = telegramSender.sendMessage(botToken, chatId, message)
-            if (ok) {
-                dao.update(messageObj.copy(isSent = true, telegramMessageId = telegramId))
-                Result.success()
-            } else {
-                Result.retry()
+            when (val result = sendTelegramMessageUseCase(botToken, chatId, message)) {
+                is SendResult.Success -> {
+                    dao.update(messageObj.copy(isSent = true, telegramMessageId = result.telegramMessageId))
+                    Result.success()
+                }
+                is SendResult.Error -> {
+                    Log.e("SendWorker", "Failed to forward message: ${result.errorMessage}", result.throwable)
+                    Result.retry()
+                }
             }
         } catch (e: Exception) {
             Log.e("SendWorker", "Error forwarding message", e)

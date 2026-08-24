@@ -7,18 +7,20 @@ import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.IBinder
 import android.util.Log
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.RequestBody.Companion.toRequestBody
-import org.json.JSONObject
+import online.thensoji.smsforwarder.domain.model.SendResult
+import online.thensoji.smsforwarder.domain.usecase.SendTelegramMessageUseCase
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class ForwardingService : Service() {
 
-    private val client = OkHttpClient()
+    @Inject
+    lateinit var sendTelegramMessageUseCase: SendTelegramMessageUseCase
+
     private val coroutineScope = CoroutineScope(Dispatchers.IO)
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -44,26 +46,15 @@ class ForwardingService : Service() {
             return
         }
 
-        val url = "https://api.telegram.org/bot$botToken/sendMessage"
-
         coroutineScope.launch {
             try {
-                val jsonBody = JSONObject()
-                jsonBody.put("chat_id", chatId)
-                jsonBody.put("text", message)
-
-                val requestBody = jsonBody.toString().toRequestBody("application/json; charset=utf-8".toMediaType())
-
-                val request = Request.Builder()
-                    .url(url)
-                    .post(requestBody)
-                    .build()
-
-                val response = client.newCall(request).execute()
-                if (response.isSuccessful) {
-                    Log.d("ForwardingService", "Message forwarded successfully")
-                } else {
-                    Log.e("ForwardingService", "Failed to forward message: ${response.body?.string()}")
+                when (val result = sendTelegramMessageUseCase(botToken, chatId, message)) {
+                    is SendResult.Success -> {
+                        Log.d("ForwardingService", "Message forwarded successfully. ID: ${result.telegramMessageId}")
+                    }
+                    is SendResult.Error -> {
+                        Log.e("ForwardingService", "Failed to forward message: ${result.errorMessage}", result.throwable)
+                    }
                 }
             } catch (e: Exception) {
                 Log.e("ForwardingService", "Error forwarding message", e)
