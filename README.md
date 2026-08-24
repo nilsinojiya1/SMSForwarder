@@ -5,44 +5,51 @@
 [![Jetpack Compose](https://img.shields.io/badge/Compose-Material%203-4285F4.svg?logo=jetpackcompose&logoColor=white)](https://developer.android.com/jetpack/compose)
 [![Hilt](https://img.shields.io/badge/Dagger-Hilt%202.60.1-brightgreen.svg)](https://dagger.dev/hilt/)
 [![Room](https://img.shields.io/badge/AndroidX-Room%202.8.4-orange.svg)](https://developer.android.com/training/data-storage/room)
+[![Retrofit](https://img.shields.io/badge/Retrofit-2.11.0-red.svg)](https://square.github.io/retrofit/)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-A robust, modern, and reliable Android application that automatically captures incoming SMS text messages and forwards them in real-time to your private **Telegram** chat or group.
+A robust, modern, and privacy-focused Android application that automatically captures incoming SMS text messages and forwards them in real-time to your private **Telegram** chat or group.
 
-Built with modern Android standards (**Jetpack Compose**, **Material 3**, **Dagger Hilt**, **Room Database**, **WorkManager**, and **Coroutines**), ensuring zero message loss even across network outages or device restarts.
+Built using modern Android architecture principles (**Jetpack Compose**, **Material 3**, **Clean Architecture + MVVM**, **Dagger Hilt**, **Retrofit 2**, **Room SQLite Database**, and **WorkManager**), guaranteeing zero message loss, multi-part message integrity, offline queue recovery, multi-device identification, and 4-digit PIN security.
 
 ---
 
 ## 🌟 Key Features
 
-- ⚡ **Real-Time SMS Forwarding:** Intercepts incoming SMS broadcasts instantly and forwards sender details, timestamp, and message body to Telegram.
-- 📶 **Dual-SIM Slot Awareness:** Automatically detects and displays which SIM slot received the message (`SIM 1` vs `SIM 2`).
-- 🧩 **Multipart SMS Reassembly:** Intelligently stitches multi-part long SMS messages into a single coherent notification before sending.
-- 🛡️ **Offline Queue & Guaranteed Delivery:** Messages are first persisted locally in a **Room SQLite Database**. **WorkManager** orchestrates delivery with automatic retries on network failure.
-- 📋 **Queued Messages Monitor:** View unsent or failed messages in a dedicated UI screen, with single-tap manual retry or mark-as-sent controls.
-- ⚙️ **In-App Bot Configuration & Live Test:** Setup your Telegram Bot Token & Chat ID directly within the app with built-in instant connection testing.
+- ⚡ **Real-Time SMS Forwarding:** Intercepts incoming SMS broadcasts instantly and forwards sender details, timestamp, SIM slot, and body to Telegram.
+- 🔒 **4-Digit App PIN Security:** Protects your app with a secure 4-digit PIN screen (SHA-256 hashed). Prompts for setup on first launch and unlocks seamlessly on subsequent opens.
+- 📱 **Multi-Device Identification:** Easily run the app on multiple phones forwarding to the same Telegram chat. Auto-detects device hardware model or lets you configure custom tags (e.g., `📱 [Pixel 7 (Work)]`).
+- 🧩 **Multi-Part Concatenated SMS Reassembly:** Binary UDH (User Data Header) parser stages and reassembles fragmented long carrier SMS messages into a single complete Telegram notification.
+- ⏳ **Forwarding Delay Tracking (> 1 min):** Automatically detects if a message was delayed due to airplane mode or network downtime and injects a delayed tag (e.g., `⏳ [Delayed by 15m]`).
+- 📶 **Dual-SIM Slot Awareness:** Identifies and tags incoming messages by their active SIM slot (`SIM 1` vs `SIM 2`).
+- 🌐 **Offline Resilience & Auto-Drain:** When offline, messages queue in Room. WorkManager and real-time network callbacks automatically send pending messages once internet returns—with strict single-send idempotency.
+- 📋 **All Messages Screen with Live Filters:** View all incoming messages categorized with filter chips (**All**, **Pending**, **Sent**, **Delayed**) with compact number formatting (`1k`, `1Lc`, `1cr`) and automatic top-scrolling on new SMS.
+- ⚙️ **In-App Bot Setup & Live Connection Test:** Configure and test your Telegram Bot Token & Chat ID directly within the app.
 - 🔄 **Boot Persistence:** Automatically resumes background listeners when the Android device reboots (`RECEIVE_BOOT_COMPLETED`).
-- 🎨 **Material 3 & Edge-to-Edge:** Designed using Jetpack Compose with dynamic theming and modern Android UI guidelines.
+- 🎨 **Modular Material 3 Compose UI:** Modern, responsive UI with smooth loading spinners, edge-to-edge support, and small-device responsiveness.
 
 ---
 
 ## 🏗️ Architecture & Data Flow
 
 ```text
-[Incoming SMS] 
+[Incoming SMS Broadcast] 
        │
        ▼
 [SmsReceiver (BroadcastReceiver)]
-       │  (Groups multipart SMS & extracts SIM metadata)
+       │  (Extracts SIM metadata & stages multi-part PDUs in SmsPartDao)
        ▼
-[Room Database (AppDatabase)] ◄─── Persists message (isSent = false)
+[Room SQLite (AppDatabase)] ◄─── Persists message (isSent = false)
        │
        ▼
-[WorkManager (SendWorker)] ───► [Telegram Bot API (OkHttp)]
+[WorkManager (SendWorker)] ───► [SendTelegramMessageUseCase]
+       │                                     │
+       │                                     ▼
+       │                            [TelegramApiService (Retrofit 2)]
        │                                     │
        ├────────── On Success ───────────────┘
        ▼
-[Room Database] ───► Updated to (isSent = true)
+[Room Database] ───► Updates message (isSent = true, sentTimestamp, delayMillis)
        │
        ▼
 [Jetpack Compose UI (MessageViewModel)] ───► Real-time StateFlow updates
@@ -56,12 +63,14 @@ Built with modern Android standards (**Jetpack Compose**, **Material 3**, **Dagg
 |---|---|
 | **Language & Toolchain** | Kotlin 2.4.10, Java 17, KSP (Kotlin Symbol Processing) 2.3.10 |
 | **Target SDKs** | Min SDK: `26` (Android 8.0) • Compile/Target SDK: `37` (Android 16+) |
+| **Architecture** | Clean Architecture, MVVM, Repository Pattern, UDF (Unidirectional Data Flow) |
 | **UI Framework** | Jetpack Compose BOM 2026.08.00, Material 3, Navigation Compose |
 | **Dependency Injection** | Dagger Hilt 2.60.1 (`hilt-android`, `hilt-work`, `hilt-navigation-compose`) |
 | **Local Persistence** | AndroidX Room 2.8.4 (Coroutines KTX & KSP CodeGen) |
 | **Background Scheduling** | AndroidX WorkManager 2.11.2 (`work-runtime-ktx`) |
-| **Networking** | Square OkHttp 5.5.0 |
-| **Concurrency** | Kotlin Coroutines & Flow (`StateFlow`) |
+| **Networking** | Retrofit 2.11.0, OkHttp 5.5.0, Gson Converter 2.11.0, Logging Interceptor |
+| **Concurrency** | Kotlin Coroutines & Flow (`StateFlow`, `SharingStarted`) |
+| **Security** | SHA-256 PIN Hashing, Private SharedPreferences |
 
 ---
 
@@ -69,9 +78,9 @@ Built with modern Android standards (**Jetpack Compose**, **Material 3**, **Dagg
 
 ### Prerequisites
 
-- **Android Studio** Ladybug (or newer recommended) / IntelliJ IDEA with Android support.
+- **Android Studio** Ladybug (or newer recommended).
 - **JDK 17** configured as your Gradle JDK.
-- Android device or emulator running **Android 8.0 (API 26)** or higher with an active SIM/telephony capability.
+- Android phone or emulator running **Android 8.0 (API 26)** or higher with active telephony capability.
 
 ### 1. Clone the Repository
 
@@ -80,11 +89,7 @@ git clone https://github.com/nilsinojiya1/SMSForwarder.git
 cd SMSForwarder
 ```
 
-### 2. Open & Build in Android Studio
-
-1. Open Android Studio and select **File > Open**, navigating to the cloned directory.
-2. Allow Gradle sync to complete and download all dependencies.
-3. Build the project using Gradle:
+### 2. Build the Project
 
 ```bash
 # Windows (PowerShell / Command Prompt)
@@ -94,39 +99,43 @@ cd SMSForwarder
 ./gradlew assembleDebug
 ```
 
-### 3. Install on a Test Device
-
-Connect your Android phone via USB debugging and run:
+### 3. Install on Device
 
 ```bash
+# Windows
 .\gradlew.bat installDebug
+
+# Linux / macOS
+./gradlew installDebug
 ```
 
 ---
 
-## 📱 Configuration & Usage
+## 📱 Setup & Configuration
 
-### 1. Setting up Telegram Bot Credentials
+### 1. Create a Telegram Bot
 
-1. Open Telegram and search for [@BotFather](https://t.me/BotFather).
-2. Send `/newbot` and follow the prompts to create your bot and obtain your **Bot Token** (e.g., `123456789:ABCdefGhIJKlmNoPQRstuVWXyz`).
-3. Search for [@userinfobot](https://t.me/userinfobot) or [@RawDataBot](https://t.me/RawDataBot) to find your numeric **Chat ID** (e.g., `123456789` or group ID `-100123456789`).
-4. **Important:** Open your newly created bot in Telegram and tap **Start** (or send `/start`) so the bot is permitted to message you.
+1. Open Telegram and message [@BotFather](https://t.me/BotFather).
+2. Send `/newbot` and follow the instructions to get your **Bot Token** (e.g. `123456789:ABCdefGhIJKlmNoPQRstuVWXyz`).
+3. Message [@userinfobot](https://t.me/userinfobot) to get your numeric **Chat ID** (e.g. `123456789`).
+4. **Important:** Open your newly created bot in Telegram and tap **Start** (or send `/start`) so it has permission to message you.
 
-### 2. In-App Setup
+### 2. In-App Configuration
 
 1. Launch **SMS Forwarder** on your device.
-2. Grant the requested runtime permissions:
+2. Set your **4-digit PIN** when prompted.
+3. Grant the required permissions on the Home overview:
    - `RECEIVE_SMS` & `READ_SMS` (To detect and read SMS messages)
-   - `READ_PHONE_STATE` (To identify active SIM slots)
+   - `READ_PHONE_STATE` (To identify active SIM slot)
    - `POST_NOTIFICATIONS` (For Android 13+)
-3. Navigate to **Settings** (Gear icon at the top right).
-4. Enter your **Bot Token** and **Chat ID**, then tap **Save Credentials**.
-5. Tap **Test Telegram Connection** to verify that your device can reach the Telegram API and dispatch a test alert.
+4. Navigate to **Settings**:
+   - Set your **Device Tag** (or leave default hardware model).
+   - Enter your **Telegram Bot Token** and **Chat ID**.
+   - Tap **Save Settings** and test via **Test Telegram Connection**.
 
 ### 3. Battery Optimization (Recommended)
 
-To prevent OEM battery optimizations (Doze mode) from suspending background forwarders:
+To prevent OEM battery managers (Doze mode) from delaying background forwarders:
 - Go to Android **Settings > Apps > SMS Forwarder > Battery > Set to "Unrestricted"**.
 
 ---
@@ -136,62 +145,45 @@ To prevent OEM battery optimizations (Doze mode) from suspending background forw
 ```text
 SMSforwarder/
 ├── app/
-│   ├── src/
-│   │   ├── main/
-│   │   │   ├── java/online/thensoji/smsforwarder/
-│   │   │   │   ├── data/                      # Room Entities, DAOs, and Database definition
-│   │   │   │   │   ├── AppDatabase.kt
-│   │   │   │   │   ├── ForwardedMessage.kt
-│   │   │   │   │   └── ForwardedMessageDao.kt
-│   │   │   │   ├── di/                        # Hilt Dependency Injection Modules
-│   │   │   │   │   ├── DatabaseModule.kt
-│   │   │   │   │   └── NetworkModule.kt
-│   │   │   │   ├── network/                   # Telegram HTTP network client
-│   │   │   │   │   └── TelegramSender.kt
-│   │   │   │   ├── repository/                # Clean Architecture Repository pattern
-│   │   │   │   │   └── MessageRepository.kt
-│   │   │   │   ├── ui/                        # Jetpack Compose UI & ViewModels
-│   │   │   │   │   ├── theme/                 # Material 3 Color, Theme, & Typography
-│   │   │   │   │   └── MessageViewModel.kt
-│   │   │   │   ├── BootReceiver.kt            # Handles BOOT_COMPLETED intents
-│   │   │   │   ├── MainActivity.kt            # Single Activity hosting Compose NavHost
-│   │   │   │   ├── SendWorker.kt              # Hilt-injected Coroutine WorkManager Worker
-│   │   │   │   ├── SMSForwarderApp.kt         # Custom Application class with HiltWorkerFactory
-│   │   │   │   └── SmsReceiver.kt             # BroadcastReceiver for Telephony.SMS_RECEIVED
-│   │   │   ├── res/                           # Android Drawables, Mipmaps, and Strings
-│   │   │   └── AndroidManifest.xml            # Permissions, Services, Receivers configuration
-│   │   └── androidTest/                       # Instrumented Android test suite
-│   ├── build.gradle.kts                       # App module build configuration
-│   └── proguard-rules.pro                     # R8 / ProGuard shrinkage rules
-├── gradle/
-│   └── libs.versions.toml                     # Centralized Gradle Version Catalog
-├── build.gradle.kts                           # Root build configuration
-└── settings.gradle.kts                        # Plugin management and repository settings
+│   ├── src/main/java/online/thensoji/smsforwarder/
+│   │   ├── data/                      # Room Entities (ForwardedMessage, SmsPart) & DAOs
+│   │   ├── di/                        # Hilt Modules (DatabaseModule, NetworkModule, RepositoryModule)
+│   │   ├── domain/                    # Clean Architecture Domain Layer (UseCases, Models, Repositories)
+│   │   ├── network/                   # Retrofit 2 API Service, DTO Models, Logging Interceptor
+│   │   ├── repository/                # Repository Implementations (MessageRepository, TelegramRepositoryImpl)
+│   │   ├── ui/                        # Jetpack Compose UI
+│   │   │   ├── components/            # Reusable UI widgets (MessageCard, PinKeypad, FilterTabs, etc.)
+│   │   │   ├── screens/               # MainScreen, HomeScreen, AllMessagesScreen, SettingsScreen, PinLockScreen
+│   │   │   ├── theme/                 # Material 3 Color, Theme, Typography
+│   │   │   └── MessageViewModel.kt    # MVVM StateFlow ViewModel
+│   │   ├── util/                      # MessageFormatter, PermissionUtils, PinManager, SmsPduParser
+│   │   ├── AssembleFallbackWorker.kt  # Fallback worker for incomplete multi-part SMS
+│   │   ├── BootReceiver.kt            # BOOT_COMPLETED receiver
+│   │   ├── MainActivity.kt            # Clean Activity Entry Point hosting MainScreen
+│   │   ├── SendWorker.kt              # Hilt WorkManager worker for dispatching messages
+│   │   ├── SMSForwarderApp.kt         # Application class with HiltWorkerFactory & Network Callback
+│   │   └── SmsReceiver.kt             # BroadcastReceiver for Telephony.SMS_RECEIVED
+│   └── proguard-rules.pro             # Optimized R8 / ProGuard rules for release builds
+├── gradle/libs.versions.toml          # Centralized Version Catalog
+└── README.md
 ```
 
 ---
 
-## 🔒 Security & Privacy Notice
+## 🔒 Security & Privacy
 
-- **Direct Communication:** This app connects **directly** from your Android device to the official Telegram Bot API endpoint (`api.telegram.org`) over HTTPS.
-- **No Third-Party Intermediaries:** No telemetry, analytics, or third-party servers receive your SMS data or bot credentials.
-- **Credential Storage:** Bot tokens and chat IDs are stored locally in Android private `SharedPreferences`.
+- **Direct Communication:** Connects directly from your Android device to the official Telegram Bot API endpoint (`https://api.telegram.org`) over HTTPS.
+- **No Third-Party Analytics:** Zero telemetry, external trackers, or intermediate servers.
+- **Local PIN Storage:** App access is protected via salted SHA-256 hashed PIN stored in private SharedPreferences.
 
 ---
 
 ## 🤝 Contributing
 
-Contributions, issues, and feature requests are welcome!
-
-1. Fork the project.
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`).
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`).
-4. Push to the branch (`git push origin feature/AmazingFeature`).
-5. Open a Pull Request.
+Contributions, issues, and feature requests are welcome! Feel free to check the [issues page](https://github.com/nilsinojiya1/SMSForwarder/issues).
 
 ---
 
 ## 📄 License
 
 This project is licensed under the [MIT License](LICENSE) - see the LICENSE file for details.
-

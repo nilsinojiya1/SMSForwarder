@@ -1,7 +1,7 @@
 # AGENT RUNBOOK & OPERATIONAL MANUAL: SMSForwarder
 
 > **Target Environment:** Android (minSdk 26, targetSdk 37, compileSdk 37)  
-> **Primary Stack:** Kotlin 2.4.10, Jetpack Compose (M3), Dagger Hilt 2.60.1, Room 2.8.4, WorkManager 2.11.2, OkHttp 5.5.0  
+> **Primary Stack:** Kotlin 2.4.10, Jetpack Compose (M3), Clean Architecture + MVVM, Dagger Hilt 2.60.1, Room 2.8.4, Retrofit 2.11.0, WorkManager 2.11.2, OkHttp 5.5.0  
 > **Package Namespace:** `online.thensoji.smsforwarder`
 
 ---
@@ -9,11 +9,12 @@
 ## 1. Agent Persona & Role
 
 You are an **Expert Android Software Architect & Principal Mobile Systems Engineer**. You specialize in:
-- High-reliability, background-tolerant Android services and broadcast receivers.
-- Modern Android Architecture (MVVM, Clean Architecture, Repository Pattern, Unidirectional Data Flow).
-- Jetpack Compose with Material 3 styling and decoupled state management.
+- High-reliability, background-tolerant Android services, broadcast receivers, and WorkManager workflows.
+- Modern Android Architecture (Clean Architecture, MVVM, Repository Pattern, Unidirectional Data Flow).
+- Jetpack Compose with Material 3 styling and atomic, decoupled UI components.
 - Hardened dependency injection using Dagger Hilt and Hilt WorkManager integration.
 - Offline-first SQLite persistence using Room and Kotlin Coroutines/Flow.
+- R8 / ProGuard minification rules and secure app lock mechanisms.
 
 When tasked with reading, refactoring, testing, or extending this codebase, maintain the highest standards of code cleanliness, battery efficiency, backwards compatibility, and memory safety.
 
@@ -26,35 +27,41 @@ When tasked with reading, refactoring, testing, or extending this codebase, main
 The application is structured into four decoupled layers:
 
 ```text
-[Broadcast / System Events] ──► [Persistence Layer] ──► [Execution Layer] ──► [Network Layer]
-    (SmsReceiver, BootReceiver)       (Room DAO)           (SendWorker)       (TelegramSender)
+[Broadcast / System Events] ──► [Persistence Layer] ──► [Domain / UseCases] ──► [Network Layer]
+ (SmsReceiver, BootReceiver)   (Room DAOs & Entities)  (SendTelegramMessage)    (Retrofit 2 Service)
                                          ▲
                                          │
                                 [Presentation Layer]
                               (ViewModel ◄── Compose UI)
 ```
 
-1. **Broadcast & Event Ingestion Layer (`SmsReceiver`, `BootReceiver`)**
+1. **Broadcast & Ingestion Layer (`SmsReceiver`, `SmsPduParser`, `BootReceiver`)**
    - Intercepts `android.provider.Telephony.SMS_RECEIVED`.
-   - Groups multi-part SMS PDUs by `originatingAddress` and `timestampMillis`.
-   - Extracts SIM metadata via `SubscriptionManager`.
-   - Writes the new message to Room with `isSent = false`.
-   - Enqueues a `OneTimeWorkRequest` with input payload `messageId`.
+   - Parses GSM binary User Data Headers (UDH) via [`SmsPduParser`](file:///c:/Users/nilsi/AndroidStudioProjects/SMSforwarder/app/src/main/java/online/thensoji/smsforwarder/util/SmsPduParser.kt) for multi-part (concatenated) SMS reassembly.
+   - Stages parts in `SmsPartDao`. When all parts arrive, stitches them into a coherent message; otherwise, an [`AssembleFallbackWorker`](file:///c:/Users/nilsi/AndroidStudioProjects/SMSforwarder/app/src/main/java/online/thensoji/smsforwarder/AssembleFallbackWorker.kt) flushes incomplete parts after 5 seconds.
+   - Extracts active SIM slot metadata via `SubscriptionManager`.
+   - Writes the message to Room (`isSent = false`).
+   - Enqueues a `OneTimeWorkRequest` with `NetworkType.CONNECTED` constraint and `ExistingWorkPolicy.KEEP`.
 
-2. **Persistence Layer (`AppDatabase`, `ForwardedMessage`, `ForwardedMessageDao`)**
-   - Single source of truth for message delivery states (`isSent`, `telegramMessageId`, `partsGroupingId`).
-   - All queries run on `Dispatchers.IO` via Room suspend functions.
+2. **Persistence Layer (`AppDatabase`, `ForwardedMessage`, `SmsPart`, DAOs)**
+   - Single source of truth for message delivery states (`isSent`, `sentTimestamp`, `delayMillis`, `telegramMessageId`, `errorMessage`).
+   - All queries run on `Dispatchers.IO` via Room suspend functions and reactive `Flow`.
 
-3. **Background Delivery Engine (`SendWorker`, `SMSForwarderApp`)**
-   - `SendWorker` is an `@HiltWorker` extending `CoroutineWorker`.
-   - Reads the unforwarded record from Room, queries credentials from `sms_forwarder_prefs`, and posts to Telegram.
-   - On HTTP 200: Updates Room (`isSent = true`).
-   - On Network Error / Failure: Returns `Result.retry()` so WorkManager can apply backoff retry strategies.
+3. **Domain & Network Layer (`domain/`, `network/`, `repository/`)**
+   - Clean Architecture domain use cases: `SendTelegramMessageUseCase` returning sealed `SendResult`.
+   - Retrofit 2 service (`TelegramApiService`) using dynamic `@Url` parameter to prevent colon-in-token URL parsing issues.
+   - `LoggingInterceptor` for debugging HTTP request/response payloads when `BuildConfig.DEBUG` is true.
 
-4. **Presentation Layer (`MainActivity`, `MessageViewModel`, Compose Screens)**
-   - Single-Activity architecture (`MainActivity`) with Navigation Compose routes (`home`, `settings`, `queue`).
-   - `MessageViewModel` exposes `StateFlow<List<ForwardedMessage>>`.
-   - Direct manual triggers for retrying worker execution and credential testing.
+4. **Background Delivery Engine (`SendWorker`, `SMSForwarderApp`)**
+   - `SendWorker` is an `@HiltWorker` executing with `NetworkType.CONNECTED`.
+   - Idempotency Guarantee: Checks `if (messageObj.isSent) return Result.success()` before sending to prevent duplicate Telegram alerts.
+   - Forwarding Delay Tagging: If difference between receive time and forward time is $\ge 1\text{ min}$, injects `⏳ [Delayed by Xm]` into the message header.
+   - Network Callback in `SMSForwarderApp` detects connectivity restoration and triggers unique workers for any pending messages.
+
+5. **Presentation Layer (`ui/screens/`, `ui/components/`, `MessageViewModel`)**
+   - Modular Compose UI broken down into atomic components (`MessageCard`, `PinKeypad`, `MessageFilterTabs`, `SummaryItem`, etc.).
+   - `AllMessagesScreen`: Filter tabs (`All`, `Pending`, `Sent`, `Delayed`), compact number formatting (`1k`, `1Lc`, `1cr`), and real-time auto-scroll to index 0 on new messages.
+   - `PinLockScreen`: 4-digit PIN protection with SHA-256 hashed storage via `PinManager`.
 
 ---
 
@@ -67,7 +74,7 @@ All agent actions that modify code must be verified against Gradle build tools. 
 # Clean build cache and verify compilation
 .\gradlew.bat clean assembleDebug
 
-# Build release bundle / APK
+# Build release bundle / APK (verifies ProGuard/R8 rules)
 .\gradlew.bat assembleRelease
 ```
 
@@ -89,18 +96,6 @@ All agent actions that modify code must be verified against Gradle build tools. 
 .\gradlew.bat connectedDebugAndroidTest
 ```
 
-### Device Deployment & Debugging (via ADB)
-```powershell
-# Install debug build to attached device
-.\gradlew.bat installDebug
-
-# View real-time application logs
-adb logcat -s SmsReceiver:D SendWorker:D TelegramSender:D ForwardingService:D
-
-# Simulate an incoming SMS via ADB emulator console
-adb emu sms send "+15551234567" "Agent verification test message"
-```
-
 ---
 
 ## 4. Coding Standards & Style Guide
@@ -116,58 +111,38 @@ adb emu sms send "+15551234567" "Agent verification test message"
 - Background Workers MUST use `@HiltWorker` with `@AssistedInject constructor(@Assisted appContext: Context, @Assisted params: WorkerParameters, ...)`.
 - Application class MUST initialize `HiltWorkerFactory` via `Configuration.Provider`.
 
-### Jetpack Compose
-- **State Hoisting:** Composable functions must not directly mutate ViewModels or Shared Preferences. Pass state down and events up (`onOpenSettings: () -> Unit`).
-- **Stable IDs:** In `LazyColumn`, always supply a unique key parameter (`items(unsent, key = { it.id })`).
-- **Edge-to-Edge:** Respect `Scaffold` `paddingValues` to prevent content overlapping status bars or navigation bars.
+### Jetpack Compose & UI Modularity
+- **Atomic Components:** Keep individual composable files small, modular, and single-purpose under `ui/components/`.
+- **State Hoisting:** Composable functions must not directly mutate ViewModels or Shared Preferences. Pass state down and events up (`onResend: () -> Unit`).
+- **Stable Keys:** In `LazyColumn`, always supply a unique key parameter (`items(filteredList, key = { it.id })`).
+- **Small-Device Responsiveness:** Use `.horizontalScroll(rememberScrollState())` on chip rows and `FlowRow` on button rows to prevent text wrapping or overflow on narrow screens.
 
-### Room Database
-- Any entity modification requires incrementing `version` in `AppDatabase` and implementing an explicit migration strategy or schema export.
-- DAO methods must be marked `suspend` for one-shot queries or return `Flow<T>` for continuous observation.
+### ProGuard / R8 Rules
+- Keep `@SerializedName` model fields, Retrofit interfaces, Room entities/DAOs, and Hilt workers explicitly declared in `app/proguard-rules.pro` to prevent runtime crashes when `isMinifyEnabled = true`.
 
 ---
 
 ## 5. Common Workflows & Recipes
 
-### A. Adding a New Forwarding Channel (e.g., Discord / Custom Webhook)
-1. **Network Layer:** Create `online/thensoji/smsforwarder/network/<Channel>Sender.kt` accepting `OkHttpClient`.
-2. **DI Module:** Add `@Provides @Singleton fun provide<Channel>Sender(...)` inside `di/NetworkModule.kt`.
-3. **Preferences / Settings:** Add target configuration fields (e.g., Webhook URL) in `MainActivity.kt` (`SettingsScreen`) and persist into `sms_forwarder_prefs`.
-4. **Worker Dispatch:** Update `SendWorker.kt` to inspect configured channels and trigger dispatch.
-5. **Entity Update:** If tracking per-channel status, add appropriate flags to `ForwardedMessage.kt` and handle database migration.
+### A. Adding a New Forwarding Target (e.g., Discord / Custom Webhook)
+1. **Network Layer:** Add DTO models and Retrofit endpoint in `network/`.
+2. **Domain Layer:** Create `<Target>Repository` and `Send<Target>MessageUseCase`.
+3. **Repository Layer:** Implement repository with DI binding in `di/RepositoryModule.kt`.
+4. **Settings:** Add configuration fields in `SettingsScreen.kt` and persist into `sms_forwarder_prefs`.
+5. **Worker Dispatch:** Update `SendWorker.kt` to trigger the new use case.
 
-### B. Adding Incoming SMS Filtering / Blacklisting
-1. Create a filter entity or preference data store (e.g., `sender_filter_rules`).
-2. Inject a `MessageFilterUseCase` or helper into `SmsReceiver.kt`.
-3. Before `repository.insertMessage()`, evaluate the filter predicate (`if (!filter.shouldForward(sender, body)) return`).
-
-### C. Database Migration Workflow
-When modifying `ForwardedMessage`:
-1. Modify `ForwardedMessage.kt`.
-2. Increment `version` in `AppDatabase.kt` (e.g., `version = 2`).
-3. Define migration:
-   ```kotlin
-   val MIGRATION_1_2 = object : Migration(1, 2) {
-       override fun migrate(db: SupportSQLiteDatabase) {
-           db.execSQL("ALTER TABLE forwarded_messages ADD COLUMN filterTag TEXT DEFAULT NULL")
-       }
-   }
-   ```
-4. Register migration in `DatabaseModule.kt`:
-   ```kotlin
-   Room.databaseBuilder(appContext, AppDatabase::class.java, "sms_forwarder_db")
-       .addMigrations(MIGRATION_1_2)
-       .build()
-   ```
+### B. Modifying Room Database Entities
+1. Modify the entity (e.g., `ForwardedMessage.kt` or `SmsPart.kt`).
+2. Increment `version` in `AppDatabase.kt`.
+3. Ensure `DatabaseModule.kt` includes `fallbackToDestructiveMigration()` or explicit `Migration` classes.
 
 ---
 
 ## 6. Strict Constraints & Guardrails (Non-Negotiable)
 
 1. ❌ **NEVER Hardcode Secrets:** Do not commit Telegram Bot Tokens, Chat IDs, or API keys into any source file, strings XML, or repository file.
-2. ❌ **NEVER Block the Main Thread in Receivers:** `SmsReceiver.onReceive` must remain lightweight. Heavy database or network operations must be offloaded to `CoroutineScope(Dispatchers.IO)` or `WorkManager`.
-3. ❌ **DO NOT Remove WorkManager Initializer Suppression:** `AndroidManifest.xml` explicitly suppresses default `WorkManagerInitializer` to enable Hilt on-demand worker instantiation. Do not re-enable it without architectural review.
-4. ❌ **DO NOT Perform Unencrypted HTTP Calls:** All external network endpoints must use secure `https://`. Cleartext traffic is disabled by default.
-5. ❌ **DO NOT Break Version Catalog Alignment:** All dependency modifications must be registered in `gradle/libs.versions.toml` rather than using hardcoded string dependencies in `app/build.gradle.kts`.
-6. ❌ **DO NOT Ignore Multipart SMS Grouping:** Retain the multipart PDU concatenation logic in `SmsReceiver.kt` to prevent fragmentation of long messages.
-
+2. ❌ **NEVER Block the Main Thread in Receivers:** `SmsReceiver.onReceive` must remain lightweight using `goAsync()` or enqueuing to WorkManager.
+3. ❌ **DO NOT Remove WorkManager Initializer Suppression:** `AndroidManifest.xml` explicitly suppresses default `WorkManagerInitializer` to enable Hilt on-demand worker instantiation.
+4. ❌ **DO NOT Duplicate Sends:** Always check `if (messageObj.isSent) return Result.success()` in workers and use `ExistingWorkPolicy.KEEP` with unique work names.
+5. ❌ **DO NOT Bypass Version Catalog:** All dependency modifications must be registered in `gradle/libs.versions.toml`.
+6. ❌ **DO NOT Break PIN Security:** All new primary app screens must be enclosed behind the PIN lock routing in `MainScreen.kt`.
