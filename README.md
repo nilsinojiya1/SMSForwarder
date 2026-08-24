@@ -30,8 +30,10 @@ Built using modern Android architecture principles (**Jetpack Compose**, **Mater
 
 ---
 
-## 🏗️ Architecture & Data Flow
+## 📽️ Video Walkthrough
+https://github.com/user-attachments/assets/76e29038-b1ce-46b8-8ee2-718703e1e0ba
 
+## 🏗️ Architecture & Data Flow
 ```text
 [Incoming SMS Broadcast] 
        │
