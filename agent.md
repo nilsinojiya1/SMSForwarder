@@ -14,7 +14,7 @@ You are an **Expert Android Software Architect & Principal Mobile Systems Engine
 - Jetpack Compose with Material 3 styling and atomic, decoupled UI components.
 - Hardened dependency injection using Dagger Hilt and Hilt WorkManager integration.
 - Offline-first SQLite persistence using Room and Kotlin Coroutines/Flow.
-- R8 / ProGuard minification rules and secure app lock mechanisms.
+- R8 / ProGuard minification rules, CI/CD automated release pipelines, and secure app lock mechanisms.
 
 When tasked with reading, refactoring, testing, or extending this codebase, maintain the highest standards of code cleanliness, battery efficiency, backwards compatibility, and memory safety.
 
@@ -62,6 +62,12 @@ The application is structured into four decoupled layers:
    - Modular Compose UI broken down into atomic components (`MessageCard`, `PinKeypad`, `MessageFilterTabs`, `SummaryItem`, etc.).
    - `AllMessagesScreen`: Filter tabs (`All`, `Pending`, `Sent`, `Delayed`), compact number formatting (`1k`, `1Lc`, `1cr`), and real-time auto-scroll to index 0 on new messages.
    - `PinLockScreen`: 4-digit PIN protection with SHA-256 hashed storage via `PinManager`.
+
+6. **CI/CD & Release Pipeline (`.github/workflows/release.yml`)**
+   - Automatically computes dynamic `versionCode` and `versionName`.
+   - Decodes base64 release keystore (`KEYSTORE_BASE64`) and signs release APK & bundle.
+   - Generates GitHub Releases with downloadable assets.
+   - Dispatches release notification email with signed `.apk` attached.
 
 ---
 
@@ -122,27 +128,11 @@ All agent actions that modify code must be verified against Gradle build tools. 
 
 ---
 
-## 5. Common Workflows & Recipes
+## 5. Strict Constraints & Guardrails (Non-Negotiable)
 
-### A. Adding a New Forwarding Target (e.g., Discord / Custom Webhook)
-1. **Network Layer:** Add DTO models and Retrofit endpoint in `network/`.
-2. **Domain Layer:** Create `<Target>Repository` and `Send<Target>MessageUseCase`.
-3. **Repository Layer:** Implement repository with DI binding in `di/RepositoryModule.kt`.
-4. **Settings:** Add configuration fields in `SettingsScreen.kt` and persist into `sms_forwarder_prefs`.
-5. **Worker Dispatch:** Update `SendWorker.kt` to trigger the new use case.
-
-### B. Modifying Room Database Entities
-1. Modify the entity (e.g., `ForwardedMessage.kt` or `SmsPart.kt`).
-2. Increment `version` in `AppDatabase.kt`.
-3. Ensure `DatabaseModule.kt` includes `fallbackToDestructiveMigration()` or explicit `Migration` classes.
-
----
-
-## 6. Strict Constraints & Guardrails (Non-Negotiable)
-
-1. ❌ **NEVER Hardcode Secrets:** Do not commit Telegram Bot Tokens, Chat IDs, or API keys into any source file, strings XML, or repository file.
+1. ❌ **NEVER Hardcode Secrets or Keystores in Git:** Keystores, passwords, bot tokens, and SMTP credentials must strictly remain in GitHub Secrets or environment variables.
 2. ❌ **NEVER Block the Main Thread in Receivers:** `SmsReceiver.onReceive` must remain lightweight using `goAsync()` or enqueuing to WorkManager.
 3. ❌ **DO NOT Remove WorkManager Initializer Suppression:** `AndroidManifest.xml` explicitly suppresses default `WorkManagerInitializer` to enable Hilt on-demand worker instantiation.
 4. ❌ **DO NOT Duplicate Sends:** Always check `if (messageObj.isSent) return Result.success()` in workers and use `ExistingWorkPolicy.KEEP` with unique work names.
 5. ❌ **DO NOT Bypass Version Catalog:** All dependency modifications must be registered in `gradle/libs.versions.toml`.
-6. ❌ **DO NOT Break PIN Security:** All new primary app screens must be enclosed behind the PIN lock routing in `MainScreen.kt`.
+6. ❌ **DO NOT Break PIN Security:** All primary app screens must be enclosed behind the PIN lock routing in `MainScreen.kt`.

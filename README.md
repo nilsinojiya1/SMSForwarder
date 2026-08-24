@@ -27,6 +27,7 @@ Built using modern Android architecture principles (**Jetpack Compose**, **Mater
 - ⚙️ **In-App Bot Setup & Live Connection Test:** Configure and test your Telegram Bot Token & Chat ID directly within the app.
 - 🔄 **Boot Persistence:** Automatically resumes background listeners when the Android device reboots (`RECEIVE_BOOT_COMPLETED`).
 - 🎨 **Modular Material 3 Compose UI:** Modern, responsive UI with smooth loading spinners, edge-to-edge support, and small-device responsiveness.
+- 🚀 **Automated CI/CD & Email Releases:** GitHub Actions automatically builds signed release APKs, increments version codes/names, publishes GitHub Releases, and emails the APK directly to you.
 
 ---
 
@@ -71,6 +72,7 @@ Built using modern Android architecture principles (**Jetpack Compose**, **Mater
 | **Networking** | Retrofit 2.11.0, OkHttp 5.5.0, Gson Converter 2.11.0, Logging Interceptor |
 | **Concurrency** | Kotlin Coroutines & Flow (`StateFlow`, `SharingStarted`) |
 | **Security** | SHA-256 PIN Hashing, Private SharedPreferences |
+| **CI / CD** | GitHub Actions (Auto-versioning, JKS Signing, GitHub Releases, Email Dispatch) |
 
 ---
 
@@ -111,6 +113,37 @@ cd SMSForwarder
 
 ---
 
+## 🤖 GitHub Actions CI/CD & Automated Release
+
+The project includes an automated GitHub Actions workflow (`.github/workflows/release.yml`) that:
+1. Automatically computes a monotonically increasing `versionCode` (`run_number`) and semantic `versionName` (e.g. `1.0.<run_number>` or git tag).
+2. Decodes your release keystore (`.jks`) from GitHub Secrets and signs the release APK and AAB bundle with R8 minification.
+3. Publishes a **GitHub Release** with direct download links.
+4. Emails the signed release `.apk` directly to your inbox as an attachment!
+
+### 🔑 Setting Up GitHub Secrets
+
+In your GitHub repository, go to **Settings > Secrets and variables > Actions > New repository secret** and add:
+
+#### Keystore / Release Signing Secrets:
+| Secret Name | Description | How to Obtain |
+|---|---|---|
+| `KEYSTORE_BASE64` | Base64-encoded `.jks` file | Windows: `[Convert]::ToBase64String([IO.File]::ReadAllBytes("path\to\your.jks")) \| Set-Clipboard`<br>Linux/Mac: `base64 -w 0 your.jks` |
+| `KEYSTORE_PASSWORD` | Password for the keystore file | Your keystore password |
+| `KEY_ALIAS` | Key alias in the keystore | Your key alias name |
+| `KEY_PASSWORD` | Password for the specific key | Your key password |
+
+#### Email Notification Secrets (Optional):
+| Secret Name | Description | Example |
+|---|---|---|
+| `MAIL_SERVER` | SMTP Server Host | `smtp.gmail.com` |
+| `MAIL_PORT` | SMTP Port | `465` (SSL) or `587` (TLS) |
+| `MAIL_USERNAME` | SMTP Username / Email | `your.email@gmail.com` |
+| `MAIL_PASSWORD` | SMTP App Password | Google App Password (16 chars) |
+| `MAIL_TO` | Recipient Email Address | `your.email@gmail.com` |
+
+---
+
 ## 📱 Setup & Configuration
 
 ### 1. Create a Telegram Bot
@@ -144,6 +177,9 @@ To prevent OEM battery managers (Doze mode) from delaying background forwarders:
 
 ```text
 SMSforwarder/
+├── .github/
+│   └── workflows/
+│       └── release.yml                # CI/CD Release, Auto-versioning & Email Workflow
 ├── app/
 │   ├── src/main/java/online/thensoji/smsforwarder/
 │   │   ├── data/                      # Room Entities (ForwardedMessage, SmsPart) & DAOs

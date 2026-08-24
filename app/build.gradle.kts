@@ -9,20 +9,48 @@ android {
     namespace = "online.thensoji.smsforwarder"
     compileSdk = 37
 
+    val customVersionCode = providers.environmentVariable("VERSION_CODE")
+        .orElse(providers.gradleProperty("versionCode"))
+        .map { it.toIntOrNull() ?: 1 }
+        .getOrElse(1)
+
+    val customVersionName = providers.environmentVariable("VERSION_NAME")
+        .orElse(providers.gradleProperty("versionName"))
+        .getOrElse("1.0.0")
+
     defaultConfig {
         applicationId = "online.thensoji.smsforwarder"
         minSdk = 26
         targetSdk = 37
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = customVersionCode
+        versionName = customVersionName
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    signingConfigs {
+        create("release") {
+            val keystorePath = providers.environmentVariable("KEYSTORE_FILE").orNull
+            if (!keystorePath.isNullOrEmpty()) {
+                val keystoreFile = file(keystorePath)
+                if (keystoreFile.exists()) {
+                    storeFile = keystoreFile
+                    storePassword = System.getenv("KEYSTORE_PASSWORD") ?: ""
+                    keyAlias = System.getenv("KEY_ALIAS") ?: ""
+                    keyPassword = System.getenv("KEY_PASSWORD") ?: ""
+                }
+            }
+        }
     }
 
     buildTypes {
         release {
             isMinifyEnabled = true
             isShrinkResources = true
+            val releaseSigning = signingConfigs.getByName("release")
+            if (releaseSigning.storeFile != null) {
+                signingConfig = releaseSigning
+            }
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -35,8 +63,6 @@ android {
     }
     buildFeatures {
         compose = true
-    }
-    buildFeatures {
         buildConfig = true
     }
 }
