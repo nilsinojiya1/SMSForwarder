@@ -46,6 +46,7 @@ class SmsReceiver : BroadcastReceiver() {
             val messages = Telephony.Sms.Intents.getMessagesFromIntent(intent)
             if (messages.isNullOrEmpty()) return
 
+            @Suppress("DEPRECATION")
             val pdus = intent.extras?.get("pdus") as? Array<*>
 
             val subscriptionId =
