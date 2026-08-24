@@ -1,12 +1,13 @@
 package online.thensoji.smsforwarder
 
+import android.Manifest
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.os.Build
 import android.provider.Telephony
 import android.telephony.SubscriptionManager
 import android.util.Log
+import androidx.annotation.RequiresPermission
 import androidx.work.Data
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
@@ -18,10 +19,8 @@ import online.thensoji.smsforwarder.data.ForwardedMessage
 import online.thensoji.smsforwarder.data.SmsPart
 import online.thensoji.smsforwarder.data.SmsPartDao
 import online.thensoji.smsforwarder.repository.MessageRepository
+import online.thensoji.smsforwarder.util.MessageFormatter
 import online.thensoji.smsforwarder.util.SmsPduParser
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
@@ -38,6 +37,7 @@ class SmsReceiver : BroadcastReceiver() {
     @Inject
     lateinit var smsPartDao: SmsPartDao
 
+    @RequiresPermission(Manifest.permission.READ_PHONE_STATE)
     override fun onReceive(context: Context, intent: Intent) {
         if (Telephony.Sms.Intents.SMS_RECEIVED_ACTION == intent.action) {
             val messages = Telephony.Sms.Intents.getMessagesFromIntent(intent)
@@ -45,19 +45,12 @@ class SmsReceiver : BroadcastReceiver() {
 
             val pdus = intent.extras?.get("pdus") as? Array<*>
 
-            val subscriptionId = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
+            val subscriptionId =
                 intent.getIntExtra("subscription", -1)
-            } else {
-                -1
-            }
 
-            val simSlot = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
-                val subManager = context.getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE) as SubscriptionManager
-                val subInfo = subManager.getActiveSubscriptionInfo(subscriptionId)
-                subInfo?.simSlotIndex ?: -1
-            } else {
-                -1
-            }
+            val subManager = context.getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE) as SubscriptionManager
+            val subInfo = subManager.getActiveSubscriptionInfo(subscriptionId)
+            val simSlot = subInfo?.simSlotIndex ?: -1
 
             val pendingResult = goAsync()
             CoroutineScope(Dispatchers.IO).launch {
@@ -73,7 +66,7 @@ class SmsReceiver : BroadcastReceiver() {
 
                         if (concatInfo == null || concatInfo.totalParts <= 1) {
                             // Single-part standard SMS -> Forward immediately
-                            val fullMessage = formatMessageText(sender, simSlot, timestamp, body)
+                            val fullMessage = MessageFormatter.format(context, sender, simSlot, timestamp, body)
                             val forwarded = ForwardedMessage(
                                 sender = sender,
                                 body = fullMessage,
@@ -108,7 +101,7 @@ class SmsReceiver : BroadcastReceiver() {
                             if (existingParts.size >= concatInfo.totalParts) {
                                 // All parts received! Reassemble in correct sequence order
                                 val fullBody = existingParts.sortedBy { it.partIndex }.joinToString("") { it.partBody }
-                                val fullMessage = formatMessageText(sender, simSlot, timestamp, fullBody)
+                                val fullMessage = MessageFormatter.format(context, sender, simSlot, timestamp, fullBody)
                                 Log.d(TAG, "Reassembled complete SMS (${existingParts.size} parts): $fullMessage")
 
                                 val forwarded = ForwardedMessage(
@@ -134,25 +127,6 @@ class SmsReceiver : BroadcastReceiver() {
                 }
             }
         }
-    }
-
-    private fun formatMessageText(
-        sender: String,
-        simSlot: Int,
-        timestamp: Long,
-        body: String
-    ): String {
-        val dateString = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date(timestamp))
-        val slotText = if (simSlot >= 0) "${simSlot + 1}" else "Unknown"
-
-        return """
-            New SMS Received
-            From: $sender
-            SIM Slot: $slotText
-            Time: $dateString
-
-            $body
-        """.trimIndent()
     }
 
     private fun enqueueSendWorker(context: Context, messageId: Long) {

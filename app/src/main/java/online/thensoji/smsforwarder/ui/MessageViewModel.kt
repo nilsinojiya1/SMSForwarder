@@ -45,10 +45,15 @@ class MessageViewModel @Inject constructor(
     fun testTelegramConnection(
         botToken: String,
         chatId: String,
+        deviceName: String? = null,
         onComplete: (Boolean, String?) -> Unit
     ) {
         viewModelScope.launch {
-            val testMessage = "🔔 Test message from SMS Forwarder app! Everything is set up correctly."
+            val tag = if (!deviceName.isNullOrBlank()) "📱 [$deviceName]" else "📱 SMS Forwarder"
+            val testMessage = """
+                $tag
+                🔔 Test message from SMS Forwarder app! Everything is set up correctly.
+            """.trimIndent()
             when (val result = sendTelegramMessageUseCase(botToken, chatId, testMessage)) {
                 is SendResult.Success -> {
                     onComplete(true, null)

@@ -46,16 +46,13 @@ class AssembleFallbackWorker @AssistedInject constructor(
         Log.w(TAG, "Fallback assembly triggered for $sender (ref: $refNumber, parts received: ${parts.size}/${parts.firstOrNull()?.totalParts ?: "?"})")
 
         val fullBody = parts.sortedBy { it.partIndex }.joinToString("") { it.partBody }
-        val dateString = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date(timestamp))
-
-        val message = """
-            New SMS Received
-            From: $sender
-            SIM Slot: ${if (simSlot >= 0) simSlot + 1 else "Unknown"}
-            Time: $dateString
-
-            $fullBody
-        """.trimIndent()
+        val message = online.thensoji.smsforwarder.util.MessageFormatter.format(
+            applicationContext,
+            sender,
+            simSlot,
+            timestamp,
+            fullBody
+        )
 
         val forwarded = ForwardedMessage(
             sender = sender,

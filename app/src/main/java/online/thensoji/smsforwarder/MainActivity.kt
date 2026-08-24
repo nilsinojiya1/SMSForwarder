@@ -20,6 +20,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Smartphone
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material.icons.filled.Warning
@@ -28,6 +29,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import online.thensoji.smsforwarder.util.MessageFormatter
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -176,10 +178,14 @@ fun HomeScreen(
     var chatId by remember {
         mutableStateOf(sharedPreferences.getString("chat_id", "") ?: "")
     }
+    var deviceName by remember {
+        mutableStateOf(MessageFormatter.getDeviceName(context))
+    }
 
     LaunchedEffect(Unit) {
         botToken = sharedPreferences.getString("bot_token", "") ?: ""
         chatId = sharedPreferences.getString("chat_id", "") ?: ""
+        deviceName = MessageFormatter.getDeviceName(context)
         hasPermissions = checkAllPermissions(context)
     }
 
@@ -192,6 +198,39 @@ fun HomeScreen(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Text("Overview", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
+
+        // Status Card: Device Identity
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.tertiaryContainer
+            )
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Smartphone,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.tertiary
+                )
+                Spacer(modifier = Modifier.width(12.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "Device: $deviceName",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    Text(
+                        text = "Attached to forwarded SMS so you can distinguish multiple devices.",
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
+            }
+        }
 
         // Status Card: Permissions
         Card(
@@ -436,6 +475,10 @@ fun SettingsScreen(
         context.getSharedPreferences("sms_forwarder_prefs", Context.MODE_PRIVATE)
     }
 
+    val defaultDeviceName = remember { MessageFormatter.getDefaultDeviceName() }
+    var deviceName by remember {
+        mutableStateOf(sharedPreferences.getString("device_name", "") ?: "")
+    }
     var botToken by remember {
         mutableStateOf(sharedPreferences.getString("bot_token", "") ?: "")
     }
@@ -455,6 +498,20 @@ fun SettingsScreen(
             "Telegram Bot Configuration",
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold
+        )
+
+        OutlinedTextField(
+            value = deviceName,
+            onValueChange = { deviceName = it },
+            label = { Text("Device Name / Tag") },
+            placeholder = { Text("e.g. $defaultDeviceName") },
+            supportingText = { Text("Appended to messages to identify this device (Default: $defaultDeviceName)") },
+            leadingIcon = {
+                Icon(Icons.Filled.Smartphone, contentDescription = null)
+            },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
         )
 
         OutlinedTextField(
@@ -489,15 +546,16 @@ fun SettingsScreen(
         Button(
             onClick = {
                 with(sharedPreferences.edit()) {
+                    putString("device_name", deviceName.trim())
                     putString("bot_token", botToken.trim())
                     putString("chat_id", chatId.trim())
                     apply()
                 }
-                Toast.makeText(context, "Credentials saved successfully!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Settings saved successfully!", Toast.LENGTH_SHORT).show()
             },
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Save Credentials")
+            Text("Save Settings")
         }
 
         OutlinedButton(
@@ -509,7 +567,8 @@ fun SettingsScreen(
                     return@OutlinedButton
                 }
                 isTestingConnection = true
-                viewModel.testTelegramConnection(token, chat) { isSuccess, errorMsg ->
+                val currentDeviceTag = deviceName.trim().ifEmpty { defaultDeviceName }
+                viewModel.testTelegramConnection(token, chat, currentDeviceTag) { isSuccess, errorMsg ->
                     isTestingConnection = false
                     if (isSuccess) {
                         Toast.makeText(context, "✅ Connection successful! Test message sent to Telegram.", Toast.LENGTH_LONG).show()
