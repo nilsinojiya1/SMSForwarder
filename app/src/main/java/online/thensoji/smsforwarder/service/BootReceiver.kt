@@ -1,4 +1,4 @@
-package online.thensoji.smsforwarder
+package online.thensoji.smsforwarder.service
 
 import android.content.BroadcastReceiver
 import android.content.Context

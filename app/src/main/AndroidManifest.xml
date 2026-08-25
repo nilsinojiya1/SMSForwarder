@@ -36,7 +36,7 @@
         </activity>
 
         <receiver
-            android:name=".SmsReceiver"
+            android:name=".service.SmsReceiver"
             android:enabled="true"
             android:exported="true"
             android:permission="android.permission.BROADCAST_SMS">
@@ -46,7 +46,7 @@
         </receiver>
 
         <receiver
-            android:name=".BootReceiver"
+            android:name=".service.BootReceiver"
             android:enabled="true"
             android:exported="true">
             <intent-filter>
@@ -55,7 +55,7 @@
         </receiver>
 
         <service
-            android:name=".ForwardingService"
+            android:name=".service.ForwardingService"
             android:enabled="true"
             android:exported="false" />
 

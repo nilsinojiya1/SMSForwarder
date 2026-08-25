@@ -1,7 +1,6 @@
-package online.thensoji.smsforwarder
+package online.thensoji.smsforwarder.service
 
 import android.app.Service
-import android.content.Context
 import android.content.Intent
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
@@ -32,7 +31,7 @@ class ForwardingService : Service() {
     }
 
     private fun forwardMessageToTelegram(message: String) {
-        val sharedPreferences = getSharedPreferences("sms_forwarder_prefs", Context.MODE_PRIVATE)
+        val sharedPreferences = getSharedPreferences("sms_forwarder_prefs", MODE_PRIVATE)
         val botToken = sharedPreferences.getString("bot_token", null)
         val chatId = sharedPreferences.getString("chat_id", null)
 
@@ -64,7 +63,7 @@ class ForwardingService : Service() {
 
     private fun isNetworkAvailable(): Boolean {
         val connectivityManager =
-            getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+            getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
         val network = connectivityManager.activeNetwork ?: return false
         val activeNetwork =
             connectivityManager.getNetworkCapabilities(network) ?: return false

@@ -19,7 +19,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import online.thensoji.smsforwarder.SendWorker
+import online.thensoji.smsforwarder.worker.SendWorker
 import online.thensoji.smsforwarder.data.ForwardedMessage
 import online.thensoji.smsforwarder.domain.model.SendResult
 import online.thensoji.smsforwarder.domain.usecase.SendTelegramMessageUseCase
