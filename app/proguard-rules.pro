@@ -62,8 +62,8 @@
 -keep class * extends androidx.work.ListenableWorker {
     public <init>(android.content.Context, androidx.work.WorkerParameters);
 }
--keep class online.thensoji.smsforwarder.SendWorker { *; }
--keep class online.thensoji.smsforwarder.AssembleFallbackWorker { *; }
+-keep class online.thensoji.smsforwarder.worker.SendWorker { *; }
+-keep class online.thensoji.smsforwarder.worker.AssembleFallbackWorker { *; }
 
 # ==============================================================================
 # Hilt / Dagger

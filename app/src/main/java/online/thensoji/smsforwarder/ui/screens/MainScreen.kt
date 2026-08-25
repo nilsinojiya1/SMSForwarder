@@ -1,5 +1,6 @@
 package online.thensoji.smsforwarder.ui.screens
 
+import android.app.Activity
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -7,13 +8,17 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import online.thensoji.smsforwarder.ui.components.SecurityConsentDialog
+import online.thensoji.smsforwarder.util.ConsentManager
 import online.thensoji.smsforwarder.util.PinManager
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -23,6 +28,35 @@ fun MainScreen() {
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route ?: ""
+
+    var isConsentGiven by remember {
+        mutableStateOf(ConsentManager.isConsentGiven(context))
+    }
+    var showConsentReviewDialog by remember { mutableStateOf(false) }
+
+    // Mandatory first-time prominent disclosure & ethical consent dialog
+    if (!isConsentGiven) {
+        SecurityConsentDialog(
+            isReviewMode = false,
+            onAccept = {
+                ConsentManager.setConsentGiven(context, true)
+                isConsentGiven = true
+            },
+            onDecline = {
+                (context as? Activity)?.finishAffinity()
+            }
+        )
+    }
+
+    // On-demand review mode from settings
+    if (showConsentReviewDialog) {
+        SecurityConsentDialog(
+            isReviewMode = true,
+            onDismiss = {
+                showConsentReviewDialog = false
+            }
+        )
+    }
 
     val isPinConfigured = remember { PinManager.isPinSet(context) }
     val initialDestination = if (isPinConfigured) "unlock_pin" else "setup_pin"
@@ -114,7 +148,8 @@ fun MainScreen() {
 
             composable("settings") {
                 SettingsScreen(
-                    onChangePin = { navController.navigate("change_pin") }
+                    onChangePin = { navController.navigate("change_pin") },
+                    onReviewConsent = { showConsentReviewDialog = true }
                 )
             }
 

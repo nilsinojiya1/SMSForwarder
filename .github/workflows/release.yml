@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       version_name:
-        description: "Custom Version Name (e.g. 26.85.0). Leave empty for auto-generation."
+        description: "Custom Version Name (e.g. 1.0.0). Leave empty for auto-generation."
         required: false
         default: ""
       send_email:
@@ -35,10 +35,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Fast Shallow Checkout
+      - name: Checkout Code with Full History
         uses: actions/checkout@v4
         with:
-          fetch-depth: 1
+          fetch-depth: 0
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -54,25 +54,35 @@ jobs:
           gradle-home-cache-cleanup: true
           cache-disabled: true  # ADD THIS LINE to skip caching when services are unstable
 
-      - name: Calculate Version Code & Dynamic Version Name (year.monthweek.build)
+      - name: Calculate Semantic Version
+        id: semver
+        uses: PaulHatch/semantic-version@v5.4.0
+        with:
+          tag_prefix: "v"
+          major_pattern: "(MAJOR)|BREAKING CHANGE:"
+          minor_pattern: "(MINOR)|feat:"
+          version_format: "${major}.${minor}.${patch}"
+          bump_each_commit: false
+          search_commit_body: true
+
+      - name: Calculate Version Code & Final Version Name
         id: versioning
         run: |
           # 1. Monotonically increasing integer Version Code for Android OS updates
           VERSION_CODE="${{ github.run_number }}"
           
-          # 2. Dynamic Version Name Formula: year.monthweek.build (e.g. 26.85.0)
-          YEAR=$(date +'%y')
-          MONTH=$(date +'%-m')
-          DAY=$(date +'%-d')
-          WEEK=$(( (DAY - 1) / 7 + 1 ))
-          
+          # 2. Semantic Version Name (e.g. 1.0.0)
           if [ -n "${{ github.event.inputs.version_name }}" ]; then
             VERSION_NAME="${{ github.event.inputs.version_name }}"
           elif [[ "${{ github.ref }}" == refs/tags/v* ]]; then
             VERSION_NAME="${GITHUB_REF_NAME#v}"
           else
-            # Format: 26.85.0 (year.month_numberweek_number.build_number)
-            VERSION_NAME="${YEAR}.${MONTH}${WEEK}.0"
+            VERSION_NAME="${{ steps.semver.outputs.version }}"
+          fi
+          
+          # Ensure fallback if version is empty
+          if [ -z "$VERSION_NAME" ]; then
+            VERSION_NAME="1.0.0"
           fi
           
           echo "Generated VERSION_CODE: $VERSION_CODE"

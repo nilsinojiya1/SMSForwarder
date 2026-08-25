@@ -1,4 +1,4 @@
-package online.thensoji.smsforwarder
+package online.thensoji.smsforwarder.service
 
 import android.Manifest
 import android.content.BroadcastReceiver
@@ -24,6 +24,8 @@ import online.thensoji.smsforwarder.data.SmsPartDao
 import online.thensoji.smsforwarder.repository.MessageRepository
 import online.thensoji.smsforwarder.util.MessageFormatter
 import online.thensoji.smsforwarder.util.SmsPduParser
+import online.thensoji.smsforwarder.worker.AssembleFallbackWorker
+import online.thensoji.smsforwarder.worker.SendWorker
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 

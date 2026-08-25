@@ -1,4 +1,4 @@
-package online.thensoji.smsforwarder
+package online.thensoji.smsforwarder.worker
 
 import android.content.Context
 import android.util.Log

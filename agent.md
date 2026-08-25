@@ -58,10 +58,20 @@ The application is structured into four decoupled layers:
    - Forwarding Delay Tagging: If difference between receive time and forward time is $\ge 1\text{ min}$, injects `⏳ [Delayed by Xm]` into the message header.
    - Network Callback in `SMSForwarderApp` detects connectivity restoration and triggers unique workers for any pending messages.
 
-5. **Presentation Layer (`ui/screens/`, `ui/components/`, `MessageViewModel`)**
-   - Modular Compose UI broken down into atomic components (`MessageCard`, `PinKeypad`, `MessageFilterTabs`, `SummaryItem`, etc.).
-   - `AllMessagesScreen`: Filter tabs (`All`, `Pending`, `Sent`, `Delayed`), compact number formatting (`1k`, `1Lc`, `1cr`), and real-time auto-scroll to index 0 on new messages.
-   - `PinLockScreen`: 4-digit PIN protection with SHA-256 hashed storage via `PinManager`.
+5. **Presentation & Security Layer (`ui/screens/`, `ui/components/`, `util/`, `MessageViewModel`)**
+   - Startup Flow: `Launch` ──► `SecurityConsentDialog (ConsentManager)` ──► `PinLockScreen (PinManager)` ──► `HomeScreen / Navigation`.
+   - **Google Play Prominent Disclosure (`SecurityConsentDialog`)**: Non-dismissible upfront dialog explaining SMS data access, direct Telegram HTTPS transmission (no 3rd-party trackers), and strict ethical use / anti-stalkerware policy. Exits via `finishAffinity()` if declined.
+   - `PinLockScreen`: 4-digit PIN protection with salted SHA-256 hashed storage via `PinManager`.
+   - `AllMessagesScreen`: Filter tabs (`All`, `Pending`, `Sent`, `Delayed`), compact number formatting (`1k`, `1Lc`, `1cr`), and real-time auto-scroll to index 0 on new incoming SMS.
+   - `SettingsScreen`: Configuration for Bot Token, Chat ID, custom device tag, PIN management, live Telegram test, and on-demand Privacy & Security Disclosure review.
+
+6. **Automated CI/CD & Semantic Versioning (`.github/workflows/release.yml`)**
+   - **Version Name (`MAJOR.MINOR.PATCH`)**: Automated via `PaulHatch/semantic-version@v5.4.0` with `bump_each_commit: false` for batch merge releases:
+     - `BREAKING CHANGE:` / `feat!:` / `#major` ➔ **MAJOR** (`1.0.0` ➔ `2.0.0`)
+     - `feat:` / `#minor` ➔ **MINOR** (`1.0.0` ➔ `1.1.0`)
+     - `fix:` / `#patch` / regular commits ➔ **PATCH** (`1.0.0` ➔ `1.0.1`)
+   - **Version Code**: Monotonically increasing build integer via `${{ github.run_number }}`.
+   - **Artifacts**: Signed release APK and optional Play Store Bundle (`.aab`) published to GitHub Releases and dispatched via email.
 
 ---
 
@@ -73,6 +83,9 @@ All actions that modify code must be verified against Gradle build tools from th
 ```powershell
 # Clean build cache and verify compilation
 .\gradlew.bat clean assembleDebug
+
+# Compile Kotlin debug sources rapidly
+.\gradlew.bat compileDebugKotlin
 
 # Build release bundle / APK (verifies ProGuard/R8 rules)
 .\gradlew.bat assembleRelease
@@ -116,3 +129,4 @@ All actions that modify code must be verified against Gradle build tools from th
 3. ❌ **DO NOT Remove WorkManager Initializer Suppression:** `AndroidManifest.xml` explicitly suppresses default `WorkManagerInitializer` to enable Hilt on-demand worker instantiation.
 4. ❌ **DO NOT Duplicate Sends:** Always check `if (messageObj.isSent) return Result.success()` in workers and use `ExistingWorkPolicy.KEEP` with unique work names.
 5. ❌ **DO NOT Break PIN Security:** All primary app screens must be enclosed behind the PIN lock routing in `MainScreen.kt`.
+6. ❌ **DO NOT Remove or Bypass Prominent Disclosure:** Upfront `SecurityConsentDialog` via `ConsentManager` must precede all runtime permission requests to strictly satisfy Google Play SMS/Telephony and Anti-Stalkerware policies.
