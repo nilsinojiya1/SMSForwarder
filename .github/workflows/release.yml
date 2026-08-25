@@ -10,16 +10,6 @@ on:
         description: "Custom Version Name (e.g. 1.0.0). Leave empty for auto-generation."
         required: false
         default: ""
-      send_email:
-        description: "Send Release Email with APK attachment"
-        type: boolean
-        required: true
-        default: true
-      build_bundle:
-        description: "Also build Play Store Bundle (.aab) [Slower]"
-        type: boolean
-        required: false
-        default: false
 
 # Concurrency: Cancel in-flight duplicate runs on the same branch
 concurrency:
@@ -52,7 +42,7 @@ jobs:
         with:
           cache-read-only: false
           gradle-home-cache-cleanup: true
-          cache-disabled: true  # ADD THIS LINE to skip caching when services are unstable
+          cache-disabled: true  # Skip caching when services are unstable
 
       - name: Calculate Semantic Version
         id: semver
@@ -108,7 +98,7 @@ jobs:
       - name: Make Gradle Wrapper Executable
         run: chmod +x gradlew
 
-      - name: High-Speed Release Assembly
+      - name: High-Speed Release Assembly (APK + AAB)
         env:
           VERSION_CODE: ${{ env.VERSION_CODE }}
           VERSION_NAME: ${{ env.VERSION_NAME }}
@@ -116,15 +106,9 @@ jobs:
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
-          BUILD_BUNDLE: ${{ github.event.inputs.build_bundle }}
         run: |
-          # Build target: assembleRelease for instant fast APK build, optionally bundleRelease if requested
-          GRADLE_TASKS=":app:assembleRelease"
-          if [ "$BUILD_BUNDLE" = "true" ]; then
-            GRADLE_TASKS="$GRADLE_TASKS :app:bundleRelease"
-          fi
-          
-          ./gradlew $GRADLE_TASKS \
+          # Build both APK (:app:assembleRelease) and Play Store Bundle (:app:bundleRelease)
+          ./gradlew :app:assembleRelease :app:bundleRelease \
             --build-cache \
             --parallel \
             --max-workers=4 \
@@ -134,10 +118,36 @@ jobs:
       - name: Prepare Release Artifacts
         run: |
           mkdir -p release_artifacts
-          cp app/build/outputs/apk/release/app-release.apk release_artifacts/SMSForwarder-v${{ env.VERSION_NAME }}.apk
+
+          # Copy APK
+          if [ -f app/build/outputs/apk/release/app-release.apk ]; then
+            cp app/build/outputs/apk/release/app-release.apk release_artifacts/SMSForwarder-v${{ env.VERSION_NAME }}.apk
+          elif [ -f app/build/outputs/apk/release/app-release-unsigned.apk ]; then
+            cp app/build/outputs/apk/release/app-release-unsigned.apk release_artifacts/SMSForwarder-v${{ env.VERSION_NAME }}.apk
+          else
+            echo "::error::Release APK not found in app/build/outputs/apk/release/"
+            exit 1
+          fi
+
+          # Copy AAB (Bundle)
           if [ -f app/build/outputs/bundle/release/app-release.aab ]; then
             cp app/build/outputs/bundle/release/app-release.aab release_artifacts/SMSForwarder-v${{ env.VERSION_NAME }}.aab
+          elif [ -f app/build/outputs/bundle/release/app-release-unsigned.aab ]; then
+            cp app/build/outputs/bundle/release/app-release-unsigned.aab release_artifacts/SMSForwarder-v${{ env.VERSION_NAME }}.aab
+          else
+            echo "::error::Release AAB bundle not found in app/build/outputs/bundle/release/"
+            exit 1
           fi
+
+          echo "Prepared artifacts:"
+          ls -lh release_artifacts/
+
+      - name: Upload Build Artifacts (Actions)
+        uses: actions/upload-artifact@v4
+        with:
+          name: SMSForwarder-v${{ env.VERSION_NAME }}
+          path: release_artifacts/*
+          retention-days: 30
 
       - name: Publish GitHub Release
         uses: softprops/action-gh-release@v2
@@ -150,36 +160,14 @@ jobs:
             - **Commit:** `${{ github.sha }}`
             - **Author:** `${{ github.actor }}`
             
-            ### ⬇️ Download
-            - **Direct APK:** [`SMSForwarder-v${{ env.VERSION_NAME }}.apk`](https://github.com/${{ github.repository }}/releases/download/v${{ env.VERSION_NAME }}/SMSForwarder-v${{ env.VERSION_NAME }}.apk)
-          files: release_artifacts/*
+            ### ⬇️ Downloads
+            - 📱 **Direct APK (Direct Install):** [`SMSForwarder-v${{ env.VERSION_NAME }}.apk`](https://github.com/${{ github.repository }}/releases/download/v${{ env.VERSION_NAME }}/SMSForwarder-v${{ env.VERSION_NAME }}.apk)
+            - 📦 **Play Store Bundle (AAB):** [`SMSForwarder-v${{ env.VERSION_NAME }}.aab`](https://github.com/${{ github.repository }}/releases/download/v${{ env.VERSION_NAME }}/SMSForwarder-v${{ env.VERSION_NAME }}.aab)
+          files: |
+            release_artifacts/*.apk
+            release_artifacts/*.aab
           draft: false
           prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Send Release Email with APK
-        env:
-          MAIL_USERNAME: ${{ secrets.MAIL_USERNAME }}
-          MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
-          MAIL_TO: ${{ secrets.MAIL_TO }}
-        if: ${{ (github.event.inputs.send_email == 'true' || github.event.inputs.send_email == '' || github.event_name == 'push') && env.MAIL_USERNAME != '' && env.MAIL_PASSWORD != '' && env.MAIL_TO != '' }}
-        uses: dawidd6/action-send-mail@v3
-        with:
-          server_address: ${{ secrets.MAIL_SERVER || 'smtp.gmail.com' }}
-          server_port: ${{ secrets.MAIL_PORT || 465 }}
-          username: ${{ secrets.MAIL_USERNAME }}
-          password: ${{ secrets.MAIL_PASSWORD }}
-          subject: "🚀 SMS Forwarder v${{ env.VERSION_NAME }} Released"
-          to: ${{ secrets.MAIL_TO }}
-          from: ${{ secrets.MAIL_FROM || format('SMS Forwarder CI <{0}>', secrets.MAIL_USERNAME) }}
-          html_body: |
-            <h2>📱 SMS Forwarder v${{ env.VERSION_NAME }} is Ready!</h2>
-            <p>Your signed release build has finished compiling.</p>
-            <ul>
-              <li><strong>Version:</strong> ${{ env.VERSION_NAME }} (Build #${{ env.VERSION_CODE }})</li>
-              <li><strong>Commit:</strong> <code>${{ github.sha }}</code></li>
-            </ul>
-            <p>Attached is your signed release APK for instant installation.</p>
-            <p><a href="https://github.com/${{ github.repository }}/releases/tag/v${{ env.VERSION_NAME }}">View GitHub Release</a></p>
-          attachments: release_artifacts/SMSForwarder-v${{ env.VERSION_NAME }}.apk
