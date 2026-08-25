@@ -30,7 +30,7 @@ jobs:
       - name: Setup Fast Gradle Engine
         uses: gradle/actions/setup-gradle@v3
         with:
-          cache-read-only: false
+          cache-read-only: true  # Don't write to cache, only read
           gradle-home-cache-cleanup: true
 
       - name: Make Gradle Wrapper Executable
