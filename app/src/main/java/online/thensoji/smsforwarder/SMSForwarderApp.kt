@@ -19,6 +19,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import online.thensoji.smsforwarder.repository.MessageRepository
+import online.thensoji.smsforwarder.worker.SendWorker
 import javax.inject.Inject
 
 @HiltAndroidApp

@@ -17,6 +17,7 @@ Built using modern Android architecture principles (**Jetpack Compose**, **Mater
 ## 🌟 Key Features
 
 - ⚡ **Real-Time SMS Forwarding:** Intercepts incoming SMS broadcasts instantly and forwards sender details, timestamp, SIM slot, and body to Telegram.
+- 🛡️ **Prominent Disclosure & Ethical Use Consent:** Google Play compliant upfront disclosure explaining data access (`RECEIVE_SMS`, `READ_SMS`, `READ_PHONE_STATE`), zero 3rd-party tracking, direct Telegram API transmission, and strict anti-stalkerware terms before access.
 - 🔒 **4-Digit App PIN Security:** Protects app access with a secure 4-digit PIN screen (SHA-256 hashed). Prompts for setup on first launch and unlocks seamlessly on subsequent opens.
 - 📱 **Multi-Device Identification:** Easily run the app on multiple phones forwarding to the same Telegram chat with auto-detected hardware names or custom tags (e.g., `📱 [Pixel 7 (Work)]`).
 - 🧩 **Multi-Part Concatenated SMS Reassembly:** Binary UDH (User Data Header) parser stages and reassembles fragmented long carrier SMS messages into a single complete Telegram notification.
@@ -24,8 +25,9 @@ Built using modern Android architecture principles (**Jetpack Compose**, **Mater
 - 📶 **Dual-SIM Slot Awareness:** Identifies and tags incoming messages by their active SIM slot (`SIM 1` vs `SIM 2`).
 - 🌐 **Offline Resilience & Auto-Drain:** When offline, messages queue in Room. WorkManager and real-time network callbacks automatically send pending messages once internet returns—with strict single-send idempotency.
 - 📋 **All Messages Screen with Live Filters:** View all incoming messages categorized with filter chips (**All**, **Pending**, **Sent**, **Delayed**) with compact number formatting (`1k`, `1Lc`, `1cr`) and automatic top-scrolling on new incoming SMS.
-- ⚙️ **In-App Bot Setup & Live Connection Test:** Configure and test your Telegram Bot Token & Chat ID directly within the app.
+- ⚙️ **In-App Bot Setup & Live Connection Test:** Configure and test your Telegram Bot Token & Chat ID directly within the app, plus re-examine Ethical Use & Privacy Disclosures anytime.
 - 🔄 **Boot Persistence:** Automatically resumes background listeners when the Android device reboots (`RECEIVE_BOOT_COMPLETED`).
+- 🤖 **Automated CI/CD & Semantic Versioning:** GitHub Actions pipeline with automated Semantic Versioning (`MAJOR.MINOR.PATCH` e.g., `1.0.0`) based on commit conventions and sequential build code generation.
 - 🎨 **Modular Material 3 Compose UI:** Modern, responsive UI with smooth loading spinners, edge-to-edge support, and small-device responsiveness.
 
 ---
@@ -125,12 +127,13 @@ cd SMSForwarder
 ### 2. In-App Configuration
 
 1. Launch **SMS Forwarder** on your device.
-2. Set your **4-digit PIN** when prompted.
-3. Grant the required permissions on the Home overview:
+2. Review and accept the **Prominent Disclosure & Ethical Use Security Agreement** on first start.
+3. Set your **4-digit PIN** when prompted.
+4. Grant the required permissions on the Home overview:
    - `RECEIVE_SMS` & `READ_SMS` (To detect and read SMS messages)
    - `READ_PHONE_STATE` (To identify active SIM slot)
    - `POST_NOTIFICATIONS` (For Android 13+)
-4. Navigate to **Settings**:
+5. Navigate to **Settings**:
    - Set your **Device Tag** (or leave default hardware model).
    - Enter your **Telegram Bot Token** and **Chat ID**.
    - Tap **Save Settings** and test via **Test Telegram Connection**.
@@ -146,6 +149,7 @@ To prevent OEM battery managers (Doze mode) from delaying background forwarders:
 
 ```text
 SMSforwarder/
+├── .github/workflows/                 # GitHub Actions Release CI (Semantic Versioning & Signed APK)
 ├── app/
 │   ├── src/main/java/online/thensoji/smsforwarder/
 │   │   ├── data/                      # Room Entities (ForwardedMessage, SmsPart) & DAOs
@@ -154,11 +158,11 @@ SMSforwarder/
 │   │   ├── network/                   # Retrofit 2 API Service, DTO Models, Logging Interceptor
 │   │   ├── repository/                # Repository Implementations (MessageRepository, TelegramRepositoryImpl)
 │   │   ├── ui/                        # Jetpack Compose UI
-│   │   │   ├── components/            # Reusable UI widgets (MessageCard, PinKeypad, FilterTabs, etc.)
+│   │   │   ├── components/            # Reusable UI widgets (SecurityConsentDialog, MessageCard, PinKeypad, etc.)
 │   │   │   ├── screens/               # MainScreen, HomeScreen, AllMessagesScreen, SettingsScreen, PinLockScreen
 │   │   │   ├── theme/                 # Material 3 Color, Theme, Typography
 │   │   │   └── MessageViewModel.kt    # MVVM StateFlow ViewModel
-│   │   ├── util/                      # MessageFormatter, PermissionUtils, PinManager, SmsPduParser
+│   │   ├── util/                      # ConsentManager, MessageFormatter, PermissionUtils, PinManager, SmsPduParser
 │   │   ├── AssembleFallbackWorker.kt  # Fallback worker for incomplete multi-part SMS
 │   │   ├── BootReceiver.kt            # BOOT_COMPLETED receiver
 │   │   ├── MainActivity.kt            # Clean Activity Entry Point hosting MainScreen
@@ -172,10 +176,12 @@ SMSforwarder/
 
 ---
 
-## 🔒 Security & Privacy
+## 🔒 Security, Privacy & Google Play Compliance
 
+- **Prominent In-App Disclosure:** Explicit upfront disclosure of SMS permissions and data access prior to requesting permissions.
+- **Strict Ethical Use & Anti-Stalkerware Policy:** Restricts app installation to devices owned by the user or operated with explicit consent.
 - **Direct Communication:** Connects directly from your Android device to the official Telegram Bot API endpoint (`https://api.telegram.org`) over HTTPS.
-- **No Third-Party Analytics:** Zero telemetry, external trackers, or intermediate servers.
+- **No Third-Party Analytics:** Zero telemetry, external trackers, or intermediate ad networks.
 - **Local PIN Storage:** App access is protected via salted SHA-256 hashed PIN stored in private SharedPreferences.
 
 ---

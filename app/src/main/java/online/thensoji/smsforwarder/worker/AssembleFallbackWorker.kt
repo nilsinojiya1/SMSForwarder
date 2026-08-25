@@ -1,10 +1,13 @@
-package online.thensoji.smsforwarder
+package online.thensoji.smsforwarder.worker
 
 import android.content.Context
 import android.util.Log
 import androidx.hilt.work.HiltWorker
+import androidx.work.Constraints
 import androidx.work.CoroutineWorker
 import androidx.work.Data
+import androidx.work.ExistingWorkPolicy
+import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
@@ -13,9 +16,7 @@ import dagger.assisted.AssistedInject
 import online.thensoji.smsforwarder.data.ForwardedMessage
 import online.thensoji.smsforwarder.data.SmsPartDao
 import online.thensoji.smsforwarder.repository.MessageRepository
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
+import online.thensoji.smsforwarder.util.MessageFormatter
 
 @HiltWorker
 class AssembleFallbackWorker @AssistedInject constructor(
@@ -46,7 +47,7 @@ class AssembleFallbackWorker @AssistedInject constructor(
         Log.w(TAG, "Fallback assembly triggered for $sender (ref: $refNumber, parts received: ${parts.size}/${parts.firstOrNull()?.totalParts ?: "?"})")
 
         val fullBody = parts.sortedBy { it.partIndex }.joinToString("") { it.partBody }
-        val message = online.thensoji.smsforwarder.util.MessageFormatter.format(
+        val message = MessageFormatter.format(
             applicationContext,
             sender,
             simSlot,
@@ -65,8 +66,8 @@ class AssembleFallbackWorker @AssistedInject constructor(
         val id = repository.insertMessage(forwarded)
         smsPartDao.deletePartsForRef(sender, refNumber)
 
-        val constraints = androidx.work.Constraints.Builder()
-            .setRequiredNetworkType(androidx.work.NetworkType.CONNECTED)
+        val constraints = Constraints.Builder()
+            .setRequiredNetworkType(NetworkType.CONNECTED)
             .build()
 
         val input = Data.Builder()
@@ -78,7 +79,7 @@ class AssembleFallbackWorker @AssistedInject constructor(
             .build()
         WorkManager.getInstance(applicationContext).enqueueUniqueWork(
             "send_sms_$id",
-            androidx.work.ExistingWorkPolicy.KEEP,
+            ExistingWorkPolicy.KEEP,
             work
         )
 

@@ -1,6 +1,3 @@
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
-
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
@@ -17,16 +14,9 @@ android {
         .map { it.toIntOrNull() ?: 1 }
         .getOrElse(1)
 
-    // Calculate default version name in format: year.monthweek.build (e.g. 26.85.0)
-    val now = LocalDate.now()
-    val defaultYear = now.format(DateTimeFormatter.ofPattern("yy"))
-    val defaultMonth = now.monthValue
-    val defaultWeek = (now.dayOfMonth - 1) / 7 + 1
-    val calculatedDefaultVersionName = "$defaultYear.$defaultMonth$defaultWeek.0"
-
     val customVersionName = providers.environmentVariable("VERSION_NAME")
         .orElse(providers.gradleProperty("versionName"))
-        .getOrElse(calculatedDefaultVersionName)
+        .getOrElse("1.0.0")
 
     defaultConfig {
         applicationId = "online.thensoji.smsforwarder"

@@ -15,6 +15,7 @@ import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Smartphone
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material.icons.filled.Security
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -35,6 +36,7 @@ import online.thensoji.smsforwarder.util.MessageFormatter
 @Composable
 fun SettingsScreen(
     onChangePin: (() -> Unit)? = null,
+    onReviewConsent: (() -> Unit)? = null,
     viewModel: MessageViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
@@ -163,7 +165,7 @@ fun SettingsScreen(
         ) {
             Column(modifier = Modifier.padding(14.dp)) {
                 Text(
-                    text = "App Security",
+                    text = "App Security & Compliance",
                     fontWeight = FontWeight.Bold,
                     style = MaterialTheme.typography.titleMedium
                 )
@@ -182,6 +184,17 @@ fun SettingsScreen(
                         Icon(Icons.Filled.Lock, contentDescription = null, modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(8.dp))
                         Text("Change 4-Digit PIN")
+                    }
+                }
+                if (onReviewConsent != null) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedButton(
+                        onClick = onReviewConsent,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Icon(Icons.Filled.Security, contentDescription = null, modifier = Modifier.size(16.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("View Ethical Use & Privacy Disclosure")
                     }
                 }
             }
