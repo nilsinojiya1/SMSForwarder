@@ -7,8 +7,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import online.thensoji.smsforwarder.R
 
 @Composable
 fun DeviceTagCard(
@@ -35,12 +37,12 @@ fun DeviceTagCard(
             Spacer(modifier = Modifier.width(12.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = "Device Tag: $deviceName",
+                    text = stringResource(R.string.device_tag_label, deviceName),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold
                 )
                 Text(
-                    text = "Identifies this device when multiple phones forward to the same chat.",
+                    text = stringResource(R.string.device_tag_desc),
                     style = MaterialTheme.typography.bodySmall
                 )
             }

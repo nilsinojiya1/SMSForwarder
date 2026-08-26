@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- App Information -->
+    <string name="app_name">SMS Forwarder</string>
+
+    <!-- Navigation & Titles -->
+    <string name="nav_home">概要</string>
+    <string name="nav_settings">Telegram 設定</string>
+    <string name="nav_messages">すべてのメッセージ</string>
+    <string name="nav_change_pin">暗証番号の変更</string>
+    <string name="action_back">戻る</string>
+    <string name="action_settings">設定</string>
+    <string name="action_cancel">キャンセル</string>
+    <string name="action_refresh">更新</string>
+    <string name="action_delete">削除</string>
+    <string name="action_send_now">今すぐ送信</string>
+    <string name="action_sending">送信中…</string>
+    <string name="action_resend">再送信</string>
+    <string name="action_resending">再送信中…</string>
+    <string name="action_mark_sent">送信済みにする</string>
+
+    <!-- Notifications & Background Service -->
+    <string name="notification_channel_name">SMS 転送サービス</string>
+    <string name="notification_channel_desc">着信 SMS を監視中の常駐フォアグラウンド通知。</string>
+    <string name="notification_active_title">SMS Forwarder 稼働中</string>
+    <string name="notification_active_desc">着信 SMS メッセージを監視しています</string>
+    <string name="notification_sending_title">SMS を Telegram に転送中</string>
+
+    <!-- PIN Lock & Security -->
+    <string name="pin_title_unlock">PIN を入力</string>
+    <string name="pin_subtitle_unlock">SMS Forwarder を開くには 4 桁の PIN を入力してください</string>
+    <string name="pin_title_setup">4 桁の PIN を設定</string>
+    <string name="pin_subtitle_setup">アプリを保護するための 4 桁の PIN を選択してください</string>
+    <string name="pin_title_confirm">PIN の確認</string>
+    <string name="pin_subtitle_confirm">確認のため、もう一度 4 桁の PIN を入力してください</string>
+    <string name="pin_title_change_old">現在の PIN を入力</string>
+    <string name="pin_subtitle_change_old">現在の 4 桁の PIN を確認してください</string>
+    <string name="pin_title_change_new">新しい PIN を入力</string>
+    <string name="pin_subtitle_change_new">新しい 4 桁の PIN を選択してください</string>
+    <string name="pin_title_change_confirm">新しい PIN の確認</string>
+    <string name="pin_subtitle_change_confirm">確認のため、新しい 4 桁の PIN をもう一度入力してください</string>
+    <string name="pin_error_incorrect">PIN が正しくありません。もう一度お試しください。</string>
+    <string name="pin_error_mismatch">PIN が一致しません。もう一度お試しください。</string>
+    <string name="pin_error_old_incorrect">現在の PIN が正しくありません。もう一度お試しください。</string>
+    <string name="pin_error_new_mismatch">新しい PIN が一致しません。もう一度お試しください。</string>
+    <string name="pin_success_set">✅ PIN を設定しました！</string>
+    <string name="pin_success_changed">✅ PIN を変更しました！</string>
+    <string name="pin_keypad_backspace">削除</string>
+
+    <!-- Overview / Home Screen -->
+    <string name="overview_title">概要</string>
+    <string name="device_tag_label">端末タグ: %1$s</string>
+    <string name="device_tag_desc">複数の端末から同じチャットに転送する場合に、この端末を識別します。</string>
+    <string name="perm_granted_title">SMS 権限が付与されています</string>
+    <string name="perm_missing_title">権限が不足しています</string>
+    <string name="perm_granted_desc">アプリは SMS メッセージを受信および読み取ることができます。</string>
+    <string name="perm_missing_desc">着信 SMS を検知できるように SMS 権限を許可してください。</string>
+    <string name="perm_grant_button">権限を許可する</string>
+    <string name="telegram_status_configured_title">Telegram Bot 設定済み</string>
+    <string name="telegram_status_not_configured_title">Telegram 未設定</string>
+    <string name="telegram_status_configured_desc">メッセージは Telegram チャットに転送されます。</string>
+    <string name="telegram_status_not_configured_desc">設定で Bot Token と Chat ID を設定してください。</string>
+    <string name="summary_title">メッセージ集計</string>
+    <string name="summary_total">合計</string>
+    <string name="summary_sent">送信済み</string>
+    <string name="summary_pending">保留中</string>
+    <string name="summary_delayed">遅延</string>
+    <string name="action_view_all_messages">すべてのメッセージを見る (%1$s)</string>
+    <string name="action_configure_telegram">Telegram 設定を開く</string>
+
+    <!-- Settings Screen -->
+    <string name="settings_bot_config_title">Telegram Bot 設定</string>
+    <string name="settings_device_name_label">端末名 / タグ</string>
+    <string name="settings_device_name_placeholder">例: %1$s</string>
+    <string name="settings_device_name_support">端末を識別するためにメッセージ末尾に付加されます (デフォルト: %1$s)</string>
+    <string name="settings_bot_token_label">Telegram Bot Token</string>
+    <string name="settings_bot_token_placeholder">例: 123456789:ABCdefGhIJKlmNoPQRstuVWXyz</string>
+    <string name="settings_hide_token">トークンを隠す</string>
+    <string name="settings_show_token">トークンを表示</string>
+    <string name="settings_chat_id_label">Telegram Chat ID</string>
+    <string name="settings_chat_id_placeholder">例: 123456789 または -100123456789</string>
+    <string name="settings_save_button">設定を保存</string>
+    <string name="settings_save_success">設定を保存しました！</string>
+    <string name="settings_test_button">Telegram 接続テスト</string>
+    <string name="settings_testing_button">テスト中…</string>
+    <string name="settings_test_empty_error">先に Bot Token と Chat ID の両方を入力してください。</string>
+    <string name="settings_test_success">✅ 接続に成功しました！Telegram にテストメッセージを送信しました。</string>
+    <string name="settings_test_failed">❌ 接続に失敗しました: %1$s</string>
+    <string name="settings_test_check_fallback">トークン、Chat ID、インターネット接続を確認してください。</string>
+    <string name="settings_security_title">アプリのセキュリティとコンプライアンス</string>
+    <string name="settings_security_desc">アプリのアクセス保護のため 4 桁の PIN が有効です。</string>
+    <string name="settings_change_pin_button">4 桁の PIN を変更</string>
+    <string name="settings_view_consent_button">倫理的使用とプライバシー開示を確認</string>
+    <string name="settings_updates_title">アプリ更新と Google Play</string>
+    <string name="settings_updates_desc">Google Play から最新のセキュリティと機能改善に更新してください。</string>
+    <string name="settings_check_updates_button">Google Play で更新を確認</string>
+    <string name="settings_guide_title">認証情報の取得方法:</string>
+    <string name="settings_guide_step1">1. Telegram を開き \@BotFather を検索します。</string>
+    <string name="settings_guide_step2">2. /newbot で新しいボットを作成し、Bot Token を取得します。</string>
+    <string name="settings_guide_step3">3. \@userinfobot にメッセージを送信し、個人の Chat ID を取得します。</string>
+    <string name="settings_guide_step4">4. 作成したボットのチャットを開き、\'Start\' を押してボットを開始します。</string>
+
+    <!-- Prominent Disclosure & Ethical Consent Dialog -->
+    <string name="consent_dialog_title">重要事項の開示とセキュリティ同意</string>
+    <string name="consent_dialog_subtitle">データアクセスおよび倫理的使用規約をご確認ください</string>
+    <string name="consent_sec1_title">1. SMS および通話データへのアクセス</string>
+    <string name="consent_sec1_body">SMS Forwarder は、受信した SMS 通知を指定した Telegram Bot またはチャットに自動転送するという中核機能を果たすため、実行時権限 (RECEIVE_SMS, READ_SMS, READ_PHONE_STATE) を必要とします。</string>
+    <string name="consent_sec1_bullet1">アクセスするデータ: 送信元の電話番号、メッセージ本文、および受信タイムスタンプ。</string>
+    <string name="consent_sec1_bullet2">利用目的: ご自身が指定したプライベートな Telegram エンドポイントへの自動転送。</string>
+    <string name="consent_sec2_title">2. データのプライバシーと第三者提供の排除</string>
+    <string name="consent_sec2_body">お客様のプライバシーと通信の安全性は最優先事項です:</string>
+    <string name="consent_sec2_bullet1">直接通信: メッセージは設定された Bot Token を使用して、公式の Telegram Bot API へ HTTPS で直接暗号化送信されます。</string>
+    <string name="consent_sec2_bullet2">解析・広告トラッカーの排除: SMS データをサードパーティの広告ネットワーク、解析プロバイダー、外部サーバーに販売・共有することはありません。</string>
+    <string name="consent_sec2_bullet3">ローカル保存: 端末内に保存されたメッセージはローカルデータベースのみに保管され、4 桁の PIN で保護されます。</string>
+    <string name="consent_sec3_title">3. 倫理的および合法的使用に関する方針</string>
+    <string name="consent_sec3_body">本アプリを使用することにより、以下に明示的に同意したものとみなされます:</string>
+    <string name="consent_sec3_bullet1">許可された端末のみ: 合法的に所有している端末、または所有者から明確な同意を得ている端末にのみインストール・使用してください。</string>
+    <string name="consent_sec3_bullet2">不正な盗聴・監視の禁止: ユーザーに無断で監視、追跡、スパイ行為、または私的な通信を傍受するために本アプリを使用することは違法であり固く禁止されています。</string>
+    <string name="consent_sec3_bullet3">フォアグラウンド通知: 動作中は、運用の透明性を保つため常にステータスバーにフォアグラウンド通知が表示されます。</string>
+    <string name="consent_affirmation">同意することにより、これらの倫理的使用規約およびプライバシー開示事項を読み、理解し、遵守することに同意したものとみなされます。</string>
+    <string name="consent_action_close">閉じる</string>
+    <string name="consent_action_agree">同意して続行</string>
+    <string name="consent_action_decline">同意せず終了</string>
+
+    <!-- All Messages Screen & Filter Chips -->
+    <string name="messages_title_with_count">すべてのメッセージ (%1$s)</string>
+    <string name="filter_tab_all">すべて (%1$s)</string>
+    <string name="filter_tab_pending">保留中 (%1$s)</string>
+    <string name="filter_tab_sent">送信済み (%1$s)</string>
+    <string name="filter_tab_delayed">遅延 (%1$s)</string>
+    <string name="pending_banner_waiting">%1$s 件のメッセージが接続待ちです</string>
+    <string name="pending_banner_auto_send">インターネット接続が回復すると自動送信されます。</string>
+    <string name="loading_messages">データベースからメッセージを読み込み中…</string>
+    <string name="empty_all_title">メッセージはまだありません</string>
+    <string name="empty_all_desc">受信した SMS メッセージがここに表示されます。</string>
+    <string name="empty_pending_title">保留中のメッセージはありません</string>
+    <string name="empty_pending_desc">すべてのメッセージが正常に Telegram に送信されました。</string>
+    <string name="empty_sent_title">送信済みメッセージはありません</string>
+    <string name="empty_sent_desc">Telegram に転送されたメッセージがここに表示されます。</string>
+    <string name="empty_delayed_title">遅延メッセージはありません</string>
+    <string name="empty_delayed_desc">転送に 1 分以上かかったメッセージがここに表示されます。</string>
+    <string name="msg_from_label">送信元: %1$s</string>
+    <string name="msg_unknown_sender">不明</string>
+    <string name="msg_status_sent">送信完了</string>
+    <string name="msg_status_pending">保留中 / キュー</string>
+    <string name="msg_status_delayed">%1$s 遅延</string>
+    <string name="msg_status_offline_delay">オフライン: %1$s</string>
+    <string name="msg_telegram_id">ID #%1$s</string>
+    <string name="toast_retrying_pending">保留中のメッセージを再試行中…</string>
+    <string name="toast_retrying_single">メッセージを再試行中…</string>
+</resources>

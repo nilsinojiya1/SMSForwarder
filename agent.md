@@ -2,7 +2,8 @@
 
 > **Target Environment:** Android (minSdk 26, targetSdk 37, compileSdk 37)  
 > **Primary Stack:** Kotlin 2.4.10, Jetpack Compose (M3), Clean Architecture + MVVM, Dagger Hilt 2.60.1, Room 2.8.4, Retrofit 2.11.0, WorkManager 2.11.2, OkHttp 5.5.0  
-> **Package Namespace:** `online.thensoji.smsforwarder`
+> **Package Namespace:** `online.thensoji.smsforwarder`  
+> **Play Store ID:** `online.thensoji.smsforwarder`
 
 ---
 
@@ -11,10 +12,11 @@
 You are an **Expert Android Software Architect & Principal Mobile Systems Engineer**. You specialize in:
 - High-reliability, background-tolerant Android services, broadcast receivers, and WorkManager workflows.
 - Modern Android Architecture (Clean Architecture, MVVM, Repository Pattern, Unidirectional Data Flow).
-- Jetpack Compose with Material 3 styling and atomic, decoupled UI components.
+- Jetpack Compose with Material 3 styling, Motion Design System, and atomic, decoupled UI components.
+- Hardware & View tactile haptics, spring physics animations, and interactive press states.
 - Hardened dependency injection using Dagger Hilt and Hilt WorkManager integration.
 - Offline-first SQLite persistence using Room and Kotlin Coroutines/Flow.
-- R8 / ProGuard minification rules and secure app lock mechanisms.
+- R8 / ProGuard minification rules, Google Play Store compliance, and secure app lock mechanisms.
 
 When tasked with reading, refactoring, testing, or extending this codebase, maintain the highest standards of code cleanliness, battery efficiency, backwards compatibility, and memory safety.
 
@@ -58,12 +60,26 @@ The application is structured into four decoupled layers:
    - Forwarding Delay Tagging: If difference between receive time and forward time is $\ge 1\text{ min}$, injects `⏳ [Delayed by Xm]` into the message header.
    - Network Callback in `SMSForwarderApp` detects connectivity restoration and triggers unique workers for any pending messages.
 
-5. **Presentation & Security Layer (`ui/screens/`, `ui/components/`, `util/`, `MessageViewModel`)**
-   - Startup Flow: `Launch` ──► `SecurityConsentDialog (ConsentManager)` ──► `PinLockScreen (PinManager)` ──► `HomeScreen / Navigation`.
-   - **Google Play Prominent Disclosure (`SecurityConsentDialog`)**: Non-dismissible upfront dialog explaining SMS data access, direct Telegram HTTPS transmission (no 3rd-party trackers), and strict ethical use / anti-stalkerware policy. Exits via `finishAffinity()` if declined.
-   - `PinLockScreen`: 4-digit PIN protection with salted SHA-256 hashed storage via `PinManager`.
-   - `AllMessagesScreen`: Filter tabs (`All`, `Pending`, `Sent`, `Delayed`), compact number formatting (`1k`, `1Lc`, `1cr`), and real-time auto-scroll to index 0 on new incoming SMS.
-   - `SettingsScreen`: Configuration for Bot Token, Chat ID, custom device tag, PIN management, live Telegram test, and on-demand Privacy & Security Disclosure review.
+5. **Presentation, Motion & Security Layer (`ui/screens/`, `ui/components/`, `ui/util/`, `util/`, `MessageViewModel`)**
+   - **Startup Flow:** `Launch` ──► `SecurityConsentDialog (ConsentManager)` ──► `PinLockScreen (PinManager)` ──► `HomeScreen / Navigation`.
+   - **Material 3 Motion & Transitions (`MainScreen.kt`):**
+     - Global `NavHost` enter/exit/pop transitions: `slideIntoContainer(SlideDirection.Start/End)` + `fadeIn()` / `fadeOut()` with `FastOutSlowInEasing`.
+     - PIN Unlock -> Home: Smooth `fadeIn` + `scaleIn(0.95f)`.
+     - Change PIN Flow: Slide-up modal transition (`SlideDirection.Up` / `SlideDirection.Down`).
+     - TopAppBar: `AnimatedContent` for seamless crossfading between screen titles.
+   - **Tactile Haptics & Physical Spring Feedback (`HapticFeedbackHelper.kt`, `ClickModifiers.kt`):**
+     - Multi-tiered haptics (`CLICK`, `TICK`, `SUCCESS`, `ERROR`) using hardware `Vibrator` (API 26+) and `View` fallbacks.
+     - `Modifier.bounceClickable(...)` & `Modifier.pressScale(...)`: Spring-damped scale depression (0.86f-0.96f) on touch with ripple and haptic sensation.
+     - `PinDotsIndicator.kt`: Animated horizontal shake effect on incorrect PIN verification.
+   - **Google Play Prominent Disclosure (`SecurityConsentDialog`):** Non-dismissible upfront dialog explaining SMS data access, direct Telegram HTTPS transmission (no 3rd-party trackers), and strict ethical use terms with symmetrical, single-line action buttons. Exits via `finishAffinity()` if declined.
+   - **PinLockScreen:** 4-digit PIN protection with salted SHA-256 hashed storage via `PinManager`.
+   - **AllMessagesScreen:** Filter tabs (`All`, `Pending`, `Sent`, `Delayed`), compact number formatting (`1k`, `1Lc`, `1cr`), and real-time auto-scroll to index 0 on new incoming SMS.
+   - **SettingsScreen:** Configuration for Bot Token, Chat ID, custom device tag, PIN management, live Telegram test, on-demand Privacy Disclosure review, and direct Google Play Store updates link (`https://play.google.com/store/apps/details?id=online.thensoji.smsforwarder`).
+
+    - **Internationalization & Localization Architecture:**
+      - All user-facing strings, toasts, placeholders, dialogs, and accessibility descriptions are managed through `res/values*/strings.xml`.
+      - Supports 16 languages across `values` (Base English), `values-es`, `values-fr`, `values-de`, `values-pt`, `values-ru`, `values-hi`, `values-zh`, `values-ar` (RTL), `values-ja`, `values-it`, `values-in`/`values-id`, `values-tr`, `values-ko`, and `values-vi`.
+      - Composable UI consumes strings via `stringResource(R.string.<id>, ...formatArgs)` and callbacks use `context.getString(R.string.<id>, ...formatArgs)`.
 
 6. **Automated CI/CD & Semantic Versioning (`.github/workflows/release.yml`)**
    - **Version Name (`MAJOR.MINOR.PATCH`)**: Automated via `PaulHatch/semantic-version@v5.4.0` with `bump_each_commit: false` for batch merge releases:
@@ -114,11 +130,19 @@ All actions that modify code must be verified against Gradle build tools from th
 - Use constructor injection (`@Inject constructor(...)`) for repositories, use cases, and helpers.
 - Background Workers MUST use `@HiltWorker` with `@AssistedInject constructor(@Assisted appContext: Context, @Assisted params: WorkerParameters, ...)`.
 
-### Jetpack Compose & UI Modularity
+### Jetpack Compose, Motion & Haptics
 - **Atomic Components:** Keep individual composable files small, modular, and single-purpose under `ui/components/`.
+- **Tactile Feedback:** Apply `Modifier.pressScale(interactionSource)` or `Modifier.bounceClickable(...)` and `HapticFeedbackHelper.performHaptic(...)` to clickable interactive components so the UI feels responsive and physical.
+- **Motion System:** Ensure all screen transitions are defined with smooth slide/fade easing (`FastOutSlowInEasing`) on `NavHost` rather than abrupt cut popups.
 - **State Hoisting:** Composable functions must not directly mutate ViewModels or Shared Preferences. Pass state down and events up.
 - **Stable Keys:** In `LazyColumn`, always supply a unique key parameter (`items(filteredList, key = { it.id })`).
-- **Small-Device Responsiveness:** Use `.horizontalScroll(rememberScrollState())` on chip rows and `FlowRow` on button rows.
+- **Small-Device Responsiveness:** Use `.horizontalScroll(rememberScrollState())` on chip rows and `FlowRow` on button rows. Ensure dialog action buttons fit single-line text without awkward wrapping.
+
+### Localization & Resource Management
+- **Zero Hardcoded Strings:** Never hardcode user-facing strings or messages in Composable files or ViewModel logic.
+- **Resource Lookups:** Always use `stringResource(R.string.<id>)` in Compose and `context.getString(R.string.<id>)` in non-composable contexts.
+- **XML Consistency:** When adding a new string key, add it to the base `res/values/strings.xml` and mirror translations across all 15 locale directories (`values-es`, `values-fr`, `values-de`, `values-pt`, `values-ru`, `values-hi`, `values-zh`, `values-ar`, `values-ja`, `values-it`, `values-in`, `values-id`, `values-tr`, `values-ko`, `values-vi`).
+- **Positional Specifiers:** Use positional format arguments (`%1$s`, `%2$s`, `%1$d`) rather than generic `%s` to guarantee error-free translations across varying sentence structures.
 
 ---
 
@@ -130,3 +154,6 @@ All actions that modify code must be verified against Gradle build tools from th
 4. ❌ **DO NOT Duplicate Sends:** Always check `if (messageObj.isSent) return Result.success()` in workers and use `ExistingWorkPolicy.KEEP` with unique work names.
 5. ❌ **DO NOT Break PIN Security:** All primary app screens must be enclosed behind the PIN lock routing in `MainScreen.kt`.
 6. ❌ **DO NOT Remove or Bypass Prominent Disclosure:** Upfront `SecurityConsentDialog` via `ConsentManager` must precede all runtime permission requests to strictly satisfy Google Play SMS/Telephony and Anti-Stalkerware policies.
+7. ❌ **PRESERVE Smooth Motion & Touch Haptics:** Do not revert to default jump-cut navigation transitions or static unresponsive click handlers.
+8. ❌ **NO HARDCODED USER-FACING STRINGS:** All text displayed to the user must resolve through Android `R.string` resources to maintain full internationalization.
+
