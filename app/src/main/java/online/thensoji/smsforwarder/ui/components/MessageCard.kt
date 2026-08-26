@@ -1,5 +1,6 @@
 package online.thensoji.smsforwarder.ui.components
 
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
@@ -9,10 +10,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import online.thensoji.smsforwarder.data.ForwardedMessage
+import online.thensoji.smsforwarder.ui.util.HapticFeedbackHelper
+import online.thensoji.smsforwarder.ui.util.HapticType
 import online.thensoji.smsforwarder.util.MessageFormatter
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -28,6 +33,8 @@ fun MessageCard(
     modifier: Modifier = Modifier,
     isResending: Boolean = false
 ) {
+    val context = LocalContext.current
+    val view = LocalView.current
     val now = remember { System.currentTimeMillis() }
     val isDelayed = (msg.delayMillis ?: 0L) >= 60_000L
     val isPendingDelayed = !msg.isSent && (now - msg.timestamp) >= 60_000L
@@ -177,16 +184,28 @@ fun MessageCard(
                 verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 if (!msg.isSent) {
+                    val markSentInteraction = remember { MutableInteractionSource() }
                     OutlinedButton(
-                        onClick = onMarkSent,
+                        onClick = {
+                            HapticFeedbackHelper.performHaptic(context, view, HapticType.CLICK)
+                            onMarkSent()
+                        },
+                        modifier = Modifier.pressScale(markSentInteraction, scaleDown = 0.94f),
+                        interactionSource = markSentInteraction,
                         contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp)
                     ) {
                         Text("Mark as Sent", style = MaterialTheme.typography.labelMedium)
                     }
                     Spacer(modifier = Modifier.width(6.dp))
+                    val resendInteraction = remember { MutableInteractionSource() }
                     Button(
-                        onClick = onResend,
+                        onClick = {
+                            HapticFeedbackHelper.performHaptic(context, view, HapticType.CLICK)
+                            onResend()
+                        },
                         enabled = !isResending,
+                        modifier = Modifier.pressScale(resendInteraction, scaleDown = 0.94f),
+                        interactionSource = resendInteraction,
                         contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp)
                     ) {
                         if (isResending) {
@@ -208,9 +227,15 @@ fun MessageCard(
                         }
                     }
                 } else {
+                    val resendInteraction = remember { MutableInteractionSource() }
                     OutlinedButton(
-                        onClick = onResend,
+                        onClick = {
+                            HapticFeedbackHelper.performHaptic(context, view, HapticType.CLICK)
+                            onResend()
+                        },
                         enabled = !isResending,
+                        modifier = Modifier.pressScale(resendInteraction, scaleDown = 0.94f),
+                        interactionSource = resendInteraction,
                         contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp)
                     ) {
                         if (isResending) {
@@ -231,7 +256,17 @@ fun MessageCard(
                         }
                     }
                     Spacer(modifier = Modifier.width(6.dp))
-                    IconButton(onClick = onDelete, modifier = Modifier.size(36.dp)) {
+                    val deleteInteraction = remember { MutableInteractionSource() }
+                    IconButton(
+                        onClick = {
+                            HapticFeedbackHelper.performHaptic(context, view, HapticType.CLICK)
+                            onDelete()
+                        },
+                        modifier = Modifier
+                            .size(36.dp)
+                            .pressScale(deleteInteraction, scaleDown = 0.88f),
+                        interactionSource = deleteInteraction
+                    ) {
                         Icon(
                             Icons.Filled.Delete,
                             contentDescription = "Delete",

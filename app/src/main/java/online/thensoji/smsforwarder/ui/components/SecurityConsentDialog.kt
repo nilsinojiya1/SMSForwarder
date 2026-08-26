@@ -2,6 +2,7 @@ package online.thensoji.smsforwarder.ui.components
 
 import android.app.Activity
 import androidx.compose.foundation.background
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -17,15 +18,19 @@ import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import online.thensoji.smsforwarder.ui.util.HapticFeedbackHelper
+import online.thensoji.smsforwarder.ui.util.HapticType
 
 @Composable
 fun SecurityConsentDialog(
@@ -35,6 +40,7 @@ fun SecurityConsentDialog(
     onDismiss: () -> Unit = {}
 ) {
     val context = LocalContext.current
+    val view = LocalView.current
     val scrollState = rememberScrollState()
 
     Dialog(
@@ -186,38 +192,65 @@ fun SecurityConsentDialog(
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                 Spacer(modifier = Modifier.height(14.dp))
 
-                // Action Buttons
+                // Symmetrical, Single-Line Action Buttons
                 if (isReviewMode) {
+                    val closeInteraction = remember { MutableInteractionSource() }
                     Button(
-                        onClick = onDismiss,
-                        modifier = Modifier.fillMaxWidth()
+                        onClick = {
+                            HapticFeedbackHelper.performHaptic(context, view, HapticType.CLICK)
+                            onDismiss()
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(48.dp)
+                            .pressScale(closeInteraction, scaleDown = 0.96f),
+                        shape = RoundedCornerShape(12.dp),
+                        interactionSource = closeInteraction
                     ) {
                         Icon(Icons.Filled.Close, contentDescription = null, modifier = Modifier.size(18.dp))
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Close Policy Review")
+                        Text("Close Policy Review", fontWeight = FontWeight.SemiBold, maxLines = 1)
                     }
                 } else {
-                    Row(
+                    Column(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
+                        val acceptInteraction = remember { MutableInteractionSource() }
+                        Button(
+                            onClick = {
+                                HapticFeedbackHelper.performHaptic(context, view, HapticType.CLICK)
+                                onAccept()
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(48.dp)
+                                .pressScale(acceptInteraction, scaleDown = 0.96f),
+                            shape = RoundedCornerShape(12.dp),
+                            interactionSource = acceptInteraction
+                        ) {
+                            Icon(Icons.Filled.CheckCircle, contentDescription = null, modifier = Modifier.size(18.dp))
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Agree & Continue", fontWeight = FontWeight.SemiBold, maxLines = 1)
+                        }
+
+                        val declineInteraction = remember { MutableInteractionSource() }
                         OutlinedButton(
                             onClick = {
+                                HapticFeedbackHelper.performHaptic(context, view, HapticType.CLICK)
                                 onDecline()
                                 (context as? Activity)?.finishAffinity()
                             },
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(48.dp)
+                                .pressScale(declineInteraction, scaleDown = 0.96f),
+                            shape = RoundedCornerShape(12.dp),
+                            interactionSource = declineInteraction
                         ) {
-                            Text("Decline & Exit", textAlign = TextAlign.Center)
-                        }
-
-                        Button(
-                            onClick = onAccept,
-                            modifier = Modifier.weight(1.3f)
-                        ) {
-                            Icon(Icons.Filled.CheckCircle, contentDescription = null, modifier = Modifier.size(18.dp))
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text("Agree & Continue", textAlign = TextAlign.Center)
+                            Icon(Icons.Filled.Close, contentDescription = null, modifier = Modifier.size(18.dp))
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Decline & Exit", fontWeight = FontWeight.SemiBold, maxLines = 1)
                         }
                     }
                 }

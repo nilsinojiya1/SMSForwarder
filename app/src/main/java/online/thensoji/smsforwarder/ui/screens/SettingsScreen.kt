@@ -4,23 +4,25 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
-import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Security
+import androidx.compose.material.icons.filled.Shop
 import androidx.compose.material.icons.filled.Smartphone
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
-import androidx.compose.material.icons.filled.Security
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -31,6 +33,9 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import online.thensoji.smsforwarder.BuildConfig
 import online.thensoji.smsforwarder.ui.MessageViewModel
 import online.thensoji.smsforwarder.ui.components.TelegramGuideCard
+import online.thensoji.smsforwarder.ui.components.pressScale
+import online.thensoji.smsforwarder.ui.util.HapticFeedbackHelper
+import online.thensoji.smsforwarder.ui.util.HapticType
 import online.thensoji.smsforwarder.util.MessageFormatter
 
 @Composable
@@ -40,6 +45,7 @@ fun SettingsScreen(
     viewModel: MessageViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
+    val view = LocalView.current
     val sharedPreferences = remember {
         context.getSharedPreferences("sms_forwarder_prefs", Context.MODE_PRIVATE)
     }
@@ -88,13 +94,21 @@ fun SettingsScreen(
             value = botToken,
             onValueChange = { botToken = it },
             label = { Text("Telegram Bot Token") },
-            placeholder = { Text("e.g. 123456789:ABCdefGhIJKlmNoPQRstuVWXyz") },
+            placeholder = { Text("e.g. 123456789:ABCdefGhI...") },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true,
             visualTransformation = if (isTokenVisible) VisualTransformation.None else PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
             trailingIcon = {
-                IconButton(onClick = { isTokenVisible = !isTokenVisible }) {
+                val toggleInteraction = remember { MutableInteractionSource() }
+                IconButton(
+                    onClick = {
+                        HapticFeedbackHelper.performHaptic(context, view, HapticType.TICK)
+                        isTokenVisible = !isTokenVisible
+                    },
+                    modifier = Modifier.pressScale(toggleInteraction, scaleDown = 0.88f),
+                    interactionSource = toggleInteraction
+                ) {
                     Icon(
                         imageVector = if (isTokenVisible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
                         contentDescription = if (isTokenVisible) "Hide token" else "Show token"
@@ -113,8 +127,10 @@ fun SettingsScreen(
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
         )
 
+        val saveInteraction = remember { MutableInteractionSource() }
         Button(
             onClick = {
+                HapticFeedbackHelper.performHaptic(context, view, HapticType.SUCCESS)
                 sharedPreferences.edit {
                     putString("device_name", deviceName.trim())
                     putString("bot_token", botToken.trim())
@@ -122,16 +138,22 @@ fun SettingsScreen(
                 }
                 Toast.makeText(context, "Settings saved successfully!", Toast.LENGTH_SHORT).show()
             },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .pressScale(saveInteraction, scaleDown = 0.96f),
+            interactionSource = saveInteraction
         ) {
-            Text("Save Settings")
+            Text("Save Settings", fontWeight = FontWeight.SemiBold)
         }
 
+        val testInteraction = remember { MutableInteractionSource() }
         OutlinedButton(
             onClick = {
+                HapticFeedbackHelper.performHaptic(context, view, HapticType.CLICK)
                 val token = botToken.trim()
                 val chat = chatId.trim()
                 if (token.isEmpty() || chat.isEmpty()) {
+                    HapticFeedbackHelper.performHaptic(context, view, HapticType.ERROR)
                     Toast.makeText(context, "Please enter both Bot Token and Chat ID first.", Toast.LENGTH_SHORT).show()
                     return@OutlinedButton
                 }
@@ -140,14 +162,19 @@ fun SettingsScreen(
                 viewModel.testTelegramConnection(token, chat, currentDeviceTag) { isSuccess, errorMsg ->
                     isTestingConnection = false
                     if (isSuccess) {
+                        HapticFeedbackHelper.performHaptic(context, view, HapticType.SUCCESS)
                         Toast.makeText(context, "✅ Connection successful! Test message sent to Telegram.", Toast.LENGTH_LONG).show()
                     } else {
+                        HapticFeedbackHelper.performHaptic(context, view, HapticType.ERROR)
                         Toast.makeText(context, "❌ Connection failed: ${errorMsg ?: "Check Token, Chat ID and connection."}", Toast.LENGTH_LONG).show()
                     }
                 }
             },
             enabled = !isTestingConnection,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .pressScale(testInteraction, scaleDown = 0.96f),
+            interactionSource = testInteraction
         ) {
             if (isTestingConnection) {
                 CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
@@ -177,9 +204,16 @@ fun SettingsScreen(
                 )
                 Spacer(modifier = Modifier.height(10.dp))
                 if (onChangePin != null) {
+                    val changePinInteraction = remember { MutableInteractionSource() }
                     OutlinedButton(
-                        onClick = onChangePin,
-                        modifier = Modifier.fillMaxWidth()
+                        onClick = {
+                            HapticFeedbackHelper.performHaptic(context, view, HapticType.CLICK)
+                            onChangePin()
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .pressScale(changePinInteraction, scaleDown = 0.96f),
+                        interactionSource = changePinInteraction
                     ) {
                         Icon(Icons.Filled.Lock, contentDescription = null, modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(8.dp))
@@ -188,9 +222,16 @@ fun SettingsScreen(
                 }
                 if (onReviewConsent != null) {
                     Spacer(modifier = Modifier.height(8.dp))
+                    val consentInteraction = remember { MutableInteractionSource() }
                     OutlinedButton(
-                        onClick = onReviewConsent,
-                        modifier = Modifier.fillMaxWidth()
+                        onClick = {
+                            HapticFeedbackHelper.performHaptic(context, view, HapticType.CLICK)
+                            onReviewConsent()
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .pressScale(consentInteraction, scaleDown = 0.96f),
+                        interactionSource = consentInteraction
                     ) {
                         Icon(Icons.Filled.Security, contentDescription = null, modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(8.dp))
@@ -200,37 +241,49 @@ fun SettingsScreen(
             }
         }
 
-        // Updates & GitHub Releases Section
+        // Updates & Google Play Section
         Card(
             modifier = Modifier.fillMaxWidth(),
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
         ) {
             Column(modifier = Modifier.padding(14.dp)) {
                 Text(
-                    text = "App Updates & Releases",
+                    text = "App Updates & Google Play",
                     fontWeight = FontWeight.Bold,
                     style = MaterialTheme.typography.titleMedium
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "Download the latest release APK directly from GitHub.",
+                    text = "Keep SMS Forwarder updated with the latest security enhancements on Google Play.",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Spacer(modifier = Modifier.height(10.dp))
+                val updateInteraction = remember { MutableInteractionSource() }
                 Button(
                     onClick = {
-                        val intent = Intent(
-                            Intent.ACTION_VIEW,
-                            Uri.parse("https://github.com/nilsinojiya1/SMSForwarder/releases/latest")
-                        )
-                        context.startActivity(intent)
+                        HapticFeedbackHelper.performHaptic(context, view, HapticType.CLICK)
+                        val playStoreUrl = "https://play.google.com/store/apps/details?id=online.thensoji.smsforwarder"
+                        val marketIntent = Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=online.thensoji.smsforwarder")).apply {
+                            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        }
+                        try {
+                            context.startActivity(marketIntent)
+                        } catch (_: Exception) {
+                            val webIntent = Intent(Intent.ACTION_VIEW, Uri.parse(playStoreUrl)).apply {
+                                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                            }
+                            context.startActivity(webIntent)
+                        }
                     },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .pressScale(updateInteraction, scaleDown = 0.96f),
+                    interactionSource = updateInteraction
                 ) {
-                    Icon(Icons.Filled.Download, contentDescription = null, modifier = Modifier.size(16.dp))
+                    Icon(Icons.Filled.Shop, contentDescription = null, modifier = Modifier.size(16.dp))
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Check for Updates / Download Latest APK")
+                    Text("Check for Updates on Google Play")
                     Spacer(modifier = Modifier.width(6.dp))
                     Icon(Icons.AutoMirrored.Filled.OpenInNew, contentDescription = null, modifier = Modifier.size(14.dp))
                 }

@@ -1,6 +1,16 @@
 package online.thensoji.smsforwarder.ui.screens
 
 import android.app.Activity
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -13,11 +23,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.text.font.FontWeight
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import online.thensoji.smsforwarder.ui.components.SecurityConsentDialog
+import online.thensoji.smsforwarder.ui.components.pressScale
+import online.thensoji.smsforwarder.ui.util.HapticFeedbackHelper
+import online.thensoji.smsforwarder.ui.util.HapticType
 import online.thensoji.smsforwarder.util.ConsentManager
 import online.thensoji.smsforwarder.util.PinManager
 
@@ -25,6 +40,7 @@ import online.thensoji.smsforwarder.util.PinManager
 @Composable
 fun MainScreen() {
     val context = LocalContext.current
+    val view = LocalView.current
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route ?: ""
@@ -39,6 +55,7 @@ fun MainScreen() {
         SecurityConsentDialog(
             isReviewMode = false,
             onAccept = {
+                HapticFeedbackHelper.performHaptic(context, view, HapticType.SUCCESS)
                 ConsentManager.setConsentGiven(context, true)
                 isConsentGiven = true
             },
@@ -53,6 +70,7 @@ fun MainScreen() {
         SecurityConsentDialog(
             isReviewMode = true,
             onDismiss = {
+                HapticFeedbackHelper.performHaptic(context, view, HapticType.CLICK)
                 showConsentReviewDialog = false
             }
         )
@@ -74,10 +92,32 @@ fun MainScreen() {
         topBar = {
             if (!isPinScreen) {
                 TopAppBar(
-                    title = { Text(title) },
+                    title = {
+                        AnimatedContent(
+                            targetState = title,
+                            transitionSpec = {
+                                fadeIn(animationSpec = tween(280, easing = FastOutSlowInEasing)) togetherWith
+                                        fadeOut(animationSpec = tween(200, easing = FastOutSlowInEasing))
+                            },
+                            label = "top_bar_title_anim"
+                        ) { targetTitle ->
+                            Text(
+                                text = targetTitle,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
+                    },
                     navigationIcon = {
                         if (currentRoute != "home") {
-                            IconButton(onClick = { navController.popBackStack() }) {
+                            val backInteractionSource = remember { MutableInteractionSource() }
+                            IconButton(
+                                onClick = {
+                                    HapticFeedbackHelper.performHaptic(context, view, HapticType.CLICK)
+                                    navController.popBackStack()
+                                },
+                                modifier = Modifier.pressScale(backInteractionSource, scaleDown = 0.90f),
+                                interactionSource = backInteractionSource
+                            ) {
                                 Icon(
                                     Icons.AutoMirrored.Filled.ArrowBack,
                                     contentDescription = "Back"
@@ -87,7 +127,15 @@ fun MainScreen() {
                     },
                     actions = {
                         if (currentRoute == "home") {
-                            IconButton(onClick = { navController.navigate("settings") }) {
+                            val settingsInteractionSource = remember { MutableInteractionSource() }
+                            IconButton(
+                                onClick = {
+                                    HapticFeedbackHelper.performHaptic(context, view, HapticType.CLICK)
+                                    navController.navigate("settings")
+                                },
+                                modifier = Modifier.pressScale(settingsInteractionSource, scaleDown = 0.90f),
+                                interactionSource = settingsInteractionSource
+                            ) {
                                 Icon(Icons.Filled.Settings, contentDescription = "Settings")
                             }
                         }
@@ -99,10 +147,41 @@ fun MainScreen() {
         NavHost(
             navController = navController,
             startDestination = initialDestination,
-            modifier = Modifier.padding(if (isPinScreen) androidx.compose.foundation.layout.PaddingValues() else paddingValues)
+            modifier = Modifier.padding(if (isPinScreen) PaddingValues() else paddingValues),
+            enterTransition = {
+                slideIntoContainer(
+                    towards = AnimatedContentTransitionScope.SlideDirection.Start,
+                    animationSpec = tween(durationMillis = 350, easing = FastOutSlowInEasing)
+                ) + fadeIn(animationSpec = tween(300))
+            },
+            exitTransition = {
+                slideOutOfContainer(
+                    towards = AnimatedContentTransitionScope.SlideDirection.Start,
+                    targetOffset = { it / 4 },
+                    animationSpec = tween(durationMillis = 350, easing = FastOutSlowInEasing)
+                ) + fadeOut(animationSpec = tween(250))
+            },
+            popEnterTransition = {
+                slideIntoContainer(
+                    towards = AnimatedContentTransitionScope.SlideDirection.End,
+                    initialOffset = { -it / 4 },
+                    animationSpec = tween(durationMillis = 350, easing = FastOutSlowInEasing)
+                ) + fadeIn(animationSpec = tween(300))
+            },
+            popExitTransition = {
+                slideOutOfContainer(
+                    towards = AnimatedContentTransitionScope.SlideDirection.End,
+                    animationSpec = tween(durationMillis = 350, easing = FastOutSlowInEasing)
+                ) + fadeOut(animationSpec = tween(250))
+            }
         ) {
             // First-time 4-digit PIN setup screen
-            composable("setup_pin") {
+            composable(
+                route = "setup_pin",
+                exitTransition = {
+                    fadeOut(animationSpec = tween(300))
+                }
+            ) {
                 PinLockScreen(
                     mode = PinMode.SETUP,
                     onPinSuccess = {
@@ -114,7 +193,12 @@ fun MainScreen() {
             }
 
             // Normal startup 4-digit PIN unlock screen
-            composable("unlock_pin") {
+            composable(
+                route = "unlock_pin",
+                exitTransition = {
+                    fadeOut(animationSpec = tween(300))
+                }
+            ) {
                 PinLockScreen(
                     mode = PinMode.UNLOCK,
                     onPinSuccess = {
@@ -125,8 +209,31 @@ fun MainScreen() {
                 )
             }
 
-            // Change PIN screen
-            composable("change_pin") {
+            // Change PIN modal sub-screen
+            composable(
+                route = "change_pin",
+                enterTransition = {
+                    slideIntoContainer(
+                        towards = AnimatedContentTransitionScope.SlideDirection.Up,
+                        animationSpec = tween(durationMillis = 350, easing = FastOutSlowInEasing)
+                    ) + fadeIn(animationSpec = tween(300))
+                },
+                exitTransition = {
+                    slideOutOfContainer(
+                        towards = AnimatedContentTransitionScope.SlideDirection.Down,
+                        animationSpec = tween(durationMillis = 300, easing = FastOutSlowInEasing)
+                    ) + fadeOut(animationSpec = tween(250))
+                },
+                popEnterTransition = {
+                    fadeIn(animationSpec = tween(300))
+                },
+                popExitTransition = {
+                    slideOutOfContainer(
+                        towards = AnimatedContentTransitionScope.SlideDirection.Down,
+                        animationSpec = tween(durationMillis = 300, easing = FastOutSlowInEasing)
+                    ) + fadeOut(animationSpec = tween(250))
+                }
+            ) {
                 PinLockScreen(
                     mode = PinMode.CHANGE,
                     onPinSuccess = {
@@ -139,7 +246,23 @@ fun MainScreen() {
             }
 
             // Main app screens
-            composable("home") {
+            composable(
+                route = "home",
+                enterTransition = {
+                    if (initialState.destination.route == "unlock_pin" || initialState.destination.route == "setup_pin") {
+                        fadeIn(animationSpec = tween(380)) + scaleIn(
+                            initialScale = 0.95f,
+                            animationSpec = tween(380, easing = FastOutSlowInEasing)
+                        )
+                    } else {
+                        slideIntoContainer(
+                            towards = AnimatedContentTransitionScope.SlideDirection.End,
+                            initialOffset = { -it / 4 },
+                            animationSpec = tween(durationMillis = 350, easing = FastOutSlowInEasing)
+                        ) + fadeIn(animationSpec = tween(300))
+                    }
+                }
+            ) {
                 HomeScreen(
                     onOpenMessages = { navController.navigate("messages") },
                     onOpenSettings = { navController.navigate("settings") }

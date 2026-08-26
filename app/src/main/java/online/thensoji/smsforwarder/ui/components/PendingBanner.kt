@@ -1,12 +1,18 @@
 package online.thensoji.smsforwarder.ui.components
 
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import online.thensoji.smsforwarder.ui.util.HapticFeedbackHelper
+import online.thensoji.smsforwarder.ui.util.HapticType
 import online.thensoji.smsforwarder.util.MessageFormatter
 
 @Composable
@@ -17,6 +23,9 @@ fun PendingBanner(
     isResending: Boolean = false
 ) {
     if (pendingCount <= 0) return
+
+    val context = LocalContext.current
+    val view = LocalView.current
 
     Card(
         modifier = modifier.fillMaxWidth(),
@@ -41,9 +50,15 @@ fun PendingBanner(
                 )
             }
             Spacer(modifier = Modifier.width(8.dp))
+            val sendInteraction = remember { MutableInteractionSource() }
             Button(
-                onClick = onSendNow,
+                onClick = {
+                    HapticFeedbackHelper.performHaptic(context, view, HapticType.CLICK)
+                    onSendNow()
+                },
                 enabled = !isResending,
+                modifier = Modifier.pressScale(sendInteraction, scaleDown = 0.94f),
+                interactionSource = sendInteraction,
                 contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp)
             ) {
                 if (isResending) {

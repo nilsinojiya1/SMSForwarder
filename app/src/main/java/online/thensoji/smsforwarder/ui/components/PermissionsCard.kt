@@ -1,11 +1,13 @@
 package online.thensoji.smsforwarder.ui.components
 
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -55,15 +57,17 @@ fun PermissionsCard(
             }
         }
         if (!hasPermissions) {
+            val grantInteraction = remember { MutableInteractionSource() }
             Button(
                 onClick = onRequestPermissions,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 14.dp, vertical = 6.dp)
+                    .pressScale(grantInteraction, scaleDown = 0.96f),
+                interactionSource = grantInteraction
             ) {
-                Text("Grant Permissions")
+                Text("Grant Permissions", fontWeight = FontWeight.SemiBold)
             }
         }
     }
 }
-

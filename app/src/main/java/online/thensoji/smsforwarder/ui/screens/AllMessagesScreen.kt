@@ -1,6 +1,7 @@
 package online.thensoji.smsforwarder.ui.screens
 
 import android.widget.Toast
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -12,11 +13,14 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import online.thensoji.smsforwarder.ui.MessageViewModel
 import online.thensoji.smsforwarder.ui.components.*
+import online.thensoji.smsforwarder.ui.util.HapticFeedbackHelper
+import online.thensoji.smsforwarder.ui.util.HapticType
 import online.thensoji.smsforwarder.util.MessageFormatter
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -26,6 +30,7 @@ fun AllMessagesScreen(
     viewModel: MessageViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
+    val view = LocalView.current
     val messages by viewModel.messages.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val isRefreshing by viewModel.isRefreshing.collectAsState()
@@ -78,9 +83,15 @@ fun AllMessagesScreen(
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
             )
+            val refreshInteraction = remember { MutableInteractionSource() }
             IconButton(
-                onClick = { viewModel.refreshMessages() },
-                enabled = !isRefreshing
+                onClick = {
+                    HapticFeedbackHelper.performHaptic(context, view, HapticType.CLICK)
+                    viewModel.refreshMessages()
+                },
+                enabled = !isRefreshing,
+                modifier = Modifier.pressScale(refreshInteraction, scaleDown = 0.88f),
+                interactionSource = refreshInteraction
             ) {
                 if (isRefreshing) {
                     CircularProgressIndicator(
