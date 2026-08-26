@@ -10,8 +10,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import online.thensoji.smsforwarder.R
 
 @Composable
 fun PermissionsCard(
@@ -43,15 +45,18 @@ fun PermissionsCard(
             Spacer(modifier = Modifier.width(12.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = if (hasPermissions) "SMS Permissions Granted" else "Permissions Missing",
+                    text = if (hasPermissions)
+                        stringResource(R.string.perm_granted_title)
+                    else
+                        stringResource(R.string.perm_missing_title),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold
                 )
                 Text(
                     text = if (hasPermissions)
-                        "App can receive and read SMS messages."
+                        stringResource(R.string.perm_granted_desc)
                     else
-                        "Grant SMS permissions so incoming SMS can be detected.",
+                        stringResource(R.string.perm_missing_desc),
                     style = MaterialTheme.typography.bodySmall
                 )
             }
@@ -66,7 +71,10 @@ fun PermissionsCard(
                     .pressScale(grantInteraction, scaleDown = 0.96f),
                 interactionSource = grantInteraction
             ) {
-                Text("Grant Permissions", fontWeight = FontWeight.SemiBold)
+                Text(
+                    text = stringResource(R.string.perm_grant_button),
+                    fontWeight = FontWeight.SemiBold
+                )
             }
         }
     }

@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- App Information -->
+    <string name="app_name">SMS Forwarder</string>
+
+    <!-- Navigation & Titles -->
+    <string name="nav_home">Genel Bakış</string>
+    <string name="nav_settings">Telegram Ayarları</string>
+    <string name="nav_messages">Tüm Mesajlar</string>
+    <string name="nav_change_pin">PIN Değiştir</string>
+    <string name="action_back">Geri</string>
+    <string name="action_settings">Ayarlar</string>
+    <string name="action_cancel">İptal</string>
+    <string name="action_refresh">Yenile</string>
+    <string name="action_delete">Sil</string>
+    <string name="action_send_now">Şimdi Gönder</string>
+    <string name="action_sending">Gönderiliyor…</string>
+    <string name="action_resend">Yeniden Gönder</string>
+    <string name="action_resending">Yeniden gönderiliyor…</string>
+    <string name="action_mark_sent">Gönderildi Olarak İşaretle</string>
+
+    <!-- Notifications & Background Service -->
+    <string name="notification_channel_name">SMS Yönlendirme Servisi</string>
+    <string name="notification_channel_desc">Gelen SMS\'leri dinlerken kalıcı ön plan bildirimi.</string>
+    <string name="notification_active_title">SMS Forwarder Etkin</string>
+    <string name="notification_active_desc">Gelen SMS mesajları izleniyor</string>
+    <string name="notification_sending_title">SMS Telegram\'a yönlendiriliyor</string>
+
+    <!-- PIN Lock & Security -->
+    <string name="pin_title_unlock">PIN Girin</string>
+    <string name="pin_subtitle_unlock">SMS Forwarder\'a erişmek için 4 haneli PIN\'inizi girin</string>
+    <string name="pin_title_setup">4 Haneli PIN Belirleyin</string>
+    <string name="pin_subtitle_setup">Uygulamanızı korumak için 4 haneli bir PIN seçin</string>
+    <string name="pin_title_confirm">PIN\'inizi Doğrulayın</string>
+    <string name="pin_subtitle_confirm">Onaylamak için 4 haneli PIN\'i tekrar girin</string>
+    <string name="pin_title_change_old">Mevcut PIN\'i Girin</string>
+    <string name="pin_subtitle_change_old">Mevcut 4 haneli PIN\'inizi doğrulayın</string>
+    <string name="pin_title_change_new">Yeni PIN Girin</string>
+    <string name="pin_subtitle_change_new">Yeni 4 haneli PIN\'inizi seçin</string>
+    <string name="pin_title_change_confirm">Yeni PIN\'i Onaylayın</string>
+    <string name="pin_subtitle_change_confirm">Onaylamak için yeni 4 haneli PIN\'i tekrar girin</string>
+    <string name="pin_error_incorrect">Yanlış PIN. Lütfen tekrar deneyin.</string>
+    <string name="pin_error_mismatch">PIN\'ler eşleşmedi. Lütfen tekrar deneyin.</string>
+    <string name="pin_error_old_incorrect">Mevcut PIN yanlış. Lütfen tekrar deneyin.</string>
+    <string name="pin_error_new_mismatch">Yeni PIN\'ler eşleşmedi. Lütfen tekrar deneyin.</string>
+    <string name="pin_success_set">✅ PIN başarıyla ayarlandı!</string>
+    <string name="pin_success_changed">✅ PIN başarıyla değiştirildi!</string>
+    <string name="pin_keypad_backspace">Sil</string>
+
+    <!-- Overview / Home Screen -->
+    <string name="overview_title">Genel Bakış</string>
+    <string name="device_tag_label">Cihaz Etiketi: %1$s</string>
+    <string name="device_tag_desc">Birden fazla telefon aynı sohbete yönlendirme yaptığında bu cihazı tanımlar.</string>
+    <string name="perm_granted_title">SMS İzinleri Verildi</string>
+    <string name="perm_missing_title">İzinler Eksik</string>
+    <string name="perm_granted_desc">Uygulama SMS mesajlarını alabilir ve okuyabilir.</string>
+    <string name="perm_missing_desc">Gelen SMS\'lerin algılanabilmesi için SMS izinlerini verin.</string>
+    <string name="perm_grant_button">İzinleri Ver</string>
+    <string name="telegram_status_configured_title">Telegram Botu Yapılandırıldı</string>
+    <string name="telegram_status_not_configured_title">Telegram Yapılandırılmadı</string>
+    <string name="telegram_status_configured_desc">Mesajlar Telegram sohbetinize yönlendirilecektir.</string>
+    <string name="telegram_status_not_configured_desc">Ayarlar bölümünden Bot Token ve Sohbet ID\'nizi belirleyin.</string>
+    <string name="summary_title">Mesaj Özeti</string>
+    <string name="summary_total">Toplam</string>
+    <string name="summary_sent">Gönderilen</string>
+    <string name="summary_pending">Bekleyen</string>
+    <string name="summary_delayed">Geciken</string>
+    <string name="action_view_all_messages">Tüm Mesajları Görüntüle (%1$s)</string>
+    <string name="action_configure_telegram">Telegram Ayarlarını Yapılandır</string>
+
+    <!-- Settings Screen -->
+    <string name="settings_bot_config_title">Telegram Bot Yapılandırması</string>
+    <string name="settings_device_name_label">Cihaz Adı / Etiketi</string>
+    <string name="settings_device_name_placeholder">örn. %1$s</string>
+    <string name="settings_device_name_support">Bu cihazı tanımlamak için mesajlara eklenir (Varsayılan: %1$s)</string>
+    <string name="settings_bot_token_label">Telegram Bot Token</string>
+    <string name="settings_bot_token_placeholder">örn. 123456789:ABCdefGhIJKlmNoPQRstuVWXyz</string>
+    <string name="settings_hide_token">Token\'ı gizle</string>
+    <string name="settings_show_token">Token\'ı göster</string>
+    <string name="settings_chat_id_label">Telegram Sohbet ID (Chat ID)</string>
+    <string name="settings_chat_id_placeholder">örn. 123456789 veya -100123456789</string>
+    <string name="settings_save_button">Ayarları Kaydet</string>
+    <string name="settings_save_success">Ayarlar başarıyla kaydedildi!</string>
+    <string name="settings_test_button">Telegram Bağlantısını Test Et</string>
+    <string name="settings_testing_button">Test ediliyor…</string>
+    <string name="settings_test_empty_error">Lütfen önce hem Bot Token\'ı hem de Sohbet ID\'yi girin.</string>
+    <string name="settings_test_success">✅ Bağlantı başarılı! Test mesajı Telegram\'a gönderildi.</string>
+    <string name="settings_test_failed">❌ Bağlantı başarısız: %1$s</string>
+    <string name="settings_test_check_fallback">Token, Sohbet ID ve internet bağlantınızı kontrol edin.</string>
+    <string name="settings_security_title">Uygulama Güvenliği ve Uyumluluk</string>
+    <string name="settings_security_desc">Uygulama erişimini korumak için 4 haneli PIN devrede.</string>
+    <string name="settings_change_pin_button">4 Haneli PIN\'i Değiştir</string>
+    <string name="settings_view_consent_button">Etik Kullanım ve Gizlilik Bildirimini Görüntüle</string>
+    <string name="settings_updates_title">Güncellemeler ve Google Play</string>
+    <string name="settings_updates_desc">SMS Forwarder\'ı Google Play üzerinden en son güvenlik güncellemeleriyle güncel tutun.</string>
+    <string name="settings_check_updates_button">Google Play\'de Güncellemeleri Denetle</string>
+    <string name="settings_guide_title">Giriş bilgileri nasıl alınır:</string>
+    <string name="settings_guide_step1">1. Telegram\'ı açın ve \@BotFather\'ı aratın.</string>
+    <string name="settings_guide_step2">2. Bot Token almak için /newbot komutu ile yeni bot oluşturun.</string>
+    <string name="settings_guide_step3">3. Kişisel Sohbet ID\'nizi almak için \@userinfobot\'a mesaj gönderin.</string>
+    <string name="settings_guide_step4">4. Botunuzla sohbeti açıp \'Başlat\'a basarak botu başlatın.</string>
+
+    <!-- Prominent Disclosure & Ethical Consent Dialog -->
+    <string name="consent_dialog_title">Önemli Bildirim ve Güvenlik Sözleşmesi</string>
+    <string name="consent_dialog_subtitle">Lütfen veri erişimi ve etik kullanım koşullarını inceleyin</string>
+    <string name="consent_sec1_title">1. SMS ve Telefon Verilerine Erişim</string>
+    <string name="consent_sec1_body">SMS Forwarder, temel işlevini yerine getirmek için çalışma zamanı izinlerine (RECEIVE_SMS, READ_SMS, READ_PHONE_STATE) ihtiyaç duyar: gelen SMS bildirimlerinizi belirlediğiniz Telegram Botuna veya Sohbetine otomatik olarak iletmek.</string>
+    <string name="consent_sec1_bullet1">Erişilen Veriler: Gönderenin telefon numarası, mesaj metin içeriği ve zaman damgası.</string>
+    <string name="consent_sec1_bullet2">Amaç: Özel Telegram uç noktanıza anında otomatik yönlendirme.</string>
+    <string name="consent_sec2_title">2. Veri Gizliliği ve Sıfır Üçüncü Taraf Paylaşımı</string>
+    <string name="consent_sec2_body">Gizliliğiniz ve iletişim güvenliğiniz en önemli önceliğimizdir:</string>
+    <string name="consent_sec2_bullet1">Doğrudan İletim: Mesajlar, yapılandırdığınız Bot Token kullanılarak HTTPS üzerinden doğrudan resmi Telegram Bot API\'sine iletilir.</string>
+    <string name="consent_sec2_bullet2">Analiz veya Reklam İzleyicisi Yok: SMS verilerinizi asla üçüncü taraf reklam ağlarına, telemetri sağlayıcılarına veya sunuculara satmayız ve aktarmayız.</string>
+    <string name="consent_sec2_bullet3">Yerel Depolama: Kaydedilen mesajlar yalnızca cihazınızın yerel veritabanında tutulur ve 4 haneli PIN\'inizle korunur.</string>
+    <string name="consent_sec3_title">3. Etik ve Yasal Kullanım Politikası</string>
+    <string name="consent_sec3_body">Bu uygulamayı kullanarak açıkça kabul ve beyan edersiniz ki:</string>
+    <string name="consent_sec3_bullet1">Yalnızca Yetkili Cihazlar: Bu uygulamayı yalnızca yasal olarak sahip olduğunuz veya sahibinden açık rıza aldığınız cihazlara yükleyecek ve çalıştıracaksınız.</string>
+    <string name="consent_sec3_bullet2">Gizli Casusluk / Takip Yasaktır: Bu uygulamayı yetkisiz gözetim, gizli izleme, casusluk veya kullanıcının bilgisi olmadan gizlice mesaj dinlemek için kullanmak kesinlikle yasaktır ve yasa dışıdır.</string>
+    <string name="consent_sec3_bullet3">Ön Plan Bildirimi: Etkin olduğunda, tam operasyonel şeffaflığı sağlamak için durum çubuğunda her zaman kalıcı bir Android ön plan bildirimi görüntülenir.</string>
+    <string name="consent_affirmation">Kabul etmeniz, bu etik kullanım koşullarını ve gizlilik bildirimini okuduğunuzu, anladığınızı ve bunlara uymayı kabul ettiğinizi belirtir.</string>
+    <string name="consent_action_close">Politika İncelemesini Kapat</string>
+    <string name="consent_action_agree">Kabul Et ve Devam Et</string>
+    <string name="consent_action_decline">Reddet ve Çık</string>
+
+    <!-- All Messages Screen & Filter Chips -->
+    <string name="messages_title_with_count">Tüm Mesajlar (%1$s)</string>
+    <string name="filter_tab_all">Tümü (%1$s)</string>
+    <string name="filter_tab_pending">Bekleyen (%1$s)</string>
+    <string name="filter_tab_sent">Gönderilen (%1$s)</string>
+    <string name="filter_tab_delayed">Geciken (%1$s)</string>
+    <string name="pending_banner_waiting">%1$s mesaj internet bağlantısı bekliyor</string>
+    <string name="pending_banner_auto_send">Bağlantı sağlandığında otomatik olarak gönderilir.</string>
+    <string name="loading_messages">Mesajlar veritabanından yükleniyor…</string>
+    <string name="empty_all_title">Henüz mesaj yok</string>
+    <string name="empty_all_desc">Gelen SMS mesajları burada görünecektir.</string>
+    <string name="empty_pending_title">Bekleyen mesaj yok</string>
+    <string name="empty_pending_desc">Tüm mesajlar Telegram\'a başarıyla iletildi.</string>
+    <string name="empty_sent_title">Gönderilmiş mesaj yok</string>
+    <string name="empty_sent_desc">Telegram\'a iletilen mesajlar burada görünecektir.</string>
+    <string name="empty_delayed_title">Geciken mesaj yok</string>
+    <string name="empty_delayed_desc">İletimi 1 dakikadan fazla geciken mesajlar burada görünecektir.</string>
+    <string name="msg_from_label">Kimden: %1$s</string>
+    <string name="msg_unknown_sender">Bilinmeyen</string>
+    <string name="msg_status_sent">Gönderildi</string>
+    <string name="msg_status_pending">Beklemede / Kuyrukta</string>
+    <string name="msg_status_delayed">%1$s gecikti</string>
+    <string name="msg_status_offline_delay">%1$s çevrimdışı</string>
+    <string name="msg_telegram_id">ID #%1$s</string>
+    <string name="toast_retrying_pending">Bekleyen mesajlar tekrar deneniyor…</string>
+    <string name="toast_retrying_single">Mesaj tekrar gönderiliyor…</string>
+</resources>

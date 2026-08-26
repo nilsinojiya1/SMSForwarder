@@ -13,7 +13,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import online.thensoji.smsforwarder.R
 import online.thensoji.smsforwarder.ui.util.HapticFeedbackHelper
 import online.thensoji.smsforwarder.ui.util.HapticType
 import online.thensoji.smsforwarder.util.MessageFormatter
@@ -55,7 +57,10 @@ fun MessageFilterTabs(
             interactionSource = allInteraction,
             label = {
                 Text(
-                    text = "All (${MessageFormatter.formatCompactNumber(allCount)})",
+                    text = stringResource(
+                        R.string.filter_tab_all,
+                        MessageFormatter.formatCompactNumber(allCount)
+                    ),
                     maxLines = 1
                 )
             }
@@ -72,7 +77,10 @@ fun MessageFilterTabs(
             interactionSource = pendingInteraction,
             label = {
                 Text(
-                    text = "Pending (${MessageFormatter.formatCompactNumber(pendingCount)})",
+                    text = stringResource(
+                        R.string.filter_tab_pending,
+                        MessageFormatter.formatCompactNumber(pendingCount)
+                    ),
                     maxLines = 1
                 )
             }
@@ -89,7 +97,10 @@ fun MessageFilterTabs(
             interactionSource = sentInteraction,
             label = {
                 Text(
-                    text = "Sent (${MessageFormatter.formatCompactNumber(sentCount)})",
+                    text = stringResource(
+                        R.string.filter_tab_sent,
+                        MessageFormatter.formatCompactNumber(sentCount)
+                    ),
                     maxLines = 1
                 )
             }
@@ -106,7 +117,10 @@ fun MessageFilterTabs(
             interactionSource = delayedInteraction,
             label = {
                 Text(
-                    text = "Delayed (${MessageFormatter.formatCompactNumber(delayedCount)})",
+                    text = stringResource(
+                        R.string.filter_tab_delayed,
+                        MessageFormatter.formatCompactNumber(delayedCount)
+                    ),
                     maxLines = 1
                 )
             }

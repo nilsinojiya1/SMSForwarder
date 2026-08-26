@@ -13,9 +13,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import online.thensoji.smsforwarder.R
 import online.thensoji.smsforwarder.ui.util.HapticType
 
 @Composable
@@ -50,16 +52,16 @@ fun PinKeypad(
                         "BACK" -> {
                             Box(
                                 modifier = Modifier
-                                    .size(74.dp)
-                                    .clip(CircleShape)
-                                    .bounceClickable(scaleDown = 0.86f, hapticType = HapticType.TICK) {
-                                        onBackspaceClick()
-                                    },
+                                .size(74.dp)
+                                .clip(CircleShape)
+                                .bounceClickable(scaleDown = 0.86f, hapticType = HapticType.TICK) {
+                                    onBackspaceClick()
+                                },
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
                                     imageVector = Icons.AutoMirrored.Filled.Backspace,
-                                    contentDescription = "Backspace",
+                                    contentDescription = stringResource(R.string.pin_keypad_backspace),
                                     tint = MaterialTheme.colorScheme.onSurface,
                                     modifier = Modifier.size(28.dp)
                                 )

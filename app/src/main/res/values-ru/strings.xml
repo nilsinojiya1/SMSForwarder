@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- App Information -->
+    <string name="app_name">SMS Forwarder</string>
+
+    <!-- Navigation & Titles -->
+    <string name="nav_home">Обзор</string>
+    <string name="nav_settings">Настройки Telegram</string>
+    <string name="nav_messages">Все сообщения</string>
+    <string name="nav_change_pin">Сменить PIN</string>
+    <string name="action_back">Назад</string>
+    <string name="action_settings">Настройки</string>
+    <string name="action_cancel">Отмена</string>
+    <string name="action_refresh">Обновить</string>
+    <string name="action_delete">Удалить</string>
+    <string name="action_send_now">Отправить сейчас</string>
+    <string name="action_sending">Отправка…</string>
+    <string name="action_resend">Повторить</string>
+    <string name="action_resending">Повторная отправка…</string>
+    <string name="action_mark_sent">Отметить как отправленное</string>
+
+    <!-- Notifications & Background Service -->
+    <string name="notification_channel_name">Служба пересылки SMS</string>
+    <string name="notification_channel_desc">Постоянное уведомление при отслеживании входящих SMS.</string>
+    <string name="notification_active_title">SMS Forwarder активен</string>
+    <string name="notification_active_desc">Отслеживание входящих SMS-сообщений</string>
+    <string name="notification_sending_title">Пересылка SMS в Telegram</string>
+
+    <!-- PIN Lock & Security -->
+    <string name="pin_title_unlock">Введите PIN-код</string>
+    <string name="pin_subtitle_unlock">Введите 4-значный PIN-код для доступа к SMS Forwarder</string>
+    <string name="pin_title_setup">Установка 4-значного PIN-кода</string>
+    <string name="pin_subtitle_setup">Выберите 4-значный PIN-код для защиты приложения</string>
+    <string name="pin_title_confirm">Подтвердите PIN-код</string>
+    <string name="pin_subtitle_confirm">Повторите 4-значный PIN-код для подтверждения</string>
+    <string name="pin_title_change_old">Введите текущий PIN-код</string>
+    <string name="pin_subtitle_change_old">Подтвердите текущий 4-значный PIN-код</string>
+    <string name="pin_title_change_new">Введите новый PIN-код</string>
+    <string name="pin_subtitle_change_new">Выберите новый 4-значный PIN-код</string>
+    <string name="pin_title_change_confirm">Подтвердите новый PIN-код</string>
+    <string name="pin_subtitle_change_confirm">Повторите новый 4-значный PIN-код для подтверждения</string>
+    <string name="pin_error_incorrect">Неверный PIN-код. Попробуйте снова.</string>
+    <string name="pin_error_mismatch">PIN-коды не совпадают. Попробуйте снова.</string>
+    <string name="pin_error_old_incorrect">Неверный текущий PIN-код. Попробуйте снова.</string>
+    <string name="pin_error_new_mismatch">Новые PIN-коды не совпадают. Попробуйте снова.</string>
+    <string name="pin_success_set">✅ PIN-код успешно установлен!</string>
+    <string name="pin_success_changed">✅ PIN-код успешно изменен!</string>
+    <string name="pin_keypad_backspace">Стереть</string>
+
+    <!-- Overview / Home Screen -->
+    <string name="overview_title">Обзор</string>
+    <string name="device_tag_label">Метка устройства: %1$s</string>
+    <string name="device_tag_desc">Идентифицирует это устройство при пересылке с нескольких телефонов в один чат.</string>
+    <string name="perm_granted_title">Разрешения SMS предоставлены</string>
+    <string name="perm_missing_title">Требуются разрешения</string>
+    <string name="perm_granted_desc">Приложение может принимать и читать SMS-сообщения.</string>
+    <string name="perm_missing_desc">Предоставьте разрешения на SMS для обнаружения входящих сообщений.</string>
+    <string name="perm_grant_button">Предоставить разрешения</string>
+    <string name="telegram_status_configured_title">Telegram-бот настроен</string>
+    <string name="telegram_status_not_configured_title">Telegram не настроен</string>
+    <string name="telegram_status_configured_desc">Сообщения будут пересылаться в ваш Telegram-чат.</string>
+    <string name="telegram_status_not_configured_desc">Укажите токен бота и Chat ID в Настройках.</string>
+    <string name="summary_title">Сводка сообщений</string>
+    <string name="summary_total">Всего</string>
+    <string name="summary_sent">Отправлено</string>
+    <string name="summary_pending">В очереди</string>
+    <string name="summary_delayed">С задержкой</string>
+    <string name="action_view_all_messages">Просмотреть все сообщения (%1$s)</string>
+    <string name="action_configure_telegram">Настройки Telegram</string>
+
+    <!-- Settings Screen -->
+    <string name="settings_bot_config_title">Конфигурация Telegram-бота</string>
+    <string name="settings_device_name_label">Имя / Метка устройства</string>
+    <string name="settings_device_name_placeholder">напр. %1$s</string>
+    <string name="settings_device_name_support">Добавляется к сообщениям для идентификации устройства (По умолчанию: %1$s)</string>
+    <string name="settings_bot_token_label">Токен бота Telegram</string>
+    <string name="settings_bot_token_placeholder">напр. 123456789:ABCdefGhIJKlmNoPQRstuVWXyz</string>
+    <string name="settings_hide_token">Скрыть токен</string>
+    <string name="settings_show_token">Показать токен</string>
+    <string name="settings_chat_id_label">Telegram Chat ID</string>
+    <string name="settings_chat_id_placeholder">напр. 123456789 или -100123456789</string>
+    <string name="settings_save_button">Сохранить настройки</string>
+    <string name="settings_save_success">Настройки успешно сохранены!</string>
+    <string name="settings_test_button">Проверить подключение к Telegram</string>
+    <string name="settings_testing_button">Проверка…</string>
+    <string name="settings_test_empty_error">Пожалуйста, сначала введите токен бота и Chat ID.</string>
+    <string name="settings_test_success">✅ Подключение успешно! Тестовое сообщение отправлено в Telegram.</string>
+    <string name="settings_test_failed">❌ Ошибка подключения: %1$s</string>
+    <string name="settings_test_check_fallback">Проверьте токен, Chat ID и подключение к интернету.</string>
+    <string name="settings_security_title">Безопасность и соответствие</string>
+    <string name="settings_security_desc">4-значный PIN-код активен для защиты доступа к приложению.</string>
+    <string name="settings_change_pin_button">Сменить 4-значный PIN-код</string>
+    <string name="settings_view_consent_button">Просмотреть политику конфиденциальности и этики</string>
+    <string name="settings_updates_title">Обновления и Google Play</string>
+    <string name="settings_updates_desc">Поддерживайте SMS Forwarder в актуальном состоянии через Google Play.</string>
+    <string name="settings_check_updates_button">Проверить обновления в Google Play</string>
+    <string name="settings_guide_title">Как получить данные для доступа:</string>
+    <string name="settings_guide_step1">1. Откройте Telegram и найдите \@BotFather.</string>
+    <string name="settings_guide_step2">2. Создайте нового бота командой /newbot, чтобы получить токен.</string>
+    <string name="settings_guide_step3">3. Отправьте сообщение \@userinfobot, чтобы узнать ваш Chat ID.</string>
+    <string name="settings_guide_step4">4. Запустите бота, открыв чат с ним и нажав \'Старт\'.</string>
+
+    <!-- Prominent Disclosure & Ethical Consent Dialog -->
+    <string name="consent_dialog_title">Уведомление и соглашение о безопасности</string>
+    <string name="consent_dialog_subtitle">Ознакомьтесь с доступом к данным и правилами использования</string>
+    <string name="consent_sec1_title">1. Доступ к SMS и данным телефонии</string>
+    <string name="consent_sec1_body">SMS Forwarder требует разрешений (RECEIVE_SMS, READ_SMS, READ_PHONE_STATE) для выполнения своей основной функции: автоматической пересылки входящих SMS-уведомлений в указанный вами бот или чат Telegram.</string>
+    <string name="consent_sec1_bullet1">Доступные данные: Телефонный номер отправителя, текст сообщения и время получения.</string>
+    <string name="consent_sec1_bullet2">Цель: Мгновенная автоматическая пересылка в ваш приватный чат Telegram.</string>
+    <string name="consent_sec2_title">2. Конфиденциальность и отсутствие передачи третьим лицам</string>
+    <string name="consent_sec2_body">Конфиденциальность ваших данных является нашим главным приоритетом:</string>
+    <string name="consent_sec2_bullet1">Прямая передача: Сообщения передаются напрямую по протоколу HTTPS в официальный API Telegram Bot с использованием вашего токена.</string>
+    <string name="consent_sec2_bullet2">Без аналитики и рекламы: Мы никогда не продаем, не монетизируем и не передаем ваши SMS-сообщения сторонним рекламным сетям или удаленным серверам.</string>
+    <string name="consent_sec2_bullet3">Локальное хранение: Все сохраненные сообщения хранятся исключительно в локальной базе данных устройства и защищены вашим PIN-кодом.</string>
+    <string name="consent_sec3_title">3. Политика этичного и законного использования</string>
+    <string name="consent_sec3_body">Используя это приложение, вы прямо соглашаетесь и подтверждаете:</string>
+    <string name="consent_sec3_bullet1">Только авторизованные устройства: Вы устанавливаете приложение только на устройства, которыми владеете законно или на использование которых получили явное согласие владельца.</string>
+    <string name="consent_sec3_bullet2">Запрет скрытой слежки: Использование приложения для негласного наблюдения, скрытого трекинга, шпионажа или перехвата чужих сообщений строго запрещено законом.</string>
+    <string name="consent_sec3_bullet3">Уведомление на переднем плане: В активном режиме в строке состояния Android всегда отображается постоянное уведомление для полной прозрачности.</string>
+    <string name="consent_affirmation">Принятие означает, что вы прочитали, поняли и согласны соблюдать эти условия этичного использования и конфиденциальности.</string>
+    <string name="consent_action_close">Закрыть просмотр</string>
+    <string name="consent_action_agree">Принять и продолжить</string>
+    <string name="consent_action_decline">Отклонить и выйти</string>
+
+    <!-- All Messages Screen & Filter Chips -->
+    <string name="messages_title_with_count">Все сообщения (%1$s)</string>
+    <string name="filter_tab_all">Все (%1$s)</string>
+    <string name="filter_tab_pending">В очереди (%1$s)</string>
+    <string name="filter_tab_sent">Отправленные (%1$s)</string>
+    <string name="filter_tab_delayed">С задержкой (%1$s)</string>
+    <string name="pending_banner_waiting">%1$s сообщ. ожидает подключения к интернету</string>
+    <string name="pending_banner_auto_send">Автоматически отправится при восстановлении связи.</string>
+    <string name="loading_messages">Загрузка сообщений из базы данных…</string>
+    <string name="empty_all_title">Сообщений пока нет</string>
+    <string name="empty_all_desc">Входящие SMS-сообщения будут отображаться здесь.</string>
+    <string name="empty_pending_title">Нет сообщений в очереди</string>
+    <string name="empty_pending_desc">Все сообщения успешно отправлены в Telegram.</string>
+    <string name="empty_sent_title">Нет отправленных сообщений</string>
+    <string name="empty_sent_desc">Пересланные в Telegram сообщения появятся здесь.</string>
+    <string name="empty_delayed_title">Нет задержанных сообщений</string>
+    <string name="empty_delayed_desc">Здесь появятся сообщения с задержкой отправки более 1 мин.</string>
+    <string name="msg_from_label">От: %1$s</string>
+    <string name="msg_unknown_sender">Неизвестно</string>
+    <string name="msg_status_sent">Отправлено</string>
+    <string name="msg_status_pending">В очереди</string>
+    <string name="msg_status_delayed">Задержка: %1$s</string>
+    <string name="msg_status_offline_delay">Офлайн: %1$s</string>
+    <string name="msg_telegram_id">ID #%1$s</string>
+    <string name="toast_retrying_pending">Повторная отправка сообщений из очереди…</string>
+    <string name="toast_retrying_single">Повторная отправка сообщения…</string>
+</resources>

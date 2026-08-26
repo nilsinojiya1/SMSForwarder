@@ -12,9 +12,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import online.thensoji.smsforwarder.R
 import online.thensoji.smsforwarder.data.ForwardedMessage
 import online.thensoji.smsforwarder.ui.util.HapticFeedbackHelper
 import online.thensoji.smsforwarder.ui.util.HapticType
@@ -52,8 +54,12 @@ fun MessageCard(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                val unknownSenderText = stringResource(R.string.msg_unknown_sender)
                 Text(
-                    text = "From: ${msg.sender ?: "Unknown"}",
+                    text = stringResource(
+                        R.string.msg_from_label,
+                        msg.sender ?: unknownSenderText
+                    ),
                     fontWeight = FontWeight.Bold,
                     style = MaterialTheme.typography.bodyMedium,
                     maxLines = 1,
@@ -88,7 +94,7 @@ fun MessageCard(
                                 modifier = Modifier.size(16.dp)
                             )
                         },
-                        label = { Text("Sent", style = MaterialTheme.typography.labelSmall) },
+                        label = { Text(stringResource(R.string.msg_status_sent), style = MaterialTheme.typography.labelSmall) },
                         colors = AssistChipDefaults.assistChipColors(
                             containerColor = MaterialTheme.colorScheme.primaryContainer
                         )
@@ -104,7 +110,7 @@ fun MessageCard(
                                 modifier = Modifier.size(16.dp)
                             )
                         },
-                        label = { Text("Pending / Queued", style = MaterialTheme.typography.labelSmall) },
+                        label = { Text(stringResource(R.string.msg_status_pending), style = MaterialTheme.typography.labelSmall) },
                         colors = AssistChipDefaults.assistChipColors(
                             containerColor = MaterialTheme.colorScheme.errorContainer
                         )
@@ -124,7 +130,7 @@ fun MessageCard(
                                 modifier = Modifier.size(16.dp)
                             )
                         },
-                        label = { Text("Delayed by $delayText", style = MaterialTheme.typography.labelSmall) },
+                        label = { Text(stringResource(R.string.msg_status_delayed, delayText), style = MaterialTheme.typography.labelSmall) },
                         colors = AssistChipDefaults.assistChipColors(
                             containerColor = MaterialTheme.colorScheme.tertiaryContainer
                         )
@@ -141,7 +147,7 @@ fun MessageCard(
                                 modifier = Modifier.size(16.dp)
                             )
                         },
-                        label = { Text("Offline for $pendingDelayText", style = MaterialTheme.typography.labelSmall) },
+                        label = { Text(stringResource(R.string.msg_status_offline_delay, pendingDelayText), style = MaterialTheme.typography.labelSmall) },
                         colors = AssistChipDefaults.assistChipColors(
                             containerColor = MaterialTheme.colorScheme.errorContainer
                         )
@@ -152,7 +158,7 @@ fun MessageCard(
                 if (!msg.telegramMessageId.isNullOrBlank()) {
                     AssistChip(
                         onClick = {},
-                        label = { Text("ID #${msg.telegramMessageId}", style = MaterialTheme.typography.labelSmall) }
+                        label = { Text(stringResource(R.string.msg_telegram_id, msg.telegramMessageId), style = MaterialTheme.typography.labelSmall) }
                     )
                 }
             }
@@ -194,7 +200,7 @@ fun MessageCard(
                         interactionSource = markSentInteraction,
                         contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp)
                     ) {
-                        Text("Mark as Sent", style = MaterialTheme.typography.labelMedium)
+                        Text(stringResource(R.string.action_mark_sent), style = MaterialTheme.typography.labelMedium)
                     }
                     Spacer(modifier = Modifier.width(6.dp))
                     val resendInteraction = remember { MutableInteractionSource() }
@@ -215,7 +221,7 @@ fun MessageCard(
                                 color = MaterialTheme.colorScheme.onPrimary
                             )
                             Spacer(modifier = Modifier.width(4.dp))
-                            Text("Sending...", style = MaterialTheme.typography.labelMedium)
+                            Text(stringResource(R.string.action_sending), style = MaterialTheme.typography.labelMedium)
                         } else {
                             Icon(
                                 Icons.AutoMirrored.Filled.Send,
@@ -223,7 +229,7 @@ fun MessageCard(
                                 modifier = Modifier.size(16.dp)
                             )
                             Spacer(modifier = Modifier.width(4.dp))
-                            Text("Send Now", style = MaterialTheme.typography.labelMedium)
+                            Text(stringResource(R.string.action_send_now), style = MaterialTheme.typography.labelMedium)
                         }
                     }
                 } else {
@@ -244,7 +250,7 @@ fun MessageCard(
                                 strokeWidth = 2.dp
                             )
                             Spacer(modifier = Modifier.width(4.dp))
-                            Text("Resending...", style = MaterialTheme.typography.labelMedium)
+                            Text(stringResource(R.string.action_resending), style = MaterialTheme.typography.labelMedium)
                         } else {
                             Icon(
                                 Icons.Filled.Refresh,
@@ -252,7 +258,7 @@ fun MessageCard(
                                 modifier = Modifier.size(16.dp)
                             )
                             Spacer(modifier = Modifier.width(4.dp))
-                            Text("Resend", style = MaterialTheme.typography.labelMedium)
+                            Text(stringResource(R.string.action_resend), style = MaterialTheme.typography.labelMedium)
                         }
                     }
                     Spacer(modifier = Modifier.width(6.dp))
@@ -269,7 +275,7 @@ fun MessageCard(
                     ) {
                         Icon(
                             Icons.Filled.Delete,
-                            contentDescription = "Delete",
+                            contentDescription = stringResource(R.string.action_delete),
                             tint = MaterialTheme.colorScheme.error
                         )
                     }

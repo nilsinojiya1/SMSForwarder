@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- App Information -->
+    <string name="app_name">SMS Forwarder</string>
+
+    <!-- Navigation & Titles -->
+    <string name="nav_home">अवलोकन</string>
+    <string name="nav_settings">टेलीग्राम सेटिंग्स</string>
+    <string name="nav_messages">सभी संदेश</string>
+    <string name="nav_change_pin">पिन बदलें</string>
+    <string name="action_back">वापस</string>
+    <string name="action_settings">सेटिंग्स</string>
+    <string name="action_cancel">रद्द करें</string>
+    <string name="action_refresh">रिफ्रेश करें</string>
+    <string name="action_delete">हटाएं</string>
+    <string name="action_send_now">अभी भेजें</string>
+    <string name="action_sending">भेजा जा रहा है…</string>
+    <string name="action_resend">पुनः भेजें</string>
+    <string name="action_resending">पुनः भेजा जा रहा है…</string>
+    <string name="action_mark_sent">भेजा गया चिह्नित करें</string>
+
+    <!-- Notifications & Background Service -->
+    <string name="notification_channel_name">एसएमएस फॉरवर्डिंग सेवा</string>
+    <string name="notification_channel_desc">इनकमिंग एसएमएस सुनते समय निरंतर सूचना।</string>
+    <string name="notification_active_title">SMS Forwarder सक्रिय है</string>
+    <string name="notification_active_desc">आने वाले एसएमएस संदेशों की निगरानी की जा रही है</string>
+    <string name="notification_sending_title">टेलीग्राम पर एसएमएस भेजा जा रहा है</string>
+
+    <!-- PIN Lock & Security -->
+    <string name="pin_title_unlock">पिन दर्ज करें</string>
+    <string name="pin_subtitle_unlock">SMS Forwarder खोलने के लिए अपना 4-अंकीय पिन दर्ज करें</string>
+    <string name="pin_title_setup">4-अंकीय पिन सेट करें</string>
+    <string name="pin_subtitle_setup">ऐप को सुरक्षित करने के लिए 4 अंकों का पिन चुनें</string>
+    <string name="pin_title_confirm">पिन की पुष्टि करें</string>
+    <string name="pin_subtitle_confirm">पुष्टि करने के लिए 4-अंकीय पिन पुनः दर्ज करें</string>
+    <string name="pin_title_change_old">वर्तमान पिन दर्ज करें</string>
+    <string name="pin_subtitle_change_old">अपना वर्तमान 4-अंकीय पिन सत्यापित करें</string>
+    <string name="pin_title_change_new">नया पिन दर्ज करें</string>
+    <string name="pin_subtitle_change_new">अपना नया 4-अंकीय पिन चुनें</string>
+    <string name="pin_title_change_confirm">नए पिन की पुष्टि करें</string>
+    <string name="pin_subtitle_change_confirm">पुष्टि के लिए नया 4-अंकीय पिन पुनः दर्ज करें</string>
+    <string name="pin_error_incorrect">गलत पिन। कृपया पुनः प्रयास करें।</string>
+    <string name="pin_error_mismatch">पिन मेल नहीं खाया। कृपया पुनः प्रयास करें।</string>
+    <string name="pin_error_old_incorrect">वर्तमान पिन गलत है। कृपया पुनः प्रयास करें।</string>
+    <string name="pin_error_new_mismatch">नए पिन मेल नहीं खाते। कृपया पुनः प्रयास करें।</string>
+    <string name="pin_success_set">✅ पिन सफलतापूर्वक सेट हो गया!</string>
+    <string name="pin_success_changed">✅ पिन सफलतापूर्वक बदल दिया गया!</string>
+    <string name="pin_keypad_backspace">हटाएं</string>
+
+    <!-- Overview / Home Screen -->
+    <string name="overview_title">अवलोकन</string>
+    <string name="device_tag_label">डिवाइस टैग: %1$s</string>
+    <string name="device_tag_desc">जब कई फोन एक ही चैट पर फॉरवर्ड करते हैं तो इस डिवाइस की पहचान करता है।</string>
+    <string name="perm_granted_title">एसएमएस अनुमतियां प्राप्त हैं</string>
+    <string name="perm_missing_title">अनुमतियां गायब हैं</string>
+    <string name="perm_granted_desc">ऐप एसएमएस संदेश प्राप्त और पढ़ सकता है।</string>
+    <string name="perm_missing_desc">आने वाले एसएमएस का पता लगाने के लिए एसएमएस अनुमति दें।</string>
+    <string name="perm_grant_button">अनुमति दें</string>
+    <string name="telegram_status_configured_title">टेलीग्राम बॉट कॉन्फ़िगर है</string>
+    <string name="telegram_status_not_configured_title">टेलीग्राम कॉन्फ़िगर नहीं है</string>
+    <string name="telegram_status_configured_desc">संदेश आपके टेलीग्राम चैट पर फॉरवर्ड किए जाएंगे।</string>
+    <string name="telegram_status_not_configured_desc">सेटिंग्स में अपना बॉट टोकन और चैट आईडी सेट करें।</string>
+    <string name="summary_title">संदेश सारांश</string>
+    <string name="summary_total">कुल</string>
+    <string name="summary_sent">भेजे गए</string>
+    <string name="summary_pending">लंबित</string>
+    <string name="summary_delayed">विलंबित</string>
+    <string name="action_view_all_messages">सभी संदेश देखें (%1$s)</string>
+    <string name="action_configure_telegram">टेलीग्राम सेटिंग्स कॉन्फ़िगर करें</string>
+
+    <!-- Settings Screen -->
+    <string name="settings_bot_config_title">टेलीग्राम बॉट कॉन्फ़िगरेशन</string>
+    <string name="settings_device_name_label">डिवाइस का नाम / टैग</string>
+    <string name="settings_device_name_placeholder">उदा. %1$s</string>
+    <string name="settings_device_name_support">इस डिवाइस की पहचान के लिए संदेशों में जोड़ा गया (डिफ़ॉल्ट: %1$s)</string>
+    <string name="settings_bot_token_label">टेलीग्राम बॉट टोकन</string>
+    <string name="settings_bot_token_placeholder">उदा. 123456789:ABCdefGhIJKlmNoPQRstuVWXyz</string>
+    <string name="settings_hide_token">टोकन छुपाएं</string>
+    <string name="settings_show_token">टोकन दिखाएं</string>
+    <string name="settings_chat_id_label">टेलीग्राम चैट आईडी</string>
+    <string name="settings_chat_id_placeholder">उदा. 123456789 या -100123456789</string>
+    <string name="settings_save_button">सेटिंग्स सहेजें</string>
+    <string name="settings_save_success">सेटिंग्स सफलतापूर्वक सहेजी गईं!</string>
+    <string name="settings_test_button">टेलीग्राम कनेक्शन जांचें</string>
+    <string name="settings_testing_button">जांच हो रही है…</string>
+    <string name="settings_test_empty_error">कृपया पहले बॉट टोकन और चैट आईडी दोनों दर्ज करें।</string>
+    <string name="settings_test_success">✅ कनेक्शन सफल! टेलीग्राम पर परीक्षण संदेश भेजा गया।</string>
+    <string name="settings_test_failed">❌ कनेक्शन विफल: %1$s</string>
+    <string name="settings_test_check_fallback">कृपया टोकन, चैट आईडी और इंटरनेट कनेक्शन की जांच करें।</string>
+    <string name="settings_security_title">ऐप सुरक्षा और अनुपालन</string>
+    <string name="settings_security_desc">ऐप सुरक्षा के लिए 4-अंकीय पिन सक्रिय है।</string>
+    <string name="settings_change_pin_button">4-अंकीय पिन बदलें</string>
+    <string name="settings_view_consent_button">नैतिक उपयोग और गोपनीयता प्रकटीकरण देखें</string>
+    <string name="settings_updates_title">ऐप अपडेट और गूगल प्ले</string>
+    <string name="settings_updates_desc">गूगल प्ले से नवीनतम सुरक्षा सुधारों के साथ SMS Forwarder को अपडेट रखें।</string>
+    <string name="settings_check_updates_button">गूगल प्ले पर अपडेट जांचें</string>
+    <string name="settings_guide_title">क्रेडेंशियल कैसे प्राप्त करें:</string>
+    <string name="settings_guide_step1">1. टेलीग्राम खोलें और \@BotFather खोजें।</string>
+    <string name="settings_guide_step2">2. अपना बॉट टोकन पाने के लिए /newbot से नया बॉट बनाएं।</string>
+    <string name="settings_guide_step3">3. अपनी व्यक्तिगत चैट आईडी पाने के लिए \@userinfobot को संदेश भेजें।</string>
+    <string name="settings_guide_step4">4. बॉट चैट खोलकर और \'Start\' दबाकर अपना बॉट शुरू करें।</string>
+
+    <!-- Prominent Disclosure & Ethical Consent Dialog -->
+    <string name="consent_dialog_title">प्रमुख प्रकटीकरण और सुरक्षा समझौता</string>
+    <string name="consent_dialog_subtitle">कृपया डेटा एक्सेस और नैतिक उपयोग की शर्तों की समीक्षा करें</string>
+    <string name="consent_sec1_title">1. एसएमएस और टेलीफोनी डेटा एक्सेस</string>
+    <string name="consent_sec1_body">SMS Forwarder को अपने मुख्य कार्य को करने के लिए अनुमतियों (RECEIVE_SMS, READ_SMS, READ_PHONE_STATE) की आवश्यकता होती है: आपके आने वाले एसएमएस को आपके निर्दिष्ट टेलीग्राम बॉट या चैट पर स्वचालित रूप से फॉरवर्ड करना।</string>
+    <string name="consent_sec1_bullet1">एक्सेस किया गया डेटा: प्रेषक का फोन नंबर, संदेश का टेक्स्ट और टाइमस्टैम्प।</string>
+    <string name="consent_sec1_bullet2">उद्देश्य: आपके निजी टेलीग्राम एंडपॉइंट पर त्वरित स्वचालित फॉरवर्डिंग।</string>
+    <string name="consent_sec2_title">2. डेटा गोपनीयता और शून्य तृतीय-पक्ष साझाकरण</string>
+    <string name="consent_sec2_body">आपकी गोपनीयता और संचार सुरक्षा हमारी सर्वोच्च प्राथमिकता है:</string>
+    <string name="consent_sec2_bullet1">सीधा प्रसारण: संदेश आपके कॉन्फ़िगर किए गए बॉट टोकन का उपयोग करके सीधे HTTPS के माध्यम से आधिकारिक टेलीग्राम बॉट एपीआई पर प्रसारित होते हैं।</string>
+    <string name="consent_sec2_bullet2">कोई एनालिटिक्स या विज्ञापन ट्रैकर नहीं: हम आपका एसएमएस डेटा कभी भी तीसरे पक्ष के विज्ञापन नेटवर्क, टेलीमेट्री प्रदाताओं या सर्वरों को नहीं बेचते या साझा करते हैं।</string>
+    <string name="consent_sec2_bullet3">स्थानीय भंडारण: संग्रहीत संदेश पूरी तरह से आपके स्थानीय डिवाइस डेटाबेस पर और आपके 4-अंकीय पिन द्वारा सुरक्षित रहते हैं।</string>
+    <string name="consent_sec3_title">3. नैतिक और वैध उपयोग नीति</string>
+    <string name="consent_sec3_body">इस एप्लिकेशन का उपयोग करके, आप स्पष्ट रूप से सहमत होते हैं कि:</string>
+    <string name="consent_sec3_bullet1">केवल अधिकृत डिवाइस: आप इस एप्लिकेशन को केवल उन्हीं डिवाइसों पर इंस्टॉल और संचालित करेंगे जो आपके कानूनी स्वामित्व में हैं या जिनके मालिक से आपने स्पष्ट सहमति प्राप्त की है।</string>
+    <string name="consent_sec3_bullet2">कोई गुप्त जासूसी / स्टॉकिंग नहीं: उपयोगकर्ता की जानकारी के बिना गुप्त निगरानी, जासूसी या निजी संचार को इंटरसेप्ट करने के लिए इस ऐप का उपयोग सख्त वर्जित और गैरकानूनी है।</string>
+    <string name="consent_sec3_bullet3">फ़ोरग्राउंड सूचना: सक्रिय होने पर, पूर्ण पारदर्शिता सुनिश्चित करने के लिए स्टेटस बार में हमेशा एक सतत सूचना प्रदर्शित होती है।</string>
+    <string name="consent_affirmation">स्वीकृति दर्शाती है कि आपने इन नैतिक उपयोग शर्तों और गोपनीयता प्रकटीकरण को पढ़, समझ और स्वीकार कर लिया है।</string>
+    <string name="consent_action_close">समीक्षा बंद करें</string>
+    <string name="consent_action_agree">सहमत हों और जारी रखें</string>
+    <string name="consent_action_decline">अस्वीकार करें और बाहर निकलें</string>
+
+    <!-- All Messages Screen & Filter Chips -->
+    <string name="messages_title_with_count">सभी संदेश (%1$s)</string>
+    <string name="filter_tab_all">सभी (%1$s)</string>
+    <string name="filter_tab_pending">लंबित (%1$s)</string>
+    <string name="filter_tab_sent">भेजे गए (%1$s)</string>
+    <string name="filter_tab_delayed">विलंबित (%1$s)</string>
+    <string name="pending_banner_waiting">%1$s संदेश इंटरनेट की प्रतीक्षा कर रहे हैं</string>
+    <string name="pending_banner_auto_send">इंटरनेट कनेक्शन बहाल होते ही स्वतः भेजे जाएंगे।</string>
+    <string name="loading_messages">डेटाबेस से संदेश लोड हो रहे हैं…</string>
+    <string name="empty_all_title">अभी तक कोई संदेश नहीं</string>
+    <string name="empty_all_desc">आने वाले एसएमएस संदेश यहां दिखाई देंगे।</string>
+    <string name="empty_pending_title">कोई लंबित संदेश नहीं है</string>
+    <string name="empty_pending_desc">सभी संदेश सफलतापूर्वक टेलीग्राम पर भेज दिए गए हैं।</string>
+    <string name="empty_sent_title">कोई भेजा गया संदेश नहीं</string>
+    <string name="empty_sent_desc">टेलीग्राम पर फॉरवर्ड किए गए संदेश यहां दिखाई देंगे।</string>
+    <string name="empty_delayed_title">कोई विलंबित संदेश नहीं</string>
+    <string name="empty_delayed_desc">1 मिनट से अधिक देरी वाले संदेश यहां दिखाई देंगे।</string>
+    <string name="msg_from_label">प्रेषक: %1$s</string>
+    <string name="msg_unknown_sender">अज्ञात</string>
+    <string name="msg_status_sent">भेजा गया</string>
+    <string name="msg_status_pending">लंबित / कतार में</string>
+    <string name="msg_status_delayed">%1$s की देरी</string>
+    <string name="msg_status_offline_delay">%1$s से ऑफ़लाइन</string>
+    <string name="msg_telegram_id">आईडी #%1$s</string>
+    <string name="toast_retrying_pending">लंबित संदेशों का पुनः प्रयास किया जा रहा है…</string>
+    <string name="toast_retrying_single">संदेश पुनः भेजा जा रहा है…</string>
+</resources>

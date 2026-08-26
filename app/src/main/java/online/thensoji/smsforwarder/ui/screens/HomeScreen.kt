@@ -15,9 +15,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import online.thensoji.smsforwarder.R
 import online.thensoji.smsforwarder.ui.MessageViewModel
 import online.thensoji.smsforwarder.ui.components.*
 import online.thensoji.smsforwarder.ui.util.HapticFeedbackHelper
@@ -79,7 +81,7 @@ fun HomeScreen(
         verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
         Text(
-            text = "Overview",
+            text = stringResource(R.string.overview_title),
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold
         )
@@ -123,7 +125,7 @@ fun HomeScreen(
         ) {
             Icon(Icons.AutoMirrored.Filled.List, contentDescription = null)
             Spacer(modifier = Modifier.width(8.dp))
-            Text("View All Messages (${MessageFormatter.formatCompactNumber(totalCount)})")
+            Text(stringResource(R.string.action_view_all_messages, MessageFormatter.formatCompactNumber(totalCount)))
         }
 
         val settingsInteraction = remember { MutableInteractionSource() }
@@ -139,7 +141,7 @@ fun HomeScreen(
         ) {
             Icon(Icons.Filled.Settings, contentDescription = null)
             Spacer(modifier = Modifier.width(8.dp))
-            Text("Configure Telegram Settings")
+            Text(stringResource(R.string.action_configure_telegram))
         }
     }
 }

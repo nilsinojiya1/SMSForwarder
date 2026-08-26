@@ -14,9 +14,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import online.thensoji.smsforwarder.R
 import online.thensoji.smsforwarder.ui.MessageViewModel
 import online.thensoji.smsforwarder.ui.components.*
 import online.thensoji.smsforwarder.ui.util.HapticFeedbackHelper
@@ -79,7 +81,10 @@ fun AllMessagesScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "All Messages (${MessageFormatter.formatCompactNumber(messages.size)})",
+                text = stringResource(
+                    R.string.messages_title_with_count,
+                    MessageFormatter.formatCompactNumber(messages.size)
+                ),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
             )
@@ -100,7 +105,10 @@ fun AllMessagesScreen(
                         color = MaterialTheme.colorScheme.primary
                     )
                 } else {
-                    Icon(Icons.Filled.Refresh, contentDescription = "Refresh")
+                    Icon(
+                        Icons.Filled.Refresh,
+                        contentDescription = stringResource(R.string.action_refresh)
+                    )
                 }
             }
         }
@@ -125,7 +133,11 @@ fun AllMessagesScreen(
                 isResending = isResendingAll,
                 onSendNow = {
                     viewModel.resendAllPending(context)
-                    Toast.makeText(context, "Retrying pending messages...", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        context,
+                        context.getString(R.string.toast_retrying_pending),
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
             )
         }
@@ -134,7 +146,7 @@ fun AllMessagesScreen(
 
         // Content Area: Loading / Empty / List
         if (isLoading) {
-            LoadingMessagesView(message = "Loading messages from database...")
+            LoadingMessagesView(message = stringResource(R.string.loading_messages))
         } else if (filteredList.isEmpty()) {
             EmptyMessagesView(selectedTab = selectedTab)
         } else {
@@ -150,7 +162,11 @@ fun AllMessagesScreen(
                         isResending = resendingIds.contains(msg.id),
                         onResend = {
                             viewModel.resendMessage(context, msg.id)
-                            Toast.makeText(context, "Retrying message...", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(
+                                context,
+                                context.getString(R.string.toast_retrying_single),
+                                Toast.LENGTH_SHORT
+                            ).show()
                         },
                         onMarkSent = {
                             viewModel.markAsSent(msg.id)

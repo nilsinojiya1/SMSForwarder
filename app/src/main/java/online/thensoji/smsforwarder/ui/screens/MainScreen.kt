@@ -24,11 +24,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import online.thensoji.smsforwarder.R
 import online.thensoji.smsforwarder.ui.components.SecurityConsentDialog
 import online.thensoji.smsforwarder.ui.components.pressScale
 import online.thensoji.smsforwarder.ui.util.HapticFeedbackHelper
@@ -82,10 +84,10 @@ fun MainScreen() {
     val isPinScreen = currentRoute == "setup_pin" || currentRoute == "unlock_pin" || currentRoute == "change_pin"
 
     val title = when (currentRoute) {
-        "settings" -> "Telegram Settings"
-        "messages" -> "All Messages"
-        "change_pin" -> "Change PIN"
-        else -> "SMS Forwarder"
+        "settings" -> stringResource(R.string.nav_settings)
+        "messages" -> stringResource(R.string.nav_messages)
+        "change_pin" -> stringResource(R.string.nav_change_pin)
+        else -> stringResource(R.string.app_name)
     }
 
     Scaffold(
@@ -120,7 +122,7 @@ fun MainScreen() {
                             ) {
                                 Icon(
                                     Icons.AutoMirrored.Filled.ArrowBack,
-                                    contentDescription = "Back"
+                                    contentDescription = stringResource(R.string.action_back)
                                 )
                             }
                         }
@@ -136,7 +138,10 @@ fun MainScreen() {
                                 modifier = Modifier.pressScale(settingsInteractionSource, scaleDown = 0.90f),
                                 interactionSource = settingsInteractionSource
                             ) {
-                                Icon(Icons.Filled.Settings, contentDescription = "Settings")
+                                Icon(
+                                    Icons.Filled.Settings,
+                                    contentDescription = stringResource(R.string.action_settings)
+                                )
                             }
                         }
                     }

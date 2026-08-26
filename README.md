@@ -30,6 +30,7 @@ Built using modern Android architecture principles (**Jetpack Compose**, **Mater
 - 🌐 **Offline Resilience & Auto-Drain:** When offline, messages queue in Room. WorkManager and real-time network callbacks automatically send pending messages once internet returns—with strict single-send idempotency.
 - 📋 **All Messages Screen with Live Filters:** View all incoming messages categorized with filter chips (**All**, **Pending**, **Sent**, **Delayed**) with compact number formatting (`1k`, `1Lc`, `1cr`) and automatic top-scrolling on new incoming SMS.
 - ⚙️ **In-App Bot Setup & Live Connection Test:** Configure and test your Telegram Bot Token & Chat ID directly within the app, plus re-examine Ethical Use & Privacy Disclosures anytime.
+- 🌍 **Full Multi-Language Localization (16 Languages):** Comprehensive internationalization supporting English, Spanish (Español), French (Français), German (Deutsch), Portuguese (Português), Russian (Русский), Hindi (हिन्दी), Chinese Simplified (简体中文), Arabic (العربية with RTL support), Japanese (日本語), Italian (Italiano), Indonesian (Bahasa Indonesia), Turkish (Türkçe), Korean (한국어), and Vietnamese (Tiếng Việt).
 - 🛍️ **Direct Google Play Store Updates:** Check and receive the latest app updates directly from the official [Google Play Store listing](https://play.google.com/store/apps/details?id=online.thensoji.smsforwarder).
 - 🔄 **Boot Persistence:** Automatically resumes background listeners when the Android device reboots (`RECEIVE_BOOT_COMPLETED`).
 - 🤖 **Automated CI/CD & Semantic Versioning:** GitHub Actions pipeline with automated Semantic Versioning (`MAJOR.MINOR.PATCH` e.g., `1.0.0`) based on commit conventions and sequential build code generation.
@@ -76,6 +77,7 @@ https://github.com/user-attachments/assets/76e29038-b1ce-46b8-8ee2-718703e1e0ba
 | **Architecture** | Clean Architecture, MVVM, Repository Pattern, UDF (Unidirectional Data Flow) |
 | **UI & Motion** | Jetpack Compose BOM 2026.08.00, Material 3, Navigation Compose with Motion System |
 | **Haptics & Touch** | Hardware Vibrator API (API 26-37+), View Haptic Constants, Spring Press Modifiers |
+| **Localization** | 16 Languages (`en`, `es`, `fr`, `de`, `pt`, `ru`, `hi`, `zh`, `ar`, `ja`, `it`, `in`/`id`, `tr`, `ko`, `vi`) with RTL |
 | **Dependency Injection** | Dagger Hilt 2.60.1 (`hilt-android`, `hilt-work`, `hilt-navigation-compose`) |
 | **Local Persistence** | AndroidX Room 2.8.4 (Coroutines KTX & KSP CodeGen) |
 | **Background Scheduling** | AndroidX WorkManager 2.11.2 (`work-runtime-ktx`) |
@@ -193,6 +195,8 @@ SMSforwarder/
 │   │   │   │   ├── components/        # Atomic UI widgets & interactive modifiers
 │   │   │   │   │   ├── ClickModifiers.kt       # bounceClickable & pressScale animations
 │   │   │   │   │   ├── DeviceTagCard.kt        # Multi-device hardware tag badge
+│   │   │   │   │   ├── EmptyMessagesView.kt    # Tab-specific empty illustration views
+│   │   │   │   │   ├── LoadingMessagesView.kt  # Loading indicator view
 │   │   │   │   │   ├── MessageCard.kt          # Message item card with delay & retry actions
 │   │   │   │   │   ├── MessageFilterTabs.kt    # Interactive filter chips with haptics
 │   │   │   │   │   ├── MessagesSummaryCard.kt  # Real-time message status metrics
@@ -201,6 +205,7 @@ SMSforwarder/
 │   │   │   │   │   ├── PinDotsIndicator.kt     # 4-digit indicator with error shake
 │   │   │   │   │   ├── PinKeypad.kt            # Tactile bounce keypad with tick haptics
 │   │   │   │   │   ├── SecurityConsentDialog.kt # Symmetrical Google Play ethical disclosure
+│   │   │   │   │   ├── SummaryItem.kt          # Compact metric counter item
 │   │   │   │   │   ├── TelegramGuideCard.kt    # BotFather & Chat ID guide
 │   │   │   │   │   └── TelegramStatusCard.kt   # Configuration status card
 │   │   │   │   ├── screens/           # Full-screen Composables
@@ -224,6 +229,23 @@ SMSforwarder/
 │   │   │   │   └── SendWorker.kt      # @HiltWorker for idempotent Telegram forwarding
 │   │   │   ├── MainActivity.kt        # Single activity entry point hosting MainScreen
 │   │   │   └── SMSForwarderApp.kt     # Application class with Hilt & Network Callback
+│   │   ├── res/                       # Android App Resources & 16-Language Localizations
+│   │   │   ├── values/strings.xml     # Base English strings
+│   │   │   ├── values-es/strings.xml  # Spanish (Español)
+│   │   │   ├── values-fr/strings.xml  # French (Français)
+│   │   │   ├── values-de/strings.xml  # German (Deutsch)
+│   │   │   ├── values-pt/strings.xml  # Portuguese (Português)
+│   │   │   ├── values-ru/strings.xml  # Russian (Русский)
+│   │   │   ├── values-hi/strings.xml  # Hindi (हिन्दी)
+│   │   │   ├── values-zh/strings.xml  # Chinese Simplified (简体中文)
+│   │   │   ├── values-ar/strings.xml  # Arabic (العربية - RTL)
+│   │   │   ├── values-ja/strings.xml  # Japanese (日本語)
+│   │   │   ├── values-it/strings.xml  # Italian (Italiano)
+│   │   │   ├── values-in/strings.xml  # Indonesian (Legacy Locale)
+│   │   │   ├── values-id/strings.xml  # Indonesian (Modern Locale)
+│   │   │   ├── values-tr/strings.xml  # Turkish (Türkçe)
+│   │   │   ├── values-ko/strings.xml  # Korean (한국어)
+│   │   │   └── values-vi/strings.xml  # Vietnamese (Tiếng Việt)
 │   │   └── AndroidManifest.xml        # Declared permissions (SMS, PHONE_STATE, VIBRATE)
 │   ├── build.gradle.kts               # Module build configuration & signing configs
 │   └── proguard-rules.pro             # Optimized R8 / ProGuard minification rules

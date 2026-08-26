@@ -23,6 +23,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -31,6 +32,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.edit
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import online.thensoji.smsforwarder.BuildConfig
+import online.thensoji.smsforwarder.R
 import online.thensoji.smsforwarder.ui.MessageViewModel
 import online.thensoji.smsforwarder.ui.components.TelegramGuideCard
 import online.thensoji.smsforwarder.ui.components.pressScale
@@ -71,7 +73,7 @@ fun SettingsScreen(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Text(
-            text = "Telegram Bot Configuration",
+            text = stringResource(R.string.settings_bot_config_title),
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold
         )
@@ -79,9 +81,9 @@ fun SettingsScreen(
         OutlinedTextField(
             value = deviceName,
             onValueChange = { deviceName = it },
-            label = { Text("Device Name / Tag") },
-            placeholder = { Text("e.g. $defaultDeviceName") },
-            supportingText = { Text("Appended to messages to identify this device (Default: $defaultDeviceName)") },
+            label = { Text(stringResource(R.string.settings_device_name_label)) },
+            placeholder = { Text(stringResource(R.string.settings_device_name_placeholder, defaultDeviceName)) },
+            supportingText = { Text(stringResource(R.string.settings_device_name_support, defaultDeviceName)) },
             leadingIcon = {
                 Icon(Icons.Filled.Smartphone, contentDescription = null)
             },
@@ -93,8 +95,8 @@ fun SettingsScreen(
         OutlinedTextField(
             value = botToken,
             onValueChange = { botToken = it },
-            label = { Text("Telegram Bot Token") },
-            placeholder = { Text("e.g. 123456789:ABCdefGhI...") },
+            label = { Text(stringResource(R.string.settings_bot_token_label)) },
+            placeholder = { Text(stringResource(R.string.settings_bot_token_placeholder)) },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true,
             visualTransformation = if (isTokenVisible) VisualTransformation.None else PasswordVisualTransformation(),
@@ -111,7 +113,10 @@ fun SettingsScreen(
                 ) {
                     Icon(
                         imageVector = if (isTokenVisible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
-                        contentDescription = if (isTokenVisible) "Hide token" else "Show token"
+                        contentDescription = if (isTokenVisible)
+                            stringResource(R.string.settings_hide_token)
+                        else
+                            stringResource(R.string.settings_show_token)
                     )
                 }
             }
@@ -120,8 +125,8 @@ fun SettingsScreen(
         OutlinedTextField(
             value = chatId,
             onValueChange = { chatId = it },
-            label = { Text("Telegram Chat ID") },
-            placeholder = { Text("e.g. 123456789 or -100123456789") },
+            label = { Text(stringResource(R.string.settings_chat_id_label)) },
+            placeholder = { Text(stringResource(R.string.settings_chat_id_placeholder)) },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
@@ -136,14 +141,14 @@ fun SettingsScreen(
                     putString("bot_token", botToken.trim())
                     putString("chat_id", chatId.trim())
                 }
-                Toast.makeText(context, "Settings saved successfully!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, context.getString(R.string.settings_save_success), Toast.LENGTH_SHORT).show()
             },
             modifier = Modifier
                 .fillMaxWidth()
                 .pressScale(saveInteraction, scaleDown = 0.96f),
             interactionSource = saveInteraction
         ) {
-            Text("Save Settings", fontWeight = FontWeight.SemiBold)
+            Text(stringResource(R.string.settings_save_button), fontWeight = FontWeight.SemiBold)
         }
 
         val testInteraction = remember { MutableInteractionSource() }
@@ -154,7 +159,7 @@ fun SettingsScreen(
                 val chat = chatId.trim()
                 if (token.isEmpty() || chat.isEmpty()) {
                     HapticFeedbackHelper.performHaptic(context, view, HapticType.ERROR)
-                    Toast.makeText(context, "Please enter both Bot Token and Chat ID first.", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, context.getString(R.string.settings_test_empty_error), Toast.LENGTH_SHORT).show()
                     return@OutlinedButton
                 }
                 isTestingConnection = true
@@ -163,10 +168,11 @@ fun SettingsScreen(
                     isTestingConnection = false
                     if (isSuccess) {
                         HapticFeedbackHelper.performHaptic(context, view, HapticType.SUCCESS)
-                        Toast.makeText(context, "✅ Connection successful! Test message sent to Telegram.", Toast.LENGTH_LONG).show()
+                        Toast.makeText(context, context.getString(R.string.settings_test_success), Toast.LENGTH_LONG).show()
                     } else {
                         HapticFeedbackHelper.performHaptic(context, view, HapticType.ERROR)
-                        Toast.makeText(context, "❌ Connection failed: ${errorMsg ?: "Check Token, Chat ID and connection."}", Toast.LENGTH_LONG).show()
+                        val fallbackDesc = context.getString(R.string.settings_test_check_fallback)
+                        Toast.makeText(context, context.getString(R.string.settings_test_failed, errorMsg ?: fallbackDesc), Toast.LENGTH_LONG).show()
                     }
                 }
             },
@@ -179,9 +185,9 @@ fun SettingsScreen(
             if (isTestingConnection) {
                 CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("Testing...")
+                Text(stringResource(R.string.settings_testing_button))
             } else {
-                Text("Test Telegram Connection")
+                Text(stringResource(R.string.settings_test_button))
             }
         }
 
@@ -192,13 +198,13 @@ fun SettingsScreen(
         ) {
             Column(modifier = Modifier.padding(14.dp)) {
                 Text(
-                    text = "App Security & Compliance",
+                    text = stringResource(R.string.settings_security_title),
                     fontWeight = FontWeight.Bold,
                     style = MaterialTheme.typography.titleMedium
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "4-digit PIN is active to secure your app access.",
+                    text = stringResource(R.string.settings_security_desc),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -217,7 +223,7 @@ fun SettingsScreen(
                     ) {
                         Icon(Icons.Filled.Lock, contentDescription = null, modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Change 4-Digit PIN")
+                        Text(stringResource(R.string.settings_change_pin_button))
                     }
                 }
                 if (onReviewConsent != null) {
@@ -235,7 +241,7 @@ fun SettingsScreen(
                     ) {
                         Icon(Icons.Filled.Security, contentDescription = null, modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("View Ethical Use & Privacy Disclosure")
+                        Text(stringResource(R.string.settings_view_consent_button))
                     }
                 }
             }
@@ -248,13 +254,13 @@ fun SettingsScreen(
         ) {
             Column(modifier = Modifier.padding(14.dp)) {
                 Text(
-                    text = "App Updates & Google Play",
+                    text = stringResource(R.string.settings_updates_title),
                     fontWeight = FontWeight.Bold,
                     style = MaterialTheme.typography.titleMedium
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "Keep SMS Forwarder updated with the latest security enhancements on Google Play.",
+                    text = stringResource(R.string.settings_updates_desc),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -283,7 +289,7 @@ fun SettingsScreen(
                 ) {
                     Icon(Icons.Filled.Shop, contentDescription = null, modifier = Modifier.size(16.dp))
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Check for Updates on Google Play")
+                    Text(stringResource(R.string.settings_check_updates_button))
                     Spacer(modifier = Modifier.width(6.dp))
                     Icon(Icons.AutoMirrored.Filled.OpenInNew, contentDescription = null, modifier = Modifier.size(14.dp))
                 }

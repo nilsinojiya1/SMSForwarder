@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- App Information -->
+    <string name="app_name">SMS Forwarder</string>
+
+    <!-- Navigation & Titles -->
+    <string name="nav_home">Ikhtisar</string>
+    <string name="nav_settings">Pengaturan Telegram</string>
+    <string name="nav_messages">Semua Pesan</string>
+    <string name="nav_change_pin">Ubah PIN</string>
+    <string name="action_back">Kembali</string>
+    <string name="action_settings">Pengaturan</string>
+    <string name="action_cancel">Batal</string>
+    <string name="action_refresh">Segarkan</string>
+    <string name="action_delete">Hapus</string>
+    <string name="action_send_now">Kirim Sekarang</string>
+    <string name="action_sending">Mengirim…</string>
+    <string name="action_resend">Kirim Ulang</string>
+    <string name="action_resending">Mengirim ulang…</string>
+    <string name="action_mark_sent">Tandai Terkirim</string>
+
+    <!-- Notifications & Background Service -->
+    <string name="notification_channel_name">Layanan Penerusan SMS</string>
+    <string name="notification_channel_desc">Notifikasi latar depan persisten saat memantau SMS masuk.</string>
+    <string name="notification_active_title">SMS Forwarder Aktif</string>
+    <string name="notification_active_desc">Memantau pesan teks SMS masuk</string>
+    <string name="notification_sending_title">Meneruskan SMS ke Telegram</string>
+
+    <!-- PIN Lock & Security -->
+    <string name="pin_title_unlock">Masukkan PIN</string>
+    <string name="pin_subtitle_unlock">Masukkan 4 digit PIN Anda untuk mengakses SMS Forwarder</string>
+    <string name="pin_title_setup">Atur 4 Digit PIN</string>
+    <string name="pin_subtitle_setup">Pilih 4 digit PIN untuk mengamankan aplikasi Anda</string>
+    <string name="pin_title_confirm">Konfirmasi PIN Anda</string>
+    <string name="pin_subtitle_confirm">Masukkan kembali 4 digit PIN untuk konfirmasi</string>
+    <string name="pin_title_change_old">Masukkan PIN Saat Ini</string>
+    <string name="pin_subtitle_change_old">Verifikasi 4 digit PIN Anda saat ini</string>
+    <string name="pin_title_change_new">Masukkan PIN Baru</string>
+    <string name="pin_subtitle_change_new">Pilih 4 digit PIN baru Anda</string>
+    <string name="pin_title_change_confirm">Konfirmasi PIN Baru</string>
+    <string name="pin_subtitle_change_confirm">Masukkan kembali 4 digit PIN baru untuk konfirmasi</string>
+    <string name="pin_error_incorrect">PIN salah. Silakan coba lagi.</string>
+    <string name="pin_error_mismatch">PIN tidak cocok. Silakan coba lagi.</string>
+    <string name="pin_error_old_incorrect">PIN saat ini salah. Silakan coba lagi.</string>
+    <string name="pin_error_new_mismatch">PIN baru tidak cocok. Silakan coba lagi.</string>
+    <string name="pin_success_set">✅ PIN berhasil diatur!</string>
+    <string name="pin_success_changed">✅ PIN berhasil diubah!</string>
+    <string name="pin_keypad_backspace">Hapus</string>
+
+    <!-- Overview / Home Screen -->
+    <string name="overview_title">Ikhtisar</string>
+    <string name="device_tag_label">Tag Perangkat: %1$s</string>
+    <string name="device_tag_desc">Mengidentifikasi perangkat ini ketika beberapa ponsel meneruskan ke obrolan yang sama.</string>
+    <string name="perm_granted_title">Izin SMS Diberikan</string>
+    <string name="perm_missing_title">Izin Kurang</string>
+    <string name="perm_granted_desc">Aplikasi dapat menerima dan membaca pesan SMS.</string>
+    <string name="perm_missing_desc">Berikan izin SMS agar SMS yang masuk dapat dideteksi.</string>
+    <string name="perm_grant_button">Berikan Izin</string>
+    <string name="telegram_status_configured_title">Bot Telegram Dikonfigurasi</string>
+    <string name="telegram_status_not_configured_title">Telegram Belum Dikonfigurasi</string>
+    <string name="telegram_status_configured_desc">Pesan akan diteruskan ke obrolan Telegram Anda.</string>
+    <string name="telegram_status_not_configured_desc">Atur Token Bot &amp; Chat ID Anda di Pengaturan.</string>
+    <string name="summary_title">Ringkasan Pesan</string>
+    <string name="summary_total">Total</string>
+    <string name="summary_sent">Terkirim</string>
+    <string name="summary_pending">Tertunda</string>
+    <string name="summary_delayed">Tertunda</string>
+    <string name="action_view_all_messages">Lihat Semua Pesan (%1$s)</string>
+    <string name="action_configure_telegram">Konfigurasi Pengaturan Telegram</string>
+
+    <!-- Settings Screen -->
+    <string name="settings_bot_config_title">Konfigurasi Bot Telegram</string>
+    <string name="settings_device_name_label">Nama / Tag Perangkat</string>
+    <string name="settings_device_name_placeholder">cth. %1$s</string>
+    <string name="settings_device_name_support">Ditambahkan ke pesan untuk identifikasi perangkat (Default: %1$s)</string>
+    <string name="settings_bot_token_label">Token Bot Telegram</string>
+    <string name="settings_bot_token_placeholder">cth. 123456789:ABCdefGhIJKlmNoPQRstuVWXyz</string>
+    <string name="settings_hide_token">Sembunyikan token</string>
+    <string name="settings_show_token">Tampilkan token</string>
+    <string name="settings_chat_id_label">Chat ID Telegram</string>
+    <string name="settings_chat_id_placeholder">cth. 123456789 atau -100123456789</string>
+    <string name="settings_save_button">Simpan Pengaturan</string>
+    <string name="settings_save_success">Pengaturan berhasil disimpan!</string>
+    <string name="settings_test_button">Uji Koneksi Telegram</string>
+    <string name="settings_testing_button">Menguji…</string>
+    <string name="settings_test_empty_error">Harap masukkan Token Bot dan Chat ID terlebih dahulu.</string>
+    <string name="settings_test_success">✅ Koneksi berhasil! Pesan uji telah dikirim ke Telegram.</string>
+    <string name="settings_test_failed">❌ Koneksi gagal: %1$s</string>
+    <string name="settings_test_check_fallback">Periksa Token, Chat ID, dan koneksi internet.</string>
+    <string name="settings_security_title">Keamanan &amp; Kepatuhan</string>
+    <string name="settings_security_desc">4 digit PIN aktif untuk mengamankan akses aplikasi Anda.</string>
+    <string name="settings_change_pin_button">Ubah 4 Digit PIN</string>
+    <string name="settings_view_consent_button">Lihat Pengungkapan Penggunaan Etis &amp; Privasi</string>
+    <string name="settings_updates_title">Pembaruan &amp; Google Play</string>
+    <string name="settings_updates_desc">Jaga agar SMS Forwarder tetap diperbarui dengan peningkatan keamanan di Google Play.</string>
+    <string name="settings_check_updates_button">Periksa Pembaruan di Google Play</string>
+    <string name="settings_guide_title">Cara mendapatkan kredensial:</string>
+    <string name="settings_guide_step1">1. Buka Telegram dan cari \@BotFather.</string>
+    <string name="settings_guide_step2">2. Buat bot baru dengan /newbot untuk mendapatkan Bot Token.</string>
+    <string name="settings_guide_step3">3. Kirim pesan ke \@userinfobot untuk mendapatkan Chat ID pribadi Anda.</string>
+    <string name="settings_guide_step4">4. Mulai bot Anda dengan membuka obrolannya dan menekan \'Start\'.</string>
+
+    <!-- Prominent Disclosure & Ethical Consent Dialog -->
+    <string name="consent_dialog_title">Pengungkapan Penting &amp; Perjanjian Keamanan</string>
+    <string name="consent_dialog_subtitle">Harap tinjau akses data &amp; ketentuan penggunaan etis</string>
+    <string name="consent_sec1_title">1. Akses SMS &amp; Data Telepon</string>
+    <string name="consent_sec1_body">SMS Forwarder memerlukan izin runtime (RECEIVE_SMS, READ_SMS, READ_PHONE_STATE) untuk menjalankan fungsi utamanya: meneruskan pemberitahuan SMS masuk secara otomatis ke Bot atau obrolan Telegram yang Anda tentukan.</string>
+    <string name="consent_sec1_bullet1">Data yang Diakses: Nomor telepon pengirim, teks isi pesan, dan stempel waktu.</string>
+    <string name="consent_sec1_bullet2">Tujuan: Penerusan otomatis instan ke endpoint Telegram pribadi Anda.</string>
+    <string name="consent_sec2_title">2. Privasi Data &amp; Tanpa Pembagian Pihak Ketiga</string>
+    <string name="consent_sec2_body">Privasi dan keamanan komunikasi Anda adalah prioritas utama kami:</string>
+    <string name="consent_sec2_bullet1">Transmisi Langsung: Pesan dikirimkan secara langsung melalui HTTPS ke Telegram Bot API resmi menggunakan Token Bot Anda sendiri.</string>
+    <string name="consent_sec2_bullet2">Tanpa Pelacak Iklan atau Analitik: Kami tidak pernah menjual atau membagikan data SMS Anda ke jaringan iklan pihak ketiga atau server jarak jauh.</string>
+    <string name="consent_sec2_bullet3">Penyimpanan Lokal: Pesan tersimpan hanya berada di basis data perangkat lokal Anda dan dilindungi oleh 4 digit PIN Anda.</string>
+    <string name="consent_sec3_title">3. Kebijakan Penggunaan yang Etis &amp; Sah</string>
+    <string name="consent_sec3_body">Dengan menggunakan aplikasi ini, Anda secara tegas menyetujui dan menyatakan bahwa:</string>
+    <string name="consent_sec3_bullet1">Hanya Perangkat Resmi: Anda hanya akan memasang dan mengoperasikan aplikasi ini pada perangkat milik Anda secara sah atau dengan izin tertulis pemilik perangkat.</string>
+    <string name="consent_sec3_bullet2">Dilarang Memata-matai / Menguntit: Menggunakan aplikasi ini untuk pengawasan tanpa izin, spionase, atau penyadapan komunikasi pribadi tanpa sepengetahuan pengguna sangat dilarang dan melanggar hukum.</string>
+    <string name="consent_sec3_bullet3">Notifikasi Latar Depan: Saat aktif, notifikasi latar depan Android persisten selalu ditampilkan di bilah status untuk memastikan transparansi operasional.</string>
+    <string name="consent_affirmation">Penerimaan menandakan bahwa Anda telah membaca, memahami, dan setuju untuk mematuhi ketentuan penggunaan etis dan pengungkapan privasi ini.</string>
+    <string name="consent_action_close">Tutup Tinjauan Kebijakan</string>
+    <string name="consent_action_agree">Setuju &amp; Lanjutkan</string>
+    <string name="consent_action_decline">Tolak &amp; Keluar</string>
+
+    <!-- All Messages Screen & Filter Chips -->
+    <string name="messages_title_with_count">Semua Pesan (%1$s)</string>
+    <string name="filter_tab_all">Semua (%1$s)</string>
+    <string name="filter_tab_pending">Tertunda (%1$s)</string>
+    <string name="filter_tab_sent">Terkirim (%1$s)</string>
+    <string name="filter_tab_delayed">Tertunda (%1$s)</string>
+    <string name="pending_banner_waiting">%1$s pesan menunggu koneksi internet</string>
+    <string name="pending_banner_auto_send">Terkirim otomatis saat koneksi pulih.</string>
+    <string name="loading_messages">Memuat pesan dari basis data…</string>
+    <string name="empty_all_title">Belum ada pesan</string>
+    <string name="empty_all_desc">Pesan SMS masuk akan muncul di sini.</string>
+    <string name="empty_pending_title">Tidak ada pesan tertunda</string>
+    <string name="empty_pending_desc">Semua pesan telah berhasil dikirim ke Telegram.</string>
+    <string name="empty_sent_title">Tidak ada pesan terkirim</string>
+    <string name="empty_sent_desc">Pesan yang diteruskan ke Telegram akan muncul di sini.</string>
+    <string name="empty_delayed_title">Tidak ada pesan yang tertunda lama</string>
+    <string name="empty_delayed_desc">Pesan dengan keterlambatan penerusan &gt; 1 menit akan muncul di sini.</string>
+    <string name="msg_from_label">Dari: %1$s</string>
+    <string name="msg_unknown_sender">Tidak Dikenal</string>
+    <string name="msg_status_sent">Terkirim</string>
+    <string name="msg_status_pending">Tertunda / Dalam Antrean</string>
+    <string name="msg_status_delayed">Tertunda selama %1$s</string>
+    <string name="msg_status_offline_delay">Offline selama %1$s</string>
+    <string name="msg_telegram_id">ID #%1$s</string>
+    <string name="toast_retrying_pending">Mencoba ulang pesan tertunda…</string>
+    <string name="toast_retrying_single">Mencoba mengirim ulang pesan…</string>
+</resources>

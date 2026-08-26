@@ -76,6 +76,11 @@ The application is structured into four decoupled layers:
    - **AllMessagesScreen:** Filter tabs (`All`, `Pending`, `Sent`, `Delayed`), compact number formatting (`1k`, `1Lc`, `1cr`), and real-time auto-scroll to index 0 on new incoming SMS.
    - **SettingsScreen:** Configuration for Bot Token, Chat ID, custom device tag, PIN management, live Telegram test, on-demand Privacy Disclosure review, and direct Google Play Store updates link (`https://play.google.com/store/apps/details?id=online.thensoji.smsforwarder`).
 
+    - **Internationalization & Localization Architecture:**
+      - All user-facing strings, toasts, placeholders, dialogs, and accessibility descriptions are managed through `res/values*/strings.xml`.
+      - Supports 16 languages across `values` (Base English), `values-es`, `values-fr`, `values-de`, `values-pt`, `values-ru`, `values-hi`, `values-zh`, `values-ar` (RTL), `values-ja`, `values-it`, `values-in`/`values-id`, `values-tr`, `values-ko`, and `values-vi`.
+      - Composable UI consumes strings via `stringResource(R.string.<id>, ...formatArgs)` and callbacks use `context.getString(R.string.<id>, ...formatArgs)`.
+
 6. **Automated CI/CD & Semantic Versioning (`.github/workflows/release.yml`)**
    - **Version Name (`MAJOR.MINOR.PATCH`)**: Automated via `PaulHatch/semantic-version@v5.4.0` with `bump_each_commit: false` for batch merge releases:
      - `BREAKING CHANGE:` / `feat!:` / `#major` ➔ **MAJOR** (`1.0.0` ➔ `2.0.0`)
@@ -133,6 +138,12 @@ All actions that modify code must be verified against Gradle build tools from th
 - **Stable Keys:** In `LazyColumn`, always supply a unique key parameter (`items(filteredList, key = { it.id })`).
 - **Small-Device Responsiveness:** Use `.horizontalScroll(rememberScrollState())` on chip rows and `FlowRow` on button rows. Ensure dialog action buttons fit single-line text without awkward wrapping.
 
+### Localization & Resource Management
+- **Zero Hardcoded Strings:** Never hardcode user-facing strings or messages in Composable files or ViewModel logic.
+- **Resource Lookups:** Always use `stringResource(R.string.<id>)` in Compose and `context.getString(R.string.<id>)` in non-composable contexts.
+- **XML Consistency:** When adding a new string key, add it to the base `res/values/strings.xml` and mirror translations across all 15 locale directories (`values-es`, `values-fr`, `values-de`, `values-pt`, `values-ru`, `values-hi`, `values-zh`, `values-ar`, `values-ja`, `values-it`, `values-in`, `values-id`, `values-tr`, `values-ko`, `values-vi`).
+- **Positional Specifiers:** Use positional format arguments (`%1$s`, `%2$s`, `%1$d`) rather than generic `%s` to guarantee error-free translations across varying sentence structures.
+
 ---
 
 ## 5. Strict Constraints & Security Guardrails
@@ -144,3 +155,5 @@ All actions that modify code must be verified against Gradle build tools from th
 5. ❌ **DO NOT Break PIN Security:** All primary app screens must be enclosed behind the PIN lock routing in `MainScreen.kt`.
 6. ❌ **DO NOT Remove or Bypass Prominent Disclosure:** Upfront `SecurityConsentDialog` via `ConsentManager` must precede all runtime permission requests to strictly satisfy Google Play SMS/Telephony and Anti-Stalkerware policies.
 7. ❌ **PRESERVE Smooth Motion & Touch Haptics:** Do not revert to default jump-cut navigation transitions or static unresponsive click handlers.
+8. ❌ **NO HARDCODED USER-FACING STRINGS:** All text displayed to the user must resolve through Android `R.string` resources to maintain full internationalization.
+

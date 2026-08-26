@@ -4,8 +4,10 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import online.thensoji.smsforwarder.R
 
 @Composable
 fun MessagesSummaryCard(
@@ -21,7 +23,7 @@ fun MessagesSummaryCard(
     ) {
         Column(modifier = Modifier.padding(14.dp)) {
             Text(
-                text = "Messages Summary",
+                text = stringResource(R.string.summary_title),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold
             )
@@ -31,16 +33,16 @@ fun MessagesSummaryCard(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 SummaryItem(
-                    title = "Total",
+                    title = stringResource(R.string.summary_total),
                     count = totalCount
                 )
                 SummaryItem(
-                    title = "Sent",
+                    title = stringResource(R.string.summary_sent),
                     count = sentCount,
                     color = MaterialTheme.colorScheme.primary
                 )
                 SummaryItem(
-                    title = "Pending",
+                    title = stringResource(R.string.summary_pending),
                     count = pendingCount,
                     color = if (pendingCount > 0) {
                         MaterialTheme.colorScheme.error
@@ -49,7 +51,7 @@ fun MessagesSummaryCard(
                     }
                 )
                 SummaryItem(
-                    title = "Delayed",
+                    title = stringResource(R.string.summary_delayed),
                     count = delayedCount,
                     color = if (delayedCount > 0) {
                         MaterialTheme.colorScheme.tertiary
