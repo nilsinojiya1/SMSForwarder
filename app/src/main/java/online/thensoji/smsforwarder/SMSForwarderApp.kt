@@ -22,6 +22,11 @@ import online.thensoji.smsforwarder.repository.MessageRepository
 import online.thensoji.smsforwarder.worker.SendWorker
 import javax.inject.Inject
 
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.PeriodicWorkRequestBuilder
+import java.util.concurrent.TimeUnit
+import online.thensoji.smsforwarder.worker.WatchdogWorker
+
 @HiltAndroidApp
 class SMSForwarderApp : Application(), Configuration.Provider {
 
@@ -42,7 +47,30 @@ class SMSForwarderApp : Application(), Configuration.Provider {
 
     override fun onCreate() {
         super.onCreate()
+        schedulePeriodicWatchdog()
         registerNetworkCallback()
+        triggerPendingMessagesDispatch()
+    }
+
+    private fun schedulePeriodicWatchdog() {
+        try {
+            val constraints = Constraints.Builder()
+                .setRequiredNetworkType(NetworkType.CONNECTED)
+                .build()
+
+            val watchdogRequest = PeriodicWorkRequestBuilder<WatchdogWorker>(15, TimeUnit.MINUTES)
+                .setConstraints(constraints)
+                .build()
+
+            WorkManager.getInstance(applicationContext).enqueueUniquePeriodicWork(
+                WatchdogWorker.WORK_NAME,
+                ExistingPeriodicWorkPolicy.KEEP,
+                watchdogRequest
+            )
+            Log.d(TAG, "Periodic WatchdogWorker scheduled successfully.")
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to schedule WatchdogWorker", e)
+        }
     }
 
     private fun registerNetworkCallback() {

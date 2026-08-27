@@ -20,7 +20,7 @@ object DatabaseModule {
     @Singleton
     fun provideDatabase(@ApplicationContext appContext: Context): AppDatabase {
         return Room.databaseBuilder(appContext, AppDatabase::class.java, "sms_forwarder_db")
-            .fallbackToDestructiveMigration(dropAllTables = true)
+            .addMigrations(*AppDatabase.ALL_MIGRATIONS)
             .build()
     }
 

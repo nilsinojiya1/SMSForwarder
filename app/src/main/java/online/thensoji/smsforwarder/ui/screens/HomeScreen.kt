@@ -3,6 +3,7 @@ package online.thensoji.smsforwarder.ui.screens
 import android.content.Context
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -13,11 +14,16 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import online.thensoji.smsforwarder.R
 import online.thensoji.smsforwarder.ui.MessageViewModel
 import online.thensoji.smsforwarder.ui.components.*
+import online.thensoji.smsforwarder.ui.util.HapticFeedbackHelper
+import online.thensoji.smsforwarder.ui.util.HapticType
 import online.thensoji.smsforwarder.util.MessageFormatter
 import online.thensoji.smsforwarder.util.PermissionUtils
 
@@ -28,6 +34,7 @@ fun HomeScreen(
     viewModel: MessageViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
+    val view = LocalView.current
     var hasPermissions by remember { mutableStateOf(PermissionUtils.checkAllPermissions(context)) }
 
     val permissionLauncher = rememberLauncherForActivityResult(
@@ -74,7 +81,7 @@ fun HomeScreen(
         verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
         Text(
-            text = "Overview",
+            text = stringResource(R.string.overview_title),
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold
         )
@@ -85,7 +92,10 @@ fun HomeScreen(
         // Status Card: Permissions
         PermissionsCard(
             hasPermissions = hasPermissions,
-            onRequestPermissions = { permissionLauncher.launch(PermissionUtils.getRequiredPermissions()) }
+            onRequestPermissions = {
+                HapticFeedbackHelper.performHaptic(context, view, HapticType.CLICK)
+                permissionLauncher.launch(PermissionUtils.getRequiredPermissions())
+            }
         )
 
         // Status Card: Telegram Config
@@ -101,24 +111,37 @@ fun HomeScreen(
 
         Spacer(modifier = Modifier.height(4.dp))
 
-        // Action Buttons
+        // Action Buttons with Spring Press Feedback
+        val messagesInteraction = remember { MutableInteractionSource() }
         Button(
-            onClick = onOpenMessages,
-            modifier = Modifier.fillMaxWidth()
+            onClick = {
+                HapticFeedbackHelper.performHaptic(context, view, HapticType.CLICK)
+                onOpenMessages()
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .pressScale(messagesInteraction, scaleDown = 0.96f),
+            interactionSource = messagesInteraction
         ) {
             Icon(Icons.AutoMirrored.Filled.List, contentDescription = null)
             Spacer(modifier = Modifier.width(8.dp))
-            Text("View All Messages (${MessageFormatter.formatCompactNumber(totalCount)})")
+            Text(stringResource(R.string.action_view_all_messages, MessageFormatter.formatCompactNumber(totalCount)))
         }
 
+        val settingsInteraction = remember { MutableInteractionSource() }
         OutlinedButton(
-            onClick = onOpenSettings,
-            modifier = Modifier.fillMaxWidth()
+            onClick = {
+                HapticFeedbackHelper.performHaptic(context, view, HapticType.CLICK)
+                onOpenSettings()
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .pressScale(settingsInteraction, scaleDown = 0.96f),
+            interactionSource = settingsInteraction
         ) {
             Icon(Icons.Filled.Settings, contentDescription = null)
             Spacer(modifier = Modifier.width(8.dp))
-            Text("Configure Telegram Settings")
+            Text(stringResource(R.string.action_configure_telegram))
         }
     }
 }
-

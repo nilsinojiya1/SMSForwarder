@@ -8,8 +8,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import online.thensoji.smsforwarder.R
 
 @Composable
 fun TelegramStatusCard(
@@ -44,15 +46,18 @@ fun TelegramStatusCard(
             Spacer(modifier = Modifier.width(12.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = if (isConfigured) "Telegram Bot Configured" else "Telegram Not Configured",
+                    text = if (isConfigured)
+                        stringResource(R.string.telegram_status_configured_title)
+                    else
+                        stringResource(R.string.telegram_status_not_configured_title),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold
                 )
                 Text(
                     text = if (isConfigured)
-                        "Messages will be forwarded to your Telegram chat."
+                        stringResource(R.string.telegram_status_configured_desc)
                     else
-                        "Set up your Bot Token & Chat ID in Settings.",
+                        stringResource(R.string.telegram_status_not_configured_desc),
                     style = MaterialTheme.typography.bodySmall
                 )
             }

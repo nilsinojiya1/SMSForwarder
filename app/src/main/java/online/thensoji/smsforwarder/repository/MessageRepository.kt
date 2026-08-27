@@ -57,4 +57,10 @@ class MessageRepository @Inject constructor(
     suspend fun getById(id: Long): ForwardedMessage? = withContext(Dispatchers.IO) {
         dao.getById(id)
     }
+
+    suspend fun getMessageById(id: Long): ForwardedMessage? = getById(id)
+
+    suspend fun updateMessage(message: ForwardedMessage) = withContext(Dispatchers.IO) {
+        dao.update(message)
+    }
 }

@@ -1,6 +1,7 @@
 package online.thensoji.smsforwarder.ui.screens
 
 import android.widget.Toast
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -12,13 +13,19 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import online.thensoji.smsforwarder.R
 import online.thensoji.smsforwarder.ui.components.PinDotsIndicator
 import online.thensoji.smsforwarder.ui.components.PinKeypad
+import online.thensoji.smsforwarder.ui.components.pressScale
+import online.thensoji.smsforwarder.ui.util.HapticFeedbackHelper
+import online.thensoji.smsforwarder.ui.util.HapticType
 import online.thensoji.smsforwarder.util.PinManager
 
 enum class PinMode {
@@ -46,6 +53,7 @@ fun PinLockScreen(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
+    val view = LocalView.current
     val coroutineScope = rememberCoroutineScope()
 
     var enteredPin by remember { mutableStateOf("") }
@@ -56,41 +64,29 @@ fun PinLockScreen(
     var isError by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
-    val title: String
-    val subtitle: String
+    val title = when (mode) {
+        PinMode.UNLOCK -> stringResource(R.string.pin_title_unlock)
+        PinMode.SETUP -> when (setupStep) {
+            SetupStep.ENTER_NEW_PIN -> stringResource(R.string.pin_title_setup)
+            SetupStep.CONFIRM_NEW_PIN -> stringResource(R.string.pin_title_confirm)
+        }
+        PinMode.CHANGE -> when (changeStep) {
+            ChangeStep.ENTER_OLD_PIN -> stringResource(R.string.pin_title_change_old)
+            ChangeStep.ENTER_NEW_PIN -> stringResource(R.string.pin_title_change_new)
+            ChangeStep.CONFIRM_NEW_PIN -> stringResource(R.string.pin_title_change_confirm)
+        }
+    }
 
-    when (mode) {
-        PinMode.UNLOCK -> {
-            title = "Enter PIN"
-            subtitle = "Enter your 4-digit PIN to access SMS Forwarder"
+    val subtitle = when (mode) {
+        PinMode.UNLOCK -> stringResource(R.string.pin_subtitle_unlock)
+        PinMode.SETUP -> when (setupStep) {
+            SetupStep.ENTER_NEW_PIN -> stringResource(R.string.pin_subtitle_setup)
+            SetupStep.CONFIRM_NEW_PIN -> stringResource(R.string.pin_subtitle_confirm)
         }
-        PinMode.SETUP -> {
-            when (setupStep) {
-                SetupStep.ENTER_NEW_PIN -> {
-                    title = "Set Up 4-Digit PIN"
-                    subtitle = "Choose a 4-digit PIN to secure your app"
-                }
-                SetupStep.CONFIRM_NEW_PIN -> {
-                    title = "Confirm Your PIN"
-                    subtitle = "Re-enter the 4-digit PIN to confirm"
-                }
-            }
-        }
-        PinMode.CHANGE -> {
-            when (changeStep) {
-                ChangeStep.ENTER_OLD_PIN -> {
-                    title = "Enter Current PIN"
-                    subtitle = "Verify your current 4-digit PIN"
-                }
-                ChangeStep.ENTER_NEW_PIN -> {
-                    title = "Enter New PIN"
-                    subtitle = "Choose your new 4-digit PIN"
-                }
-                ChangeStep.CONFIRM_NEW_PIN -> {
-                    title = "Confirm New PIN"
-                    subtitle = "Re-enter the new 4-digit PIN to confirm"
-                }
-            }
+        PinMode.CHANGE -> when (changeStep) {
+            ChangeStep.ENTER_OLD_PIN -> stringResource(R.string.pin_subtitle_change_old)
+            ChangeStep.ENTER_NEW_PIN -> stringResource(R.string.pin_subtitle_change_new)
+            ChangeStep.CONFIRM_NEW_PIN -> stringResource(R.string.pin_subtitle_change_confirm)
         }
     }
 
@@ -100,10 +96,12 @@ fun PinLockScreen(
                 if (PinManager.verifyPin(context, pin)) {
                     isError = false
                     errorMessage = null
+                    HapticFeedbackHelper.performHaptic(context, view, HapticType.SUCCESS)
                     onPinSuccess()
                 } else {
                     isError = true
-                    errorMessage = "Incorrect PIN. Please try again."
+                    errorMessage = context.getString(R.string.pin_error_incorrect)
+                    HapticFeedbackHelper.performHaptic(context, view, HapticType.ERROR)
                     coroutineScope.launch {
                         delay(600)
                         enteredPin = ""
@@ -119,15 +117,18 @@ fun PinLockScreen(
                         enteredPin = ""
                         setupStep = SetupStep.CONFIRM_NEW_PIN
                         errorMessage = null
+                        HapticFeedbackHelper.performHaptic(context, view, HapticType.CLICK)
                     }
                     SetupStep.CONFIRM_NEW_PIN -> {
                         if (pin == firstEnteredPin) {
                             PinManager.savePin(context, pin)
-                            Toast.makeText(context, "✅ PIN set successfully!", Toast.LENGTH_SHORT).show()
+                            HapticFeedbackHelper.performHaptic(context, view, HapticType.SUCCESS)
+                            Toast.makeText(context, context.getString(R.string.pin_success_set), Toast.LENGTH_SHORT).show()
                             onPinSuccess()
                         } else {
                             isError = true
-                            errorMessage = "PINs did not match. Please try again."
+                            errorMessage = context.getString(R.string.pin_error_mismatch)
+                            HapticFeedbackHelper.performHaptic(context, view, HapticType.ERROR)
                             coroutineScope.launch {
                                 delay(800)
                                 enteredPin = ""
@@ -147,9 +148,11 @@ fun PinLockScreen(
                             enteredPin = ""
                             changeStep = ChangeStep.ENTER_NEW_PIN
                             errorMessage = null
+                            HapticFeedbackHelper.performHaptic(context, view, HapticType.CLICK)
                         } else {
                             isError = true
-                            errorMessage = "Incorrect current PIN. Please try again."
+                            errorMessage = context.getString(R.string.pin_error_old_incorrect)
+                            HapticFeedbackHelper.performHaptic(context, view, HapticType.ERROR)
                             coroutineScope.launch {
                                 delay(600)
                                 enteredPin = ""
@@ -162,15 +165,18 @@ fun PinLockScreen(
                         enteredPin = ""
                         changeStep = ChangeStep.CONFIRM_NEW_PIN
                         errorMessage = null
+                        HapticFeedbackHelper.performHaptic(context, view, HapticType.CLICK)
                     }
                     ChangeStep.CONFIRM_NEW_PIN -> {
                         if (pin == firstEnteredPin) {
                             PinManager.savePin(context, pin)
-                            Toast.makeText(context, "✅ PIN changed successfully!", Toast.LENGTH_SHORT).show()
+                            HapticFeedbackHelper.performHaptic(context, view, HapticType.SUCCESS)
+                            Toast.makeText(context, context.getString(R.string.pin_success_changed), Toast.LENGTH_SHORT).show()
                             onPinSuccess()
                         } else {
                             isError = true
-                            errorMessage = "New PINs did not match. Please try again."
+                            errorMessage = context.getString(R.string.pin_error_new_mismatch)
+                            HapticFeedbackHelper.performHaptic(context, view, HapticType.ERROR)
                             coroutineScope.launch {
                                 delay(800)
                                 enteredPin = ""
@@ -288,12 +294,19 @@ fun PinLockScreen(
 
             if (onCancel != null && mode == PinMode.CHANGE) {
                 Spacer(modifier = Modifier.height(16.dp))
-                TextButton(onClick = onCancel) {
-                    Text("Cancel")
+                val cancelInteraction = remember { MutableInteractionSource() }
+                TextButton(
+                    onClick = {
+                        HapticFeedbackHelper.performHaptic(context, view, HapticType.CLICK)
+                        onCancel()
+                    },
+                    modifier = Modifier.pressScale(cancelInteraction, scaleDown = 0.94f),
+                    interactionSource = cancelInteraction
+                ) {
+                    Text(stringResource(R.string.action_cancel))
                 }
             }
             Spacer(modifier = Modifier.height(16.dp))
         }
     }
 }
-
