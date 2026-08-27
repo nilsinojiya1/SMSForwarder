@@ -24,29 +24,20 @@ permissions:
   contents: write
 
 jobs:
-  build-and-release:
-    name: Fast Build Signed Release & Dispatch
+  # =========================================================================
+  # STAGE 1: Calculate Semantic Version & Version Code
+  # =========================================================================
+  versioning:
+    name: "1. Version & Release Metadata"
     runs-on: ubuntu-latest
-
+    outputs:
+      version_name: ${{ steps.versioning.outputs.version_name }}
+      version_code: ${{ steps.versioning.outputs.version_code }}
     steps:
       - name: Checkout Code with Full History
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '17'
-          cache: 'gradle'
-
-      - name: Setup Fast Gradle Engine
-        uses: gradle/actions/setup-gradle@v3
-        with:
-          cache-read-only: false
-          gradle-home-cache-cleanup: true
-          cache-disabled: true  # Skip caching when services are unstable
 
       - name: Calculate Semantic Version
         id: semver
@@ -82,10 +73,30 @@ jobs:
           echo "Generated VERSION_CODE: $VERSION_CODE"
           echo "Generated VERSION_NAME: $VERSION_NAME"
           
-          echo "VERSION_CODE=$VERSION_CODE" >> $GITHUB_ENV
-          echo "VERSION_NAME=$VERSION_NAME" >> $GITHUB_ENV
           echo "version_code=$VERSION_CODE" >> $GITHUB_OUTPUT
           echo "version_name=$VERSION_NAME" >> $GITHUB_OUTPUT
+
+  # =========================================================================
+  # STAGE 2: High-Speed Build & Sign Release Binaries (APK + AAB)
+  # =========================================================================
+  build-release:
+    name: "2. Build & Sign (APK + AAB)"
+    needs: versioning
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Fast Gradle Engine
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          cache-disabled: true
 
       - name: Decode Release Keystore JKS
         env:
@@ -99,19 +110,18 @@ jobs:
             echo "No KEYSTORE_BASE64 secret provided."
           fi
 
-      - name: Make Gradle Wrapper Executable
+      - name: Make Gradle Executable
         run: chmod +x gradlew
 
-      - name: High-Speed Release Assembly (APK + AAB)
+      - name: Compile & Assemble Release Binaries
         env:
-          VERSION_CODE: ${{ env.VERSION_CODE }}
-          VERSION_NAME: ${{ env.VERSION_NAME }}
+          VERSION_CODE: ${{ needs.versioning.outputs.version_code }}
+          VERSION_NAME: ${{ needs.versioning.outputs.version_name }}
           KEYSTORE_FILE: ${{ env.KEYSTORE_FILE }}
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
-          # Build both APK (:app:assembleRelease) and Play Store Bundle (:app:bundleRelease)
           ./gradlew :app:assembleRelease :app:bundleRelease \
             --build-cache \
             --parallel \
@@ -119,54 +129,73 @@ jobs:
             -Dorg.gradle.jvmargs="-Xmx5120m -XX:+UseParallelGC" \
             -x lint -x test -x lintVitalRelease
 
-      - name: Prepare Release Artifacts
+      - name: Prepare Artifacts Directory
         run: |
           mkdir -p release_artifacts
 
           # Copy APK
           if [ -f app/build/outputs/apk/release/app-release.apk ]; then
-            cp app/build/outputs/apk/release/app-release.apk release_artifacts/SMSForwarder-v${{ env.VERSION_NAME }}.apk
+            cp app/build/outputs/apk/release/app-release.apk release_artifacts/SMSForwarder-v${{ needs.versioning.outputs.version_name }}.apk
           elif [ -f app/build/outputs/apk/release/app-release-unsigned.apk ]; then
-            cp app/build/outputs/apk/release/app-release-unsigned.apk release_artifacts/SMSForwarder-v${{ env.VERSION_NAME }}.apk
+            cp app/build/outputs/apk/release/app-release-unsigned.apk release_artifacts/SMSForwarder-v${{ needs.versioning.outputs.version_name }}.apk
           else
-            echo "::error::Release APK not found in app/build/outputs/apk/release/"
+            echo "::error::Release APK not found"
             exit 1
           fi
 
           # Copy AAB (Bundle)
           if [ -f app/build/outputs/bundle/release/app-release.aab ]; then
-            cp app/build/outputs/bundle/release/app-release.aab release_artifacts/SMSForwarder-v${{ env.VERSION_NAME }}.aab
+            cp app/build/outputs/bundle/release/app-release.aab release_artifacts/SMSForwarder-v${{ needs.versioning.outputs.version_name }}.aab
           elif [ -f app/build/outputs/bundle/release/app-release-unsigned.aab ]; then
-            cp app/build/outputs/bundle/release/app-release-unsigned.aab release_artifacts/SMSForwarder-v${{ env.VERSION_NAME }}.aab
+            cp app/build/outputs/bundle/release/app-release-unsigned.aab release_artifacts/SMSForwarder-v${{ needs.versioning.outputs.version_name }}.aab
           else
-            echo "::error::Release AAB bundle not found in app/build/outputs/bundle/release/"
+            echo "::error::Release AAB bundle not found"
             exit 1
+          fi
+
+          # Copy ProGuard/R8 Mapping if available
+          if [ -f app/build/outputs/mapping/release/mapping.txt ]; then
+            cp app/build/outputs/mapping/release/mapping.txt release_artifacts/mapping.txt
           fi
 
           echo "Prepared artifacts:"
           ls -lh release_artifacts/
 
-      - name: Upload Build Artifacts (Actions)
+      - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: SMSForwarder-v${{ env.VERSION_NAME }}
+          name: SMSForwarder-v${{ needs.versioning.outputs.version_name }}
           path: release_artifacts/*
           retention-days: 30
+
+  # =========================================================================
+  # STAGE 3: Publish to GitHub Releases
+  # =========================================================================
+  github-release:
+    name: "3. Publish GitHub Release"
+    needs: [versioning, build-release]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download Built Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: SMSForwarder-v${{ needs.versioning.outputs.version_name }}
+          path: release_artifacts
 
       - name: Publish GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: "v${{ env.VERSION_NAME }}"
-          name: "SMS Forwarder v${{ env.VERSION_NAME }}"
+          tag_name: "v${{ needs.versioning.outputs.version_name }}"
+          name: "SMS Forwarder v${{ needs.versioning.outputs.version_name }}"
           body: |
-            ## 🚀 SMS Forwarder v${{ env.VERSION_NAME }} (Build ${{ env.VERSION_CODE }})
+            ## 🚀 SMS Forwarder v${{ needs.versioning.outputs.version_name }} (Build ${{ needs.versioning.outputs.version_code }})
             
             - **Commit:** `${{ github.sha }}`
             - **Author:** `${{ github.actor }}`
             
             ### ⬇️ Downloads
-            - 📱 **Direct APK (Direct Install):** [`SMSForwarder-v${{ env.VERSION_NAME }}.apk`](https://github.com/${{ github.repository }}/releases/download/v${{ env.VERSION_NAME }}/SMSForwarder-v${{ env.VERSION_NAME }}.apk)
-            - 📦 **Play Store Bundle (AAB):** [`SMSForwarder-v${{ env.VERSION_NAME }}.aab`](https://github.com/${{ github.repository }}/releases/download/v${{ env.VERSION_NAME }}/SMSForwarder-v${{ env.VERSION_NAME }}.aab)
+            - 📱 **Direct APK (Direct Install):** [`SMSForwarder-v${{ needs.versioning.outputs.version_name }}.apk`](https://github.com/${{ github.repository }}/releases/download/v${{ needs.versioning.outputs.version_name }}/SMSForwarder-v${{ needs.versioning.outputs.version_name }}.apk)
+            - 📦 **Play Store Bundle (AAB):** [`SMSForwarder-v${{ needs.versioning.outputs.version_name }}.aab`](https://github.com/${{ github.repository }}/releases/download/v${{ needs.versioning.outputs.version_name }}/SMSForwarder-v${{ needs.versioning.outputs.version_name }}.aab)
           files: |
             release_artifacts/*.apk
             release_artifacts/*.aab
@@ -175,17 +204,31 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Upload AAB to Google Play (Closed Testing)
-        env:
-          PLAY_CONFIG_JSON: ${{ secrets.PLAY_CONFIG_JSON || secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
-        if: ${{ env.PLAY_CONFIG_JSON != '' }}
+  # =========================================================================
+  # STAGE 4: Deploy AAB to Google Play (Closed Testing)
+  # =========================================================================
+  play-store-deploy:
+    name: "4. Deploy to Google Play (Closed Testing)"
+    needs: [versioning, build-release]
+    runs-on: ubuntu-latest
+    env:
+      PLAY_CONFIG_JSON: ${{ secrets.PLAY_CONFIG_JSON || secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+    if: ${{ env.PLAY_CONFIG_JSON != '' }}
+    steps:
+      - name: Download Built Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: SMSForwarder-v${{ needs.versioning.outputs.version_name }}
+          path: release_artifacts
+
+      - name: Upload AAB to Google Play
         uses: r0adkll/upload-google-play@v1
         with:
           serviceAccountJsonPlainText: ${{ env.PLAY_CONFIG_JSON }}
           packageName: online.thensoji.smsforwarder
-          releaseFiles: release_artifacts/SMSForwarder-v${{ env.VERSION_NAME }}.aab
+          releaseFiles: release_artifacts/SMSForwarder-v${{ needs.versioning.outputs.version_name }}.aab
           track: ${{ github.event.inputs.play_track || 'alpha' }}
           status: completed
-          mappingFile: app/build/outputs/mapping/release/mapping.txt
+          mappingFile: release_artifacts/mapping.txt
 
 
