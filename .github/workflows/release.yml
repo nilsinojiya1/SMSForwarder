@@ -176,7 +176,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload AAB to Google Play (Closed Testing)
-        if: ${{ secrets.PLAY_CONFIG_JSON != '' || secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON != '' }}
+        if: ${{ secrets.PLAY_CONFIG_JSON != '' }}
         uses: r0adkll/upload-google-play@v1
         with:
           serviceAccountJsonPlainText: ${{ secrets.PLAY_CONFIG_JSON || secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
