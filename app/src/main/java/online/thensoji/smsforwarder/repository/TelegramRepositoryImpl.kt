@@ -24,10 +24,34 @@ class TelegramRepositoryImpl @Inject constructor(
         chatId: String,
         message: String
     ): SendResult = withContext(Dispatchers.IO) {
-        try {
+        val maxChunkSize = 3900
+        if (message.length <= maxChunkSize) {
+            sendSingleMessage(botToken, chatId, message)
+        } else {
+            // Split into numbered chunks to avoid Telegram 4096 char hard limit rejection
+            val chunks = message.chunked(maxChunkSize)
+            var lastMessageId: String? = null
+            for ((index, chunk) in chunks.withIndex()) {
+                val header = "[Part ${index + 1}/${chunks.size}]\n"
+                val chunkText = header + chunk
+                when (val result = sendSingleMessage(botToken, chatId, chunkText)) {
+                    is SendResult.Success -> lastMessageId = result.telegramMessageId
+                    is SendResult.Error -> return@withContext result
+                }
+            }
+            SendResult.Success(lastMessageId)
+        }
+    }
+
+    private suspend fun sendSingleMessage(
+        botToken: String,
+        chatId: String,
+        text: String
+    ): SendResult {
+        return try {
             val request = SendMessageRequest(
                 chatId = chatId,
-                text = message
+                text = text
             )
             val response = remoteDataSource.sendMessage(botToken, request)
 

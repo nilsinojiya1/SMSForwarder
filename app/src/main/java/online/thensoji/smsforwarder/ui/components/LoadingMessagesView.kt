@@ -7,12 +7,14 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import online.thensoji.smsforwarder.R
 
 @Composable
 fun LoadingMessagesView(
     modifier: Modifier = Modifier,
-    message: String = "Loading messages..."
+    message: String = stringResource(R.string.loading_messages)
 ) {
     Box(
         modifier = modifier

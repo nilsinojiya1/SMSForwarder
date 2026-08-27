@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- App Information -->
+    <string name="app_name">SMS Forwarder</string>
+
+    <!-- Navigation & Titles -->
+    <string name="nav_home">Tổng quan</string>
+    <string name="nav_settings">Cài đặt Telegram</string>
+    <string name="nav_messages">Tất cả tin nhắn</string>
+    <string name="nav_change_pin">Đổi mã PIN</string>
+    <string name="action_back">Quay lại</string>
+    <string name="action_settings">Cài đặt</string>
+    <string name="action_cancel">Hủy</string>
+    <string name="action_refresh">Làm mới</string>
+    <string name="action_delete">Xóa</string>
+    <string name="action_send_now">Gửi ngay</string>
+    <string name="action_sending">Đang gửi…</string>
+    <string name="action_resend">Gửi lại</string>
+    <string name="action_resending">Đang gửi lại…</string>
+    <string name="action_mark_sent">Đánh dấu đã gửi</string>
+
+    <!-- Notifications & Background Service -->
+    <string name="notification_channel_name">Dịch vụ chuyển tiếp SMS</string>
+    <string name="notification_channel_desc">Thông báo chạy ngầm liên tục khi theo dõi tin nhắn SMS đến.</string>
+    <string name="notification_active_title">SMS Forwarder đang hoạt động</string>
+    <string name="notification_active_desc">Đang theo dõi tin nhắn SMS đến</string>
+    <string name="notification_sending_title">Đang chuyển tiếp SMS tới Telegram</string>
+
+    <!-- PIN Lock & Security -->
+    <string name="pin_title_unlock">Nhập mã PIN</string>
+    <string name="pin_subtitle_unlock">Nhập mã PIN 4 chữ số để truy cập SMS Forwarder</string>
+    <string name="pin_title_setup">Thiết lập mã PIN 4 chữ số</string>
+    <string name="pin_subtitle_setup">Chọn mã PIN 4 chữ số để bảo vệ ứng dụng của bạn</string>
+    <string name="pin_title_confirm">Xác nhận mã PIN</string>
+    <string name="pin_subtitle_confirm">Nhập lại mã PIN 4 chữ số để xác nhận</string>
+    <string name="pin_title_change_old">Nhập mã PIN hiện tại</string>
+    <string name="pin_subtitle_change_old">Xác minh mã PIN 4 chữ số hiện tại của bạn</string>
+    <string name="pin_title_change_new">Nhập mã PIN mới</string>
+    <string name="pin_subtitle_change_new">Chọn mã PIN 4 chữ số mới của bạn</string>
+    <string name="pin_title_change_confirm">Xác nhận mã PIN mới</string>
+    <string name="pin_subtitle_change_confirm">Nhập lại mã PIN 4 chữ số mới để xác nhận</string>
+    <string name="pin_error_incorrect">Mã PIN không chính xác. Vui lòng thử lại.</string>
+    <string name="pin_error_mismatch">Mã PIN không khớp. Vui lòng thử lại.</string>
+    <string name="pin_error_old_incorrect">Mã PIN hiện tại không đúng. Vui lòng thử lại.</string>
+    <string name="pin_error_new_mismatch">Mã PIN mới không khớp. Vui lòng thử lại.</string>
+    <string name="pin_success_set">✅ Đặt mã PIN thành công!</string>
+    <string name="pin_success_changed">✅ Đổi mã PIN thành công!</string>
+    <string name="pin_keypad_backspace">Xóa</string>
+
+    <!-- Overview / Home Screen -->
+    <string name="overview_title">Tổng quan</string>
+    <string name="device_tag_label">Thẻ thiết bị: %1$s</string>
+    <string name="device_tag_desc">Nhận diện thiết bị này khi nhiều điện thoại cùng chuyển tiếp tới một cuộc trò chuyện.</string>
+    <string name="perm_granted_title">Đã cấp quyền SMS</string>
+    <string name="perm_missing_title">Chưa cấp quyền</string>
+    <string name="perm_granted_desc">Ứng dụng có thể nhận và đọc tin nhắn SMS.</string>
+    <string name="perm_missing_desc">Cấp quyền SMS để ứng dụng có thể phát hiện tin nhắn đến.</string>
+    <string name="perm_grant_button">Cấp quyền</string>
+    <string name="telegram_status_configured_title">Đã cấu hình Bot Telegram</string>
+    <string name="telegram_status_not_configured_title">Chưa cấu hình Telegram</string>
+    <string name="telegram_status_configured_desc">Tin nhắn sẽ được chuyển tiếp đến cuộc trò chuyện Telegram của bạn.</string>
+    <string name="telegram_status_not_configured_desc">Cài đặt Bot Token &amp; Chat ID của bạn trong phần Cài đặt.</string>
+    <string name="summary_title">Thống kê tin nhắn</string>
+    <string name="summary_total">Tổng cộng</string>
+    <string name="summary_sent">Đã gửi</string>
+    <string name="summary_pending">Đang chờ</string>
+    <string name="summary_delayed">Bị trễ</string>
+    <string name="action_view_all_messages">Xem tất cả tin nhắn (%1$s)</string>
+    <string name="action_configure_telegram">Cấu hình cài đặt Telegram</string>
+
+    <!-- Settings Screen -->
+    <string name="settings_bot_config_title">Cấu hình Bot Telegram</string>
+    <string name="settings_device_name_label">Tên / Thẻ thiết bị</string>
+    <string name="settings_device_name_placeholder">vd: %1$s</string>
+    <string name="settings_device_name_support">Được đính kèm vào tin nhắn để nhận diện thiết bị này (Mặc định: %1$s)</string>
+    <string name="settings_bot_token_label">Telegram Bot Token</string>
+    <string name="settings_bot_token_placeholder">vd: 123456789:ABCdefGhIJKlmNoPQRstuVWXyz</string>
+    <string name="settings_hide_token">Ẩn mã Token</string>
+    <string name="settings_show_token">Hiện mã Token</string>
+    <string name="settings_chat_id_label">Telegram Chat ID</string>
+    <string name="settings_chat_id_placeholder">vd: 123456789 hoặc -100123456789</string>
+    <string name="settings_save_button">Lưu cài đặt</string>
+    <string name="settings_save_success">Lưu cài đặt thành công!</string>
+    <string name="settings_test_button">Kiểm tra kết nối Telegram</string>
+    <string name="settings_testing_button">Đang kiểm tra…</string>
+    <string name="settings_test_empty_error">Vui lòng nhập cả Bot Token và Chat ID trước.</string>
+    <string name="settings_test_success">✅ Kết nối thành công! Tin nhắn thử nghiệm đã được gửi tới Telegram.</string>
+    <string name="settings_test_failed">❌ Kết nối thất bại: %1$s</string>
+    <string name="settings_test_check_fallback">Kiểm tra lại Token, Chat ID và kết nối mạng.</string>
+    <string name="settings_security_title">Bảo mật ứng dụng &amp; Tuân thủ</string>
+    <string name="settings_security_desc">Mã PIN 4 chữ số đang hoạt động để bảo vệ quyền truy cập ứng dụng.</string>
+    <string name="settings_change_pin_button">Đổi mã PIN 4 chữ số</string>
+    <string name="settings_view_consent_button">Xem điều khoản sử dụng có đạo đức &amp; quyền riêng tư</string>
+    <string name="settings_battery_title">Độ tin cậy trong nền &amp; Pin</string>
+    <string name="settings_battery_desc">Cho phép sử dụng pin không hạn chế để tránh làm trễ việc chuyển tiếp tin nhắn SMS khi tắt màn hình.</string>
+    <string name="settings_battery_button">Tắt hạn chế pin</string>
+    <string name="settings_battery_unrestricted">✅ Pin đã được đặt thành Không hạn chế</string>
+    <string name="settings_updates_title">Cập nhật ứng dụng &amp; Google Play</string>
+    <string name="settings_updates_desc">Giữ SMS Forwarder luôn cập nhật với các bản vá bảo mật mới nhất trên Google Play.</string>
+    <string name="settings_check_updates_button">Kiểm tra cập nhật trên Google Play</string>
+    <string name="settings_guide_title">Cách lấy thông tin đăng nhập:</string>
+    <string name="settings_guide_step1">1. Mở Telegram và tìm kiếm \@BotFather.</string>
+    <string name="settings_guide_step2">2. Tạo bot mới bằng lệnh /newbot để nhận Bot Token.</string>
+    <string name="settings_guide_step3">3. Gửi tin nhắn tới \@userinfobot để lấy Chat ID cá nhân của bạn.</string>
+    <string name="settings_guide_step4">4. Bắt đầu bot bằng cách mở cuộc trò chuyện với bot và nhấn \'Start\'.</string>
+
+    <!-- Prominent Disclosure & Ethical Consent Dialog -->
+    <string name="consent_dialog_title">Tiết lộ thông tin quan trọng &amp; Thỏa thuận bảo mật</string>
+    <string name="consent_dialog_subtitle">Vui lòng xem lại quyền truy cập dữ liệu và các điều khoản sử dụng</string>
+    <string name="consent_sec1_title">1. Truy cập SMS &amp; Dữ liệu điện thoại</string>
+    <string name="consent_sec1_body">SMS Forwarder yêu cầu các quyền thực thi (RECEIVE_SMS, READ_SMS, READ_PHONE_STATE) để thực hiện chức năng cốt lõi: tự động chuyển tiếp các thông báo SMS đến của bạn tới Bot hoặc nhóm Telegram được chỉ định.</string>
+    <string name="consent_sec1_bullet1">Dữ liệu được truy cập: Số điện thoại người gửi, nội dung văn bản và thời gian gửi.</string>
+    <string name="consent_sec1_bullet2">Mục đích: Chuyển tiếp tự động và tức thì tới điểm cuối Telegram riêng tư của bạn.</string>
+    <string name="consent_sec2_title">2. Quyền riêng tư dữ liệu &amp; Không chia sẻ với bên thứ ba</string>
+    <string name="consent_sec2_body">Quyền riêng tư và bảo mật liên lạc của bạn là ưu tiên hàng đầu của chúng tôi:</string>
+    <string name="consent_sec2_bullet1">Truyền trực tiếp: Tin nhắn được truyền trực tiếp qua HTTPS tới API chính thức của Telegram Bot bằng Token do chính bạn thiết lập.</string>
+    <string name="consent_sec2_bullet2">Không có phân tích hoặc theo dõi quảng cáo: Chúng tôi không bao giờ bán, thương mại hóa hoặc chuyển dữ liệu SMS của bạn cho các mạng quảng cáo bên thứ ba hoặc máy chủ từ xa.</string>
+    <string name="consent_sec2_bullet3">Lưu trữ cục bộ: Các tin nhắn đã lưu chỉ được giữ trong cơ sở dữ liệu trên thiết bị cục bộ của bạn và được bảo vệ bằng mã PIN 4 chữ số.</string>
+    <string name="consent_sec3_title">3. Chính sách sử dụng hợp pháp &amp; Có đạo đức</string>
+    <string name="consent_sec3_body">Bằng việc sử dụng ứng dụng này, bạn tuyên bố và đồng ý rõ ràng rằng:</string>
+    <string name="consent_sec3_bullet1">Chỉ dành cho thiết bị được ủy quyền: Bạn chỉ cài đặt và vận hành ứng dụng này trên các thiết bị bạn sở hữu hợp pháp hoặc đã nhận được sự đồng ý rõ ràng từ chủ sở hữu thiết bị.</string>
+    <string name="consent_sec3_bullet2">Nghiêm cấm theo dõi lén lút / Gián điệp: Nghiêm cấm và coi là bất hợp pháp hành vi sử dụng ứng dụng này để giám sát trái phép, theo dõi bí mật hoặc nghe lén liên lạc riêng tư mà không có sự hiểu biết của người dùng.</string>
+    <string name="consent_sec3_bullet3">Thông báo liên tục: Khi hoạt động, một thông báo liên tục của Android luôn hiển thị trên thanh trạng thái để đảm bảo tính minh bạch hoạt động đầy đủ.</string>
+    <string name="consent_affirmation">Việc chấp nhận thể hiện rằng bạn đã đọc, hiểu và đồng ý tuân thủ các điều khoản sử dụng có đạo đức và công bố quyền riêng tư này.</string>
+    <string name="consent_action_close">Đóng xem xét điều khoản</string>
+    <string name="consent_action_agree">Đồng ý &amp; Tiếp tục</string>
+    <string name="consent_action_decline">Từ chối &amp; Thoát</string>
+
+    <!-- All Messages Screen & Filter Chips -->
+    <string name="messages_title_with_count">Tất cả tin nhắn (%1$s)</string>
+    <string name="filter_tab_all">Tất cả (%1$s)</string>
+    <string name="filter_tab_pending">Đang chờ (%1$s)</string>
+    <string name="filter_tab_sent">Đã gửi (%1$s)</string>
+    <string name="filter_tab_delayed">Bị trễ (%1$s)</string>
+    <string name="pending_banner_waiting">%1$s tin nhắn đang chờ kết nối mạng</string>
+    <string name="pending_banner_auto_send">Tự động gửi khi kết nối mạng được khôi phục.</string>
+    <string name="loading_messages">Đang tải tin nhắn từ cơ sở dữ liệu…</string>
+    <string name="empty_all_title">Chưa có tin nhắn nào</string>
+    <string name="empty_all_desc">Tin nhắn SMS đến sẽ xuất hiện tại đây.</string>
+    <string name="empty_pending_title">Không có tin nhắn đang chờ</string>
+    <string name="empty_pending_desc">Tất cả tin nhắn đã được gửi thành công tới Telegram.</string>
+    <string name="empty_sent_title">Không có tin nhắn đã gửi</string>
+    <string name="empty_sent_desc">Tin nhắn được chuyển tiếp tới Telegram sẽ xuất hiện ở đây.</string>
+    <string name="empty_delayed_title">Không có tin nhắn bị trễ</string>
+    <string name="empty_delayed_desc">Tin nhắn có độ trễ chuyển tiếp &gt; 1 phút sẽ xuất hiện ở đây.</string>
+    <string name="msg_from_label">Từ: %1$s</string>
+    <string name="msg_unknown_sender">Không xác định</string>
+    <string name="msg_status_sent">Đã gửi</string>
+    <string name="msg_status_pending">Đang chờ / Đang xếp hàng</string>
+    <string name="msg_status_delayed">Bị trễ %1$s</string>
+    <string name="msg_status_offline_delay">Ngoại tuyến trong %1$s</string>
+    <string name="msg_telegram_id">ID #%1$s</string>
+    <string name="toast_retrying_pending">Đang thử gửi lại các tin nhắn đang chờ…</string>
+    <string name="toast_retrying_single">Đang thử gửi lại tin nhắn…</string>
+</resources>

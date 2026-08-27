@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- App Information -->
+    <string name="app_name">SMS Forwarder</string>
+
+    <!-- Navigation & Titles -->
+    <string name="nav_home">概览</string>
+    <string name="nav_settings">Telegram 设置</string>
+    <string name="nav_messages">全部消息</string>
+    <string name="nav_change_pin">更改 PIN 码</string>
+    <string name="action_back">返回</string>
+    <string name="action_settings">设置</string>
+    <string name="action_cancel">取消</string>
+    <string name="action_refresh">刷新</string>
+    <string name="action_delete">删除</string>
+    <string name="action_send_now">立即发送</string>
+    <string name="action_sending">正在发送…</string>
+    <string name="action_resend">重发</string>
+    <string name="action_resending">正在重发…</string>
+    <string name="action_mark_sent">标记为已发送</string>
+
+    <!-- Notifications & Background Service -->
+    <string name="notification_channel_name">短信转发服务</string>
+    <string name="notification_channel_desc">监听传入短信时的常驻前台通知。</string>
+    <string name="notification_active_title">SMS Forwarder 已激活</string>
+    <string name="notification_active_desc">正在监听传入的短信文本消息</string>
+    <string name="notification_sending_title">正在将短信转发至 Telegram</string>
+
+    <!-- PIN Lock & Security -->
+    <string name="pin_title_unlock">输入 PIN 码</string>
+    <string name="pin_subtitle_unlock">请输入您的 4 位数字 PIN 码以访问 SMS Forwarder</string>
+    <string name="pin_title_setup">设置 4 位 PIN 码</string>
+    <string name="pin_subtitle_setup">选择一个 4 位数字 PIN 码以保护您的应用</string>
+    <string name="pin_title_confirm">确认您的 PIN 码</string>
+    <string name="pin_subtitle_confirm">请再次输入 4 位数字 PIN 码以确认</string>
+    <string name="pin_title_change_old">输入当前 PIN 码</string>
+    <string name="pin_subtitle_change_old">验证您当前的 4 位数字 PIN 码</string>
+    <string name="pin_title_change_new">输入新 PIN 码</string>
+    <string name="pin_subtitle_change_new">选择您的新 4 位数字 PIN 码</string>
+    <string name="pin_title_change_confirm">确认新 PIN 码</string>
+    <string name="pin_subtitle_change_confirm">请再次输入新 4 位数字 PIN 码以确认</string>
+    <string name="pin_error_incorrect">PIN 码不正确，请重试。</string>
+    <string name="pin_error_mismatch">两次输入的 PIN 码不一致，请重试。</string>
+    <string name="pin_error_old_incorrect">当前 PIN 码不正确，请重试。</string>
+    <string name="pin_error_new_mismatch">新输入的 PIN 码不匹配，请重试。</string>
+    <string name="pin_success_set">✅ PIN 码设置成功！</string>
+    <string name="pin_success_changed">✅ PIN 码更改成功！</string>
+    <string name="pin_keypad_backspace">退格</string>
+
+    <!-- Overview / Home Screen -->
+    <string name="overview_title">概览</string>
+    <string name="device_tag_label">设备标识: %1$s</string>
+    <string name="device_tag_desc">当多台手机转发到同一聊天窗口时用于标识此设备。</string>
+    <string name="perm_granted_title">短信权限已授予</string>
+    <string name="perm_missing_title">缺少权限</string>
+    <string name="perm_granted_desc">应用可以接收并读取短信消息。</string>
+    <string name="perm_missing_desc">请授予短信权限以便能够检测到传入的短信。</string>
+    <string name="perm_grant_button">授予权限</string>
+    <string name="telegram_status_configured_title">Telegram Bot 已配置</string>
+    <string name="telegram_status_not_configured_title">Telegram 未配置</string>
+    <string name="telegram_status_configured_desc">消息将被转发到您的 Telegram 聊天窗口。</string>
+    <string name="telegram_status_not_configured_desc">请在设置中配置您的 Bot Token 和 Chat ID。</string>
+    <string name="summary_title">消息统计摘要</string>
+    <string name="summary_total">总计</string>
+    <string name="summary_sent">已发送</string>
+    <string name="summary_pending">待发送</string>
+    <string name="summary_delayed">已延迟</string>
+    <string name="action_view_all_messages">查看所有消息 (%1$s)</string>
+    <string name="action_configure_telegram">配置 Telegram 设置</string>
+
+    <!-- Settings Screen -->
+    <string name="settings_bot_config_title">Telegram Bot 配置</string>
+    <string name="settings_device_name_label">设备名称 / 标识</string>
+    <string name="settings_device_name_placeholder">例: %1$s</string>
+    <string name="settings_device_name_support">附加到消息以标识此设备 (默认: %1$s)</string>
+    <string name="settings_bot_token_label">Telegram Bot Token</string>
+    <string name="settings_bot_token_placeholder">例: 123456789:ABCdefGhIJKlmNoPQRstuVWXyz</string>
+    <string name="settings_hide_token">隐藏 Token</string>
+    <string name="settings_show_token">显示 Token</string>
+    <string name="settings_chat_id_label">Telegram Chat ID</string>
+    <string name="settings_chat_id_placeholder">例: 123456789 或 -100123456789</string>
+    <string name="settings_save_button">保存设置</string>
+    <string name="settings_save_success">设置保存成功！</string>
+    <string name="settings_test_button">测试 Telegram 连接</string>
+    <string name="settings_testing_button">正在测试…</string>
+    <string name="settings_test_empty_error">请先输入 Bot Token 和 Chat ID。</string>
+    <string name="settings_test_success">✅ 连接成功！测试消息已发送至 Telegram。</string>
+    <string name="settings_test_failed">❌ 连接失败: %1$s</string>
+    <string name="settings_test_check_fallback">请检查 Token、Chat ID 和网络连接。</string>
+    <string name="settings_security_title">应用安全与合规</string>
+    <string name="settings_security_desc">4 位 PIN 码已启用，以保护应用访问权限。</string>
+    <string name="settings_change_pin_button">更改 4 位 PIN 码</string>
+    <string name="settings_view_consent_button">查看合规使用与隐私声明</string>
+    <string name="settings_battery_title">后台可靠性与电池优化</string>
+    <string name="settings_battery_desc">允许无限制电池使用，以防止在息屏时短信转发被延迟。</string>
+    <string name="settings_battery_button">停用电池限制</string>
+    <string name="settings_battery_unrestricted">✅ 电池已设置为无限制</string>
+    <string name="settings_updates_title">应用更新与 Google Play</string>
+    <string name="settings_updates_desc">在 Google Play 上使 SMS Forwarder 保持最新的安全与性能增强。</string>
+    <string name="settings_check_updates_button">在 Google Play 上检查更新</string>
+    <string name="settings_guide_title">如何获取凭据：</string>
+    <string name="settings_guide_step1">1. 打开 Telegram 并搜索 \@BotFather。</string>
+    <string name="settings_guide_step2">2. 发送 /newbot 创建新机器人并获取您的 Bot Token。</string>
+    <string name="settings_guide_step3">3. 向 \@userinfobot 发送消息获取您的个人 Chat ID。</string>
+    <string name="settings_guide_step4">4. 打开机器人的聊天窗口并点击 \"Start\" 启动它。</string>
+
+    <!-- Prominent Disclosure & Ethical Consent Dialog -->
+    <string name="consent_dialog_title">重要声明与安全协议</string>
+    <string name="consent_dialog_subtitle">请仔细阅读数据访问及合规使用条款</string>
+    <string name="consent_sec1_title">1. 短信与电话数据访问</string>
+    <string name="consent_sec1_body">SMS Forwarder 需要运行时权限 (RECEIVE_SMS, READ_SMS, READ_PHONE_STATE) 以执行其核心功能：自动将接收到的短信通知转发到您指定的 Telegram 机器人或聊天中。</string>
+    <string name="consent_sec1_bullet1">访问的数据：发件人电话号码、短信文本内容以及时间戳。</string>
+    <string name="consent_sec1_bullet2">使用目的：即时自动化转发至您的私人 Telegram 终端。</string>
+    <string name="consent_sec2_title">2. 数据隐私与零第三方共享</string>
+    <string name="consent_sec2_body">您的隐私和通信安全是我们的最高准则：</string>
+    <string name="consent_sec2_bullet1">直接传输：消息使用您自行配置的 Bot Token，直接通过 HTTPS 加密传输至 Telegram 官方 API。</string>
+    <string name="consent_sec2_bullet2">无分析与广告追踪：我们绝不会向第三方广告网络、遥测服务商或远程服务器出售、变现或传输您的短信数据。</string>
+    <string name="consent_sec2_bullet3">本地存储：存储的消息严格保存在您设备的本地数据库中，并受到 4 位 PIN 码的保护。</string>
+    <string name="consent_sec3_title">3. 合规与合法使用准则</string>
+    <string name="consent_sec3_body">使用本应用即表示您明确同意并保证：</string>
+    <string name="consent_sec3_bullet1">仅限授权设备：您仅在您合法拥有的设备上安装并运行本应用，或者您已获得设备所有者的明确知情同意。</string>
+    <string name="consent_sec3_bullet2">禁止秘密监视/跟踪：严禁将本应用用于未经授权的秘密监视、间谍活动、跟踪或在用户不知情的情况下秘密截获私人通信。</string>
+    <string name="consent_sec3_bullet3">前台常驻通知：在激活状态下，Android 状态栏始终会显示常驻前台通知，以确保操作的完全透明。</string>
+    <string name="consent_affirmation">接受即表示您已阅读、理解并同意遵守这些合规使用条款和隐私声明。</string>
+    <string name="consent_action_close">关闭政策查看</string>
+    <string name="consent_action_agree">同意并继续</string>
+    <string name="consent_action_decline">拒绝并退出</string>
+
+    <!-- All Messages Screen & Filter Chips -->
+    <string name="messages_title_with_count">全部消息 (%1$s)</string>
+    <string name="filter_tab_all">全部 (%1$s)</string>
+    <string name="filter_tab_pending">待发送 (%1$s)</string>
+    <string name="filter_tab_sent">已发送 (%1$s)</string>
+    <string name="filter_tab_delayed">已延迟 (%1$s)</string>
+    <string name="pending_banner_waiting">%1$s 条消息正在等待网络连接</string>
+    <string name="pending_banner_auto_send">网络恢复时将自动发送。</string>
+    <string name="loading_messages">正在从数据库加载消息…</string>
+    <string name="empty_all_title">暂无消息</string>
+    <string name="empty_all_desc">传入的短信消息将显示在此处。</string>
+    <string name="empty_pending_title">无待发送消息</string>
+    <string name="empty_pending_desc">所有消息均已成功发送至 Telegram。</string>
+    <string name="empty_sent_title">无已发送消息</string>
+    <string name="empty_sent_desc">转发至 Telegram 的消息将显示在此处。</string>
+    <string name="empty_delayed_title">无延迟消息</string>
+    <string name="empty_delayed_desc">转发延迟超过 1 分钟的消息将显示在此处。</string>
+    <string name="msg_from_label">发件人: %1$s</string>
+    <string name="msg_unknown_sender">未知</string>
+    <string name="msg_status_sent">已发送</string>
+    <string name="msg_status_pending">排队待发</string>
+    <string name="msg_status_delayed">延迟 %1$s</string>
+    <string name="msg_status_offline_delay">离线已达 %1$s</string>
+    <string name="msg_telegram_id">ID #%1$s</string>
+    <string name="toast_retrying_pending">正在重试待发送消息…</string>
+    <string name="toast_retrying_single">正在重试发送消息…</string>
+</resources>
