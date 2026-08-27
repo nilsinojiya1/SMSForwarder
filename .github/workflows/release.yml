@@ -10,6 +10,10 @@ on:
         description: "Custom Version Name (e.g. 1.0.0). Leave empty for auto-generation."
         required: false
         default: ""
+      play_track:
+        description: "Google Play Track (alpha for Closed Testing, internal, beta, production)"
+        required: false
+        default: "alpha"
 
 # Concurrency: Cancel in-flight duplicate runs on the same branch
 concurrency:
@@ -170,4 +174,16 @@ jobs:
           prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload AAB to Google Play (Closed Testing)
+        if: ${{ secrets.PLAY_CONFIG_JSON != '' || secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON != '' }}
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.PLAY_CONFIG_JSON || secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+          packageName: online.thensoji.smsforwarder
+          releaseFiles: release_artifacts/SMSForwarder-v${{ env.VERSION_NAME }}.aab
+          track: ${{ github.event.inputs.play_track || 'alpha' }}
+          status: completed
+          mappingFile: app/build/outputs/mapping/release/mapping.txt
+
 
