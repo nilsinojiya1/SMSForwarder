@@ -91,6 +91,10 @@
     <string name="settings_security_desc">Le code PIN à 4 chiffres est actif pour sécuriser l\'accès à l\'application.</string>
     <string name="settings_change_pin_button">Modifier le code PIN à 4 chiffres</string>
     <string name="settings_view_consent_button">Consulter la déclaration d\'utilisation éthique et de confidentialité</string>
+    <string name="settings_battery_title">Fiabilité en arrière-plan et batterie</string>
+    <string name="settings_battery_desc">Autorisez l\'utilisation sans restriction de la batterie pour éviter que le transfert de SMS soit retardé.</string>
+    <string name="settings_battery_button">Désactiver les restrictions de batterie</string>
+    <string name="settings_battery_unrestricted">✅ Batterie définie sur Non restreinte</string>
     <string name="settings_updates_title">Mises à jour et Google Play</string>
     <string name="settings_updates_desc">Gardez SMS Forwarder à jour avec les dernières améliorations de sécurité sur Google Play.</string>
     <string name="settings_check_updates_button">Rechercher des mises à jour sur Google Play</string>

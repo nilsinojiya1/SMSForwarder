@@ -91,6 +91,10 @@
     <string name="settings_security_desc">El PIN de 4 dígitos está activo para proteger el acceso a la app.</string>
     <string name="settings_change_pin_button">Cambiar PIN de 4 dígitos</string>
     <string name="settings_view_consent_button">Ver divulgación de uso ético y privacidad</string>
+    <string name="settings_battery_title">Fiabilidad en segundo plano y batería</string>
+    <string name="settings_battery_desc">Permite el uso sin restricciones de batería para evitar que Android retrase el reenvío de SMS.</string>
+    <string name="settings_battery_button">Desactivar restricciones de batería</string>
+    <string name="settings_battery_unrestricted">✅ La batería está configurada como Sin restricciones</string>
     <string name="settings_updates_title">Actualizaciones y Google Play</string>
     <string name="settings_updates_desc">Mantén SMS Forwarder actualizado con las últimas mejoras de seguridad en Google Play.</string>
     <string name="settings_check_updates_button">Buscar actualizaciones en Google Play</string>

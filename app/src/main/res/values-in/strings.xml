@@ -91,7 +91,11 @@
     <string name="settings_security_desc">4 digit PIN aktif untuk mengamankan akses aplikasi Anda.</string>
     <string name="settings_change_pin_button">Ubah 4 Digit PIN</string>
     <string name="settings_view_consent_button">Lihat Pengungkapan Penggunaan Etis &amp; Privasi</string>
-    <string name="settings_updates_title">Pembaruan &amp; Google Play</string>
+    <string name="settings_battery_title">Keandalan Latar Belakang &amp; Baterai</string>
+    <string name="settings_battery_desc">Izinkan penggunaan baterai tanpa batas untuk mencegah keterlambatan penerusan SMS saat layar mati.</string>
+    <string name="settings_battery_button">Nonaktifkan Pembatasan Baterai</string>
+    <string name="settings_battery_unrestricted">✅ Baterai diatur ke Tanpa Batas</string>
+    <string name="settings_updates_title">Pembaruan Aplikasi &amp; Google Play</string>
     <string name="settings_updates_desc">Jaga agar SMS Forwarder tetap diperbarui dengan peningkatan keamanan di Google Play.</string>
     <string name="settings_check_updates_button">Periksa Pembaruan di Google Play</string>
     <string name="settings_guide_title">Cara mendapatkan kredensial:</string>

@@ -91,7 +91,11 @@
     <string name="settings_security_desc">Uygulama erişimini korumak için 4 haneli PIN devrede.</string>
     <string name="settings_change_pin_button">4 Haneli PIN\'i Değiştir</string>
     <string name="settings_view_consent_button">Etik Kullanım ve Gizlilik Bildirimini Görüntüle</string>
-    <string name="settings_updates_title">Güncellemeler ve Google Play</string>
+    <string name="settings_battery_title">Arka Plan Güvenilirliği ve Pil</string>
+    <string name="settings_battery_desc">Ekran kapalıyken SMS iletme gecikmelerini önlemek için kısıtlamasız pil kullanımına izin verin.</string>
+    <string name="settings_battery_button">Pil Kısıtlamalarını Kaldır</string>
+    <string name="settings_battery_unrestricted">✅ Pil Kısıtlamasız olarak ayarlandı</string>
+    <string name="settings_updates_title">Uygulama Güncellemeleri &amp; Google Play</string>
     <string name="settings_updates_desc">SMS Forwarder\'ı Google Play üzerinden en son güvenlik güncellemeleriyle güncel tutun.</string>
     <string name="settings_check_updates_button">Google Play\'de Güncellemeleri Denetle</string>
     <string name="settings_guide_title">Giriş bilgileri nasıl alınır:</string>

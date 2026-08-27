@@ -91,6 +91,10 @@
     <string name="settings_security_desc">4 位 PIN 码已启用，以保护应用访问权限。</string>
     <string name="settings_change_pin_button">更改 4 位 PIN 码</string>
     <string name="settings_view_consent_button">查看合规使用与隐私声明</string>
+    <string name="settings_battery_title">后台可靠性与电池优化</string>
+    <string name="settings_battery_desc">允许无限制电池使用，以防止在息屏时短信转发被延迟。</string>
+    <string name="settings_battery_button">停用电池限制</string>
+    <string name="settings_battery_unrestricted">✅ 电池已设置为无限制</string>
     <string name="settings_updates_title">应用更新与 Google Play</string>
     <string name="settings_updates_desc">在 Google Play 上使 SMS Forwarder 保持最新的安全与性能增强。</string>
     <string name="settings_check_updates_button">在 Google Play 上检查更新</string>

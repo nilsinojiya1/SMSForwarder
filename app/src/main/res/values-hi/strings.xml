@@ -91,7 +91,11 @@
     <string name="settings_security_desc">ऐप सुरक्षा के लिए 4-अंकीय पिन सक्रिय है।</string>
     <string name="settings_change_pin_button">4-अंकीय पिन बदलें</string>
     <string name="settings_view_consent_button">नैतिक उपयोग और गोपनीयता प्रकटीकरण देखें</string>
-    <string name="settings_updates_title">ऐप अपडेट और गूगल प्ले</string>
+    <string name="settings_battery_title">बैकग्राउंड विश्वसनीयता और बैटरी</string>
+    <string name="settings_battery_desc">स्क्रीन बंद होने पर एसएमएस फॉरवर्डिंग में देरी से बचने के लिए अप्रतिबंधित बैटरी उपयोग की अनुमति दें।</string>
+    <string name="settings_battery_button">बैटरी प्रतिबंध हटाएं</string>
+    <string name="settings_battery_unrestricted">✅ बैटरी अप्रतिबंधित पर सेट है</string>
+    <string name="settings_updates_title">ऐप अपडेट और Google Play</string>
     <string name="settings_updates_desc">गूगल प्ले से नवीनतम सुरक्षा सुधारों के साथ SMS Forwarder को अपडेट रखें।</string>
     <string name="settings_check_updates_button">गूगल प्ले पर अपडेट जांचें</string>
     <string name="settings_guide_title">क्रेडेंशियल कैसे प्राप्त करें:</string>

@@ -91,6 +91,10 @@
     <string name="settings_security_desc">4-stellige PIN ist aktiv, um den App-Zugriff zu schützen.</string>
     <string name="settings_change_pin_button">4-stellige PIN ändern</string>
     <string name="settings_view_consent_button">Ethische Nutzung &amp; Datenschutzerklärung anzeigen</string>
+    <string name="settings_battery_title">Hintergrund-Zuverlässigkeit &amp; Akku</string>
+    <string name="settings_battery_desc">Erlauben Sie die uneingeschränkte Akkunutzung, um Verzögerungen bei der SMS-Weiterleitung zu vermeiden.</string>
+    <string name="settings_battery_button">Akku-Einschränkungen aufheben</string>
+    <string name="settings_battery_unrestricted">✅ Akkunutzung ist auf Uneingeschränkt gesetzt</string>
     <string name="settings_updates_title">App-Updates &amp; Google Play</string>
     <string name="settings_updates_desc">Halten Sie SMS Forwarder mit den neuesten Sicherheitsverbesserungen auf Google Play aktuell.</string>
     <string name="settings_check_updates_button">Auf Google Play nach Updates suchen</string>

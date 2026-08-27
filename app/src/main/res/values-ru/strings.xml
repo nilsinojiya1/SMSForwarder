@@ -91,6 +91,10 @@
     <string name="settings_security_desc">4-значный PIN-код активен для защиты доступа к приложению.</string>
     <string name="settings_change_pin_button">Сменить 4-значный PIN-код</string>
     <string name="settings_view_consent_button">Просмотреть политику конфиденциальности и этики</string>
+    <string name="settings_battery_title">Надежность в фоновом режиме и батарея</string>
+    <string name="settings_battery_desc">Разрешите работу без ограничений батареи, чтобы избежать задержек пересылки SMS.</string>
+    <string name="settings_battery_button">Отключить ограничения батареи</string>
+    <string name="settings_battery_unrestricted">✅ Батарея настроена на Без ограничений</string>
     <string name="settings_updates_title">Обновления и Google Play</string>
     <string name="settings_updates_desc">Поддерживайте SMS Forwarder в актуальном состоянии через Google Play.</string>
     <string name="settings_check_updates_button">Проверить обновления в Google Play</string>

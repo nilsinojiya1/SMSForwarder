@@ -91,7 +91,11 @@
     <string name="settings_security_desc">アプリのアクセス保護のため 4 桁の PIN が有効です。</string>
     <string name="settings_change_pin_button">4 桁の PIN を変更</string>
     <string name="settings_view_consent_button">倫理的使用とプライバシー開示を確認</string>
-    <string name="settings_updates_title">アプリ更新と Google Play</string>
+    <string name="settings_battery_title">バックグラウンド信頼性とバッテリー</string>
+    <string name="settings_battery_desc">画面オフ時のSMS転送の遅延を防ぐため、バッテリー使用を「無制限」に設定してください。</string>
+    <string name="settings_battery_button">バッテリー制限を解除</string>
+    <string name="settings_battery_unrestricted">✅ バッテリーは「無制限」に設定されています</string>
+    <string name="settings_updates_title">アプリの更新と Google Play</string>
     <string name="settings_updates_desc">Google Play から最新のセキュリティと機能改善に更新してください。</string>
     <string name="settings_check_updates_button">Google Play で更新を確認</string>
     <string name="settings_guide_title">認証情報の取得方法:</string>

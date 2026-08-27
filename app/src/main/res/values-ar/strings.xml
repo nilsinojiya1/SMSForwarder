@@ -91,7 +91,11 @@
     <string name="settings_security_desc">رمز PIN المكون من 4 أرقام مفعّل لتأمين الوصول إلى التطبيق.</string>
     <string name="settings_change_pin_button">تغيير رمز PIN</string>
     <string name="settings_view_consent_button">عرض إشعار الاستخدام الأخلاقي والخصوصية</string>
-    <string name="settings_updates_title">التحديثات وGoogle Play</string>
+    <string name="settings_battery_title">الموثوقية في الخلفية والبطارية</string>
+    <string name="settings_battery_desc">اسمح بالاستخدام غير المقيد للبطارية لمنع تأخير إعادة توجيه الرسائل عند إغلاق الشاشة.</string>
+    <string name="settings_battery_button">تعطيل قيود البطارية</string>
+    <string name="settings_battery_unrestricted">✅ تم تعيين البطارية إلى غير مقيد</string>
+    <string name="settings_updates_title">تحديثات التطبيق و Google Play</string>
     <string name="settings_updates_desc">حافظ على تحديث SMS Forwarder بأحدث التحسينات الأمنية من Google Play.</string>
     <string name="settings_check_updates_button">التحقق من التحديثات على Google Play</string>
     <string name="settings_guide_title">كيفية الحصول على البيانات:</string>

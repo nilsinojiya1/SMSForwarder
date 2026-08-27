@@ -91,6 +91,10 @@
     <string name="settings_security_desc">PIN de 4 dígitos ativo para proteger o acesso ao app.</string>
     <string name="settings_change_pin_button">Alterar PIN de 4 Dígitos</string>
     <string name="settings_view_consent_button">Ver Termos de Uso Ético e Privacidade</string>
+    <string name="settings_battery_title">Confiabilidade em segundo plano e bateria</string>
+    <string name="settings_battery_desc">Permita o uso irrestrito da bateria para evitar atrasos no encaminhamento de SMS.</string>
+    <string name="settings_battery_button">Desativar restrições de bateria</string>
+    <string name="settings_battery_unrestricted">✅ Bateria configurada como Irrestrita</string>
     <string name="settings_updates_title">Atualizações e Google Play</string>
     <string name="settings_updates_desc">Mantenha o SMS Forwarder atualizado com as últimas melhorias de segurança no Google Play.</string>
     <string name="settings_check_updates_button">Buscar Atualizações no Google Play</string>

@@ -91,6 +91,10 @@
     <string name="settings_security_desc">4-digit PIN is active to secure your app access.</string>
     <string name="settings_change_pin_button">Change 4-Digit PIN</string>
     <string name="settings_view_consent_button">View Ethical Use &amp; Privacy Disclosure</string>
+    <string name="settings_battery_title">Background Reliability &amp; Battery</string>
+    <string name="settings_battery_desc">Allow Unrestricted battery usage to prevent Android from delaying SMS forwarding when the screen is off.</string>
+    <string name="settings_battery_button">Disable Battery Restrictions</string>
+    <string name="settings_battery_unrestricted">✅ Battery is set to Unrestricted</string>
     <string name="settings_updates_title">App Updates &amp; Google Play</string>
     <string name="settings_updates_desc">Keep SMS Forwarder updated with the latest security enhancements on Google Play.</string>
     <string name="settings_check_updates_button">Check for Updates on Google Play</string>

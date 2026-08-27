@@ -91,7 +91,11 @@
     <string name="settings_security_desc">Mã PIN 4 chữ số đang hoạt động để bảo vệ quyền truy cập ứng dụng.</string>
     <string name="settings_change_pin_button">Đổi mã PIN 4 chữ số</string>
     <string name="settings_view_consent_button">Xem điều khoản sử dụng có đạo đức &amp; quyền riêng tư</string>
-    <string name="settings_updates_title">Cập nhật &amp; Google Play</string>
+    <string name="settings_battery_title">Độ tin cậy trong nền &amp; Pin</string>
+    <string name="settings_battery_desc">Cho phép sử dụng pin không hạn chế để tránh làm trễ việc chuyển tiếp tin nhắn SMS khi tắt màn hình.</string>
+    <string name="settings_battery_button">Tắt hạn chế pin</string>
+    <string name="settings_battery_unrestricted">✅ Pin đã được đặt thành Không hạn chế</string>
+    <string name="settings_updates_title">Cập nhật ứng dụng &amp; Google Play</string>
     <string name="settings_updates_desc">Giữ SMS Forwarder luôn cập nhật với các bản vá bảo mật mới nhất trên Google Play.</string>
     <string name="settings_check_updates_button">Kiểm tra cập nhật trên Google Play</string>
     <string name="settings_guide_title">Cách lấy thông tin đăng nhập:</string>

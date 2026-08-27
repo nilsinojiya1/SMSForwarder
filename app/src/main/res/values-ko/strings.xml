@@ -91,6 +91,10 @@
     <string name="settings_security_desc">앱 접근 보안을 위해 4자리 PIN이 활성화되어 있습니다.</string>
     <string name="settings_change_pin_button">4자리 PIN 변경</string>
     <string name="settings_view_consent_button">윤리적 사용 및 개인정보 처리방침 보기</string>
+    <string name="settings_battery_title">백그라운드 안정성 및 배터리</string>
+    <string name="settings_battery_desc">화면이 꺼졌을 때 SMS 전달이 지연되지 않도록 배터리 사용을 제한 없음으로 허용하세요.</string>
+    <string name="settings_battery_button">배터리 제한 해제</string>
+    <string name="settings_battery_unrestricted">✅ 배터리가 제한 없음으로 설정되었습니다</string>
     <string name="settings_updates_title">앱 업데이트 및 Google Play</string>
     <string name="settings_updates_desc">Google Play에서 SMS Forwarder를 최신 보안 개선 사항으로 유지하세요.</string>
     <string name="settings_check_updates_button">Google Play에서 업데이트 확인</string>
