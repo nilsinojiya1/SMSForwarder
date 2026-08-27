@@ -107,18 +107,18 @@ class AssembleFallbackWorker @AssistedInject constructor(
                 .setRequiredNetworkType(NetworkType.CONNECTED)
                 .build()
 
-            val input = Data.Builder()
-                .putLong("messageId", id)
-                .build()
-            val work = OneTimeWorkRequestBuilder<SendWorker>()
-                .setConstraints(constraints)
-                .setInputData(input)
-                .build()
-            WorkManager.getInstance(applicationContext).enqueueUniqueWork(
-                "send_sms_$id",
-                ExistingWorkPolicy.KEEP,
-                work
-            )
+        val input = Data.Builder()
+            .putLong("messageId", id)
+            .build()
+        val work = OneTimeWorkRequestBuilder<SendWorker>()
+            .setConstraints(constraints)
+            .setInputData(input)
+            .build()
+        WorkManager.getInstance(applicationContext).enqueueUniqueWork(
+            "send_sms_$id",
+            ExistingWorkPolicy.KEEP,
+            work
+        )
         }
 
         return Result.success()
