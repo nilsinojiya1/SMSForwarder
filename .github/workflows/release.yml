@@ -209,7 +209,7 @@ jobs:
   # =========================================================================
   play-store-deploy:
     name: "4. Deploy to Google Play (Closed Testing)"
-    needs: [versioning, build-release]
+    needs: [versioning, build-release, github-release]
     runs-on: ubuntu-latest
     steps:
       - name: Check for Google Play Credentials
