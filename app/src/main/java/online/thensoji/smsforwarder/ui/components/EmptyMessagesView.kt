@@ -10,8 +10,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import online.thensoji.smsforwarder.R
 
 @Composable
 fun EmptyMessagesView(
@@ -37,10 +39,10 @@ fun EmptyMessagesView(
             Spacer(modifier = Modifier.height(12.dp))
             Text(
                 text = when (selectedTab) {
-                    MessageFilterTab.ALL -> "No messages yet"
-                    MessageFilterTab.PENDING -> "No pending messages"
-                    MessageFilterTab.SENT -> "No sent messages"
-                    MessageFilterTab.DELAYED -> "No delayed messages"
+                    MessageFilterTab.ALL -> stringResource(R.string.empty_all_title)
+                    MessageFilterTab.PENDING -> stringResource(R.string.empty_pending_title)
+                    MessageFilterTab.SENT -> stringResource(R.string.empty_sent_title)
+                    MessageFilterTab.DELAYED -> stringResource(R.string.empty_delayed_title)
                 },
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold
@@ -48,10 +50,10 @@ fun EmptyMessagesView(
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = when (selectedTab) {
-                    MessageFilterTab.ALL -> "Incoming SMS messages will appear here."
-                    MessageFilterTab.PENDING -> "All messages have been successfully sent to Telegram."
-                    MessageFilterTab.SENT -> "Messages forwarded to Telegram will appear here."
-                    MessageFilterTab.DELAYED -> "Messages with > 1 min forwarding delay will appear here."
+                    MessageFilterTab.ALL -> stringResource(R.string.empty_all_desc)
+                    MessageFilterTab.PENDING -> stringResource(R.string.empty_pending_desc)
+                    MessageFilterTab.SENT -> stringResource(R.string.empty_sent_desc)
+                    MessageFilterTab.DELAYED -> stringResource(R.string.empty_delayed_desc)
                 },
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant

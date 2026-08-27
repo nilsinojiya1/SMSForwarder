@@ -1,12 +1,20 @@
 package online.thensoji.smsforwarder.ui.components
 
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import online.thensoji.smsforwarder.R
+import online.thensoji.smsforwarder.ui.util.HapticFeedbackHelper
+import online.thensoji.smsforwarder.ui.util.HapticType
 import online.thensoji.smsforwarder.util.MessageFormatter
 
 @Composable
@@ -17,6 +25,9 @@ fun PendingBanner(
     isResending: Boolean = false
 ) {
     if (pendingCount <= 0) return
+
+    val context = LocalContext.current
+    val view = LocalView.current
 
     Card(
         modifier = modifier.fillMaxWidth(),
@@ -31,19 +42,28 @@ fun PendingBanner(
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = "${MessageFormatter.formatCompactNumber(pendingCount)} message(s) waiting for internet",
+                    text = stringResource(
+                        R.string.pending_banner_waiting,
+                        MessageFormatter.formatCompactNumber(pendingCount)
+                    ),
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.SemiBold
                 )
                 Text(
-                    text = "Auto-sends when connection is restored.",
+                    text = stringResource(R.string.pending_banner_auto_send),
                     style = MaterialTheme.typography.bodySmall
                 )
             }
             Spacer(modifier = Modifier.width(8.dp))
+            val sendInteraction = remember { MutableInteractionSource() }
             Button(
-                onClick = onSendNow,
+                onClick = {
+                    HapticFeedbackHelper.performHaptic(context, view, HapticType.CLICK)
+                    onSendNow()
+                },
                 enabled = !isResending,
+                modifier = Modifier.pressScale(sendInteraction, scaleDown = 0.94f),
+                interactionSource = sendInteraction,
                 contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp)
             ) {
                 if (isResending) {
@@ -53,9 +73,9 @@ fun PendingBanner(
                         color = MaterialTheme.colorScheme.onPrimary
                     )
                     Spacer(modifier = Modifier.width(6.dp))
-                    Text("Sending...", maxLines = 1)
+                    Text(stringResource(R.string.action_sending), maxLines = 1)
                 } else {
-                    Text("Send Now", maxLines = 1)
+                    Text(stringResource(R.string.action_send_now), maxLines = 1)
                 }
             }
         }

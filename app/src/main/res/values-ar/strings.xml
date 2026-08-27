@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- App Information -->
+    <string name="app_name">SMS Forwarder</string>
+
+    <!-- Navigation & Titles -->
+    <string name="nav_home">نظرة عامة</string>
+    <string name="nav_settings">إعدادات تيليجرام</string>
+    <string name="nav_messages">جميع الرسائل</string>
+    <string name="nav_change_pin">تغيير رمز PIN</string>
+    <string name="action_back">رجوع</string>
+    <string name="action_settings">الإعدادات</string>
+    <string name="action_cancel">إلغاء</string>
+    <string name="action_refresh">تحديث</string>
+    <string name="action_delete">حذف</string>
+    <string name="action_send_now">إرسال الآن</string>
+    <string name="action_sending">جارٍ الإرسال…</string>
+    <string name="action_resend">إعادة الإرسال</string>
+    <string name="action_resending">جارٍ إعادة الإرسال…</string>
+    <string name="action_mark_sent">تحديد كمرسل</string>
+
+    <!-- Notifications & Background Service -->
+    <string name="notification_channel_name">خدمة إعادة توجيه الرسائل</string>
+    <string name="notification_channel_desc">إشعار دائم في الواجهة أثناء مراقبة الرسائل القصيرة الواردة.</string>
+    <string name="notification_active_title">SMS Forwarder نشط</string>
+    <string name="notification_active_desc">مراقبة الرسائل النصية القصيرة الواردة</string>
+    <string name="notification_sending_title">إعادة توجيه الرسالة إلى تيليجرام</string>
+
+    <!-- PIN Lock & Security -->
+    <string name="pin_title_unlock">أدخل رمز PIN</string>
+    <string name="pin_subtitle_unlock">أدخل رمز PIN المكون من 4 أرقام للوصول إلى التطبيق</string>
+    <string name="pin_title_setup">تعيين رمز PIN المكون من 4 أرقام</string>
+    <string name="pin_subtitle_setup">اختر رمز PIN مكوناً من 4 أرقام لحماية تطبيقك</string>
+    <string name="pin_title_confirm">تأكيد رمز PIN</string>
+    <string name="pin_subtitle_confirm">أعد إدخال رمز PIN المكون من 4 أرقام للتأكيد</string>
+    <string name="pin_title_change_old">أدخل رمز PIN الحالي</string>
+    <string name="pin_subtitle_change_old">تحقق من رمز PIN الحالي المكون من 4 أرقام</string>
+    <string name="pin_title_change_new">أدخل رمز PIN الجديد</string>
+    <string name="pin_subtitle_change_new">اختر رمز PIN جديداً مكوناً من 4 أرقام</string>
+    <string name="pin_title_change_confirm">تأكيد رمز PIN الجديد</string>
+    <string name="pin_subtitle_change_confirm">أعد إدخال رمز PIN الجديد للتأكيد</string>
+    <string name="pin_error_incorrect">رمز PIN غير صحيح. يرجى المحاولة مرة أخرى.</string>
+    <string name="pin_error_mismatch">رمزا PIN غير متطابقين. يرجى المحاولة مرة أخرى.</string>
+    <string name="pin_error_old_incorrect">رمز PIN الحالي غير صحيح. يرجى المحاولة مرة أخرى.</string>
+    <string name="pin_error_new_mismatch">رمزا PIN الجديدان غير متطابقين. يرجى المحاولة مرة أخرى.</string>
+    <string name="pin_success_set">✅ تم تعيين رمز PIN بنجاح!</string>
+    <string name="pin_success_changed">✅ تم تغيير رمز PIN بنجاح!</string>
+    <string name="pin_keypad_backspace">حذف</string>
+
+    <!-- Overview / Home Screen -->
+    <string name="overview_title">نظرة عامة</string>
+    <string name="device_tag_label">معرف الجهاز: %1$s</string>
+    <string name="device_tag_desc">يميز هذا الجهاز عند إعادة التوجيه من عدة هواتف إلى نفس المحادثة.</string>
+    <string name="perm_granted_title">تم منح أذونات الرسائل القصيرة</string>
+    <string name="perm_missing_title">الأذونات مفقودة</string>
+    <string name="perm_granted_desc">يمكن للتطبيق تلقي وقراءة الرسائل النصية القصيرة.</string>
+    <string name="perm_missing_desc">يرجى منح أذونات الرسائل القصيرة لاكتشاف الرسائل الواردة.</string>
+    <string name="perm_grant_button">منح الأذونات</string>
+    <string name="telegram_status_configured_title">تم ضبط بوت تيليجرام</string>
+    <string name="telegram_status_not_configured_title">تيليجرام غير مضبوط</string>
+    <string name="telegram_status_configured_desc">سيتم إعادة توجيه الرسائل إلى محادثة تيليجرام الخاصة بك.</string>
+    <string name="telegram_status_not_configured_desc">قم بإعداد رمز البوت ومعرف الدردشة في الإعدادات.</string>
+    <string name="summary_title">ملخص الرسائل</string>
+    <string name="summary_total">الإجمالي</string>
+    <string name="summary_sent">المرسلة</string>
+    <string name="summary_pending">المعلقة</string>
+    <string name="summary_delayed">المتأخرة</string>
+    <string name="action_view_all_messages">عرض جميع الرسائل (%1$s)</string>
+    <string name="action_configure_telegram">ضبط إعدادات تيليجرام</string>
+
+    <!-- Settings Screen -->
+    <string name="settings_bot_config_title">إعدادات بوت تيليجرام</string>
+    <string name="settings_device_name_label">اسم / معرف الجهاز</string>
+    <string name="settings_device_name_placeholder">مثال: %1$s</string>
+    <string name="settings_device_name_support">يُلحق بالرسائل لتمييز هذا الجهاز (الافتراضي: %1$s)</string>
+    <string name="settings_bot_token_label">رمز البوت (Bot Token)</string>
+    <string name="settings_bot_token_placeholder">مثال: 123456789:ABCdefGhIJKlmNoPQRstuVWXyz</string>
+    <string name="settings_hide_token">إخفاء الرمز</string>
+    <string name="settings_show_token">إظهار الرمز</string>
+    <string name="settings_chat_id_label">معرف المحادثة (Chat ID)</string>
+    <string name="settings_chat_id_placeholder">مثال: 123456789 أو -100123456789</string>
+    <string name="settings_save_button">حفظ الإعدادات</string>
+    <string name="settings_save_success">تم حفظ الإعدادات بنجاح!</string>
+    <string name="settings_test_button">اختبار الاتصال بتيليجرام</string>
+    <string name="settings_testing_button">جارٍ الاختبار…</string>
+    <string name="settings_test_empty_error">يرجى إدخال رمز البوت ومعرف المحادثة أولاً.</string>
+    <string name="settings_test_success">✅ تم الاتصال بنجاح! تم إرسال رسالة اختبار إلى تيليجرام.</string>
+    <string name="settings_test_failed">❌ فشل الاتصال: %1$s</string>
+    <string name="settings_test_check_fallback">يرجى التحقق من الرمز ومعرف المحادثة والاتصال بالإنترنت.</string>
+    <string name="settings_security_title">أمان التطبيق والامتثال</string>
+    <string name="settings_security_desc">رمز PIN المكون من 4 أرقام مفعّل لتأمين الوصول إلى التطبيق.</string>
+    <string name="settings_change_pin_button">تغيير رمز PIN</string>
+    <string name="settings_view_consent_button">عرض إشعار الاستخدام الأخلاقي والخصوصية</string>
+    <string name="settings_battery_title">الموثوقية في الخلفية والبطارية</string>
+    <string name="settings_battery_desc">اسمح بالاستخدام غير المقيد للبطارية لمنع تأخير إعادة توجيه الرسائل عند إغلاق الشاشة.</string>
+    <string name="settings_battery_button">تعطيل قيود البطارية</string>
+    <string name="settings_battery_unrestricted">✅ تم تعيين البطارية إلى غير مقيد</string>
+    <string name="settings_updates_title">تحديثات التطبيق و Google Play</string>
+    <string name="settings_updates_desc">حافظ على تحديث SMS Forwarder بأحدث التحسينات الأمنية من Google Play.</string>
+    <string name="settings_check_updates_button">التحقق من التحديثات على Google Play</string>
+    <string name="settings_guide_title">كيفية الحصول على البيانات:</string>
+    <string name="settings_guide_step1">1. افتح تيليجرام وابحث عن \@BotFather.</string>
+    <string name="settings_guide_step2">2. أنشئ بوتاً جديداً بالأمر /newbot للحصول على Bot Token.</string>
+    <string name="settings_guide_step3">3. أرسل رسالة إلى \@userinfobot للحصول على Chat ID الشخصي.</string>
+    <string name="settings_guide_step4">4. ابدأ البوت عن طريق فتح محادثته والضغط على \'Start\'.</string>
+
+    <!-- Prominent Disclosure & Ethical Consent Dialog -->
+    <string name="consent_dialog_title">إشعار بارز واتفاقية أمان</string>
+    <string name="consent_dialog_subtitle">يرجى مراجعة شروط الوصول إلى البيانات والاستخدام الأخلاقي</string>
+    <string name="consent_sec1_title">1. الوصول إلى الرسائل النصية والمهاتفة</string>
+    <string name="consent_sec1_body">يتطلب SMS Forwarder أذونات التشغيل (RECEIVE_SMS, READ_SMS, READ_PHONE_STATE) لتأدية وظيفته الأساسية: إعادة توجيه إشعارات الرسائل القصيرة تلقائياً إلى بوت أو محادثة تيليجرام المحددة.</string>
+    <string name="consent_sec1_bullet1">البيانات التي يتم الوصول إليها: رقم المرسل، نص الرسالة، والطابع الزمني.</string>
+    <string name="consent_sec1_bullet2">الغرض: إعادة التوجيه الفوري والآلي إلى وجهتك الخاصة على تيليجرام.</string>
+    <string name="consent_sec2_title">2. خصوصية البيانات وعدم المشاركة مع أطراف ثالثة</string>
+    <string name="consent_sec2_body">خصوصيتك وأمان اتصالاتك هما أولويتنا القصوى:</string>
+    <string name="consent_sec2_bullet1">إرسال مباشر: يتم نقل الرسائل مباشرة عبر HTTPS إلى واجهة برمجة تطبيقات Telegram Bot الرسمية باستخدام الرمز الخاص بك.</string>
+    <string name="consent_sec2_bullet2">لا تحليلات أو تتبع إعلاني: نحن لا نبيع بياناتك أو نشاركها مع أي شبكات إعلانية أو مزودي تحليلات أو خوادم وسيطة.</string>
+    <string name="consent_sec2_bullet3">تخزين محلي: تظل الرسائل المخزنة محلياً حصراً على جهازك ومحمية برمز PIN المكون من 4 أرقام.</string>
+    <string name="consent_sec3_title">3. سياسة الاستخدام القانوني والأخلاقي</string>
+    <string name="consent_sec3_body">باستخدام هذا التطبيق، فإنك توافق وتقر صراحةً بما يلي:</string>
+    <string name="consent_sec3_bullet1">الأجهزة المصرح بها فقط: لن تقوم بتثبيت وتشغيل هذا التطبيق إلا على الأجهزة التي تمتلكها قانونياً أو حصلت على موافقة صريحة من مالكها.</string>
+    <string name="consent_sec3_bullet2">حظر التجسس والملاحقة: يُحظر تماماً ويعتبر غير قانوني استخدام هذا التطبيق للمراقبة غير المصرح بها أو التجسس أو اعتراض الاتصالات سراً.</string>
+    <string name="consent_sec3_bullet3">إشعار الواجهة الأمامية: عند التنشيط، يظهر دائماً إشعار دائم في شريط الحالة لضمان الشفافية الكاملة.</string>
+    <string name="consent_affirmation">تشير الموافقة إلى أنك قرأت وفهمت ووافقت على الالتزام بشروط الاستخدام الأخلاقي وإشعار الخصوصية هذه.</string>
+    <string name="consent_action_close">إغلاق المراجعة</string>
+    <string name="consent_action_agree">الموافقة والمتابعة</string>
+    <string name="consent_action_decline">الرفض والخروج</string>
+
+    <!-- All Messages Screen & Filter Chips -->
+    <string name="messages_title_with_count">جميع الرسائل (%1$s)</string>
+    <string name="filter_tab_all">الكل (%1$s)</string>
+    <string name="filter_tab_pending">المعلقة (%1$s)</string>
+    <string name="filter_tab_sent">المرسلة (%1$s)</string>
+    <string name="filter_tab_delayed">المتأخرة (%1$s)</string>
+    <string name="pending_banner_waiting">%1$s رسالة بانتظار الاتصال بالإنترنت</string>
+    <string name="pending_banner_auto_send">يتم الإرسال تلقائياً فور استعادة الاتصال.</string>
+    <string name="loading_messages">جارٍ تحميل الرسائل من قاعدة البيانات…</string>
+    <string name="empty_all_title">لا توجد رسائل بعد</string>
+    <string name="empty_all_desc">ستظهر الرسائل القصيرة الواردة هنا.</string>
+    <string name="empty_pending_title">لا توجد رسائل معلقة</string>
+    <string name="empty_pending_desc">تم إرسال جميع الرسائل بنجاح إلى تيليجرام.</string>
+    <string name="empty_sent_title">لا توجد رسائل مرسلة</string>
+    <string name="empty_sent_desc">ستظهر الرسائل المعاد توجيهها إلى تيليجرام هنا.</string>
+    <string name="empty_delayed_title">لا توجد رسائل متأخرة</string>
+    <string name="empty_delayed_desc">الرسائل ذات التأخير الذي يتجاوز دقيقة واحدة ستظهر هنا.</string>
+    <string name="msg_from_label">من: %1$s</string>
+    <string name="msg_unknown_sender">مجهول</string>
+    <string name="msg_status_sent">تم الإرسال</string>
+    <string name="msg_status_pending">معلق / في الانتظار</string>
+    <string name="msg_status_delayed">تأخر بمقدار %1$s</string>
+    <string name="msg_status_offline_delay">غير متصل منذ %1$s</string>
+    <string name="msg_telegram_id">المعرف #%1$s</string>
+    <string name="toast_retrying_pending">جارٍ إعادة محاولة الرسائل المعلقة…</string>
+    <string name="toast_retrying_single">جارٍ إعادة إرسال الرسالة…</string>
+</resources>

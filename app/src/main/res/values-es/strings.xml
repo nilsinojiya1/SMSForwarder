@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- App Information -->
+    <string name="app_name">SMS Forwarder</string>
+
+    <!-- Navigation & Titles -->
+    <string name="nav_home">Resumen</string>
+    <string name="nav_settings">Configuración de Telegram</string>
+    <string name="nav_messages">Todos los mensajes</string>
+    <string name="nav_change_pin">Cambiar PIN</string>
+    <string name="action_back">Atrás</string>
+    <string name="action_settings">Configuración</string>
+    <string name="action_cancel">Cancelar</string>
+    <string name="action_refresh">Actualizar</string>
+    <string name="action_delete">Eliminar</string>
+    <string name="action_send_now">Enviar ahora</string>
+    <string name="action_sending">Enviando…</string>
+    <string name="action_resend">Reenviar</string>
+    <string name="action_resending">Reenviando…</string>
+    <string name="action_mark_sent">Marcar como enviado</string>
+
+    <!-- Notifications & Background Service -->
+    <string name="notification_channel_name">Servicio de reenvío de SMS</string>
+    <string name="notification_channel_desc">Notificación persistente en primer plano mientras escucha SMS entrantes.</string>
+    <string name="notification_active_title">SMS Forwarder activo</string>
+    <string name="notification_active_desc">Monitoreando mensajes de texto SMS entrantes</string>
+    <string name="notification_sending_title">Reenviando SMS a Telegram</string>
+
+    <!-- PIN Lock & Security -->
+    <string name="pin_title_unlock">Introducir PIN</string>
+    <string name="pin_subtitle_unlock">Introduce tu PIN de 4 dígitos para acceder a SMS Forwarder</string>
+    <string name="pin_title_setup">Configurar PIN de 4 dígitos</string>
+    <string name="pin_subtitle_setup">Elige un PIN de 4 dígitos para proteger tu aplicación</string>
+    <string name="pin_title_confirm">Confirma tu PIN</string>
+    <string name="pin_subtitle_confirm">Vuelve a introducir el PIN de 4 dígitos para confirmar</string>
+    <string name="pin_title_change_old">Introducir PIN actual</string>
+    <string name="pin_subtitle_change_old">Verifica tu PIN actual de 4 dígitos</string>
+    <string name="pin_title_change_new">Introducir nuevo PIN</string>
+    <string name="pin_subtitle_change_new">Elige tu nuevo PIN de 4 dígitos</string>
+    <string name="pin_title_change_confirm">Confirmar nuevo PIN</string>
+    <string name="pin_subtitle_change_confirm">Vuelve a introducir el nuevo PIN de 4 dígitos para confirmar</string>
+    <string name="pin_error_incorrect">PIN incorrecto. Inténtalo de nuevo.</string>
+    <string name="pin_error_mismatch">Los PIN no coinciden. Inténtalo de nuevo.</string>
+    <string name="pin_error_old_incorrect">El PIN actual es incorrecto. Inténtalo de nuevo.</string>
+    <string name="pin_error_new_mismatch">Los nuevos PIN no coinciden. Inténtalo de nuevo.</string>
+    <string name="pin_success_set">✅ ¡PIN configurado con éxito!</string>
+    <string name="pin_success_changed">✅ ¡PIN cambiado con éxito!</string>
+    <string name="pin_keypad_backspace">Borrar</string>
+
+    <!-- Overview / Home Screen -->
+    <string name="overview_title">Resumen</string>
+    <string name="device_tag_label">Etiqueta de dispositivo: %1$s</string>
+    <string name="device_tag_desc">Identifica este dispositivo cuando varios teléfonos reenvían al mismo chat.</string>
+    <string name="perm_granted_title">Permisos de SMS concedidos</string>
+    <string name="perm_missing_title">Faltan permisos</string>
+    <string name="perm_granted_desc">La aplicación puede recibir y leer mensajes SMS.</string>
+    <string name="perm_missing_desc">Concede permisos de SMS para que se puedan detectar los SMS entrantes.</string>
+    <string name="perm_grant_button">Conceder permisos</string>
+    <string name="telegram_status_configured_title">Bot de Telegram configurado</string>
+    <string name="telegram_status_not_configured_title">Telegram no configurado</string>
+    <string name="telegram_status_configured_desc">Los mensajes se reenviarán a tu chat de Telegram.</string>
+    <string name="telegram_status_not_configured_desc">Configura tu token de bot y Chat ID en Configuración.</string>
+    <string name="summary_title">Resumen de mensajes</string>
+    <string name="summary_total">Total</string>
+    <string name="summary_sent">Enviados</string>
+    <string name="summary_pending">Pendientes</string>
+    <string name="summary_delayed">Retrasados</string>
+    <string name="action_view_all_messages">Ver todos los mensajes (%1$s)</string>
+    <string name="action_configure_telegram">Configurar ajustes de Telegram</string>
+
+    <!-- Settings Screen -->
+    <string name="settings_bot_config_title">Configuración del bot de Telegram</string>
+    <string name="settings_device_name_label">Nombre / Etiqueta del dispositivo</string>
+    <string name="settings_device_name_placeholder">p. ej. %1$s</string>
+    <string name="settings_device_name_support">Se añade a los mensajes para identificar este dispositivo (Predeterminado: %1$s)</string>
+    <string name="settings_bot_token_label">Token del bot de Telegram</string>
+    <string name="settings_bot_token_placeholder">p. ej. 123456789:ABCdefGhIJKlmNoPQRstuVWXyz</string>
+    <string name="settings_hide_token">Ocultar token</string>
+    <string name="settings_show_token">Mostrar token</string>
+    <string name="settings_chat_id_label">Chat ID de Telegram</string>
+    <string name="settings_chat_id_placeholder">p. ej. 123456789 o -100123456789</string>
+    <string name="settings_save_button">Guardar configuración</string>
+    <string name="settings_save_success">¡Configuración guardada con éxito!</string>
+    <string name="settings_test_button">Probar conexión con Telegram</string>
+    <string name="settings_testing_button">Probando…</string>
+    <string name="settings_test_empty_error">Introduce primero el Token del bot y el Chat ID.</string>
+    <string name="settings_test_success">✅ ¡Conexión exitosa! Mensaje de prueba enviado a Telegram.</string>
+    <string name="settings_test_failed">❌ Error de conexión: %1$s</string>
+    <string name="settings_test_check_fallback">Verifica el Token, Chat ID y la conexión.</string>
+    <string name="settings_security_title">Seguridad y cumplimiento</string>
+    <string name="settings_security_desc">El PIN de 4 dígitos está activo para proteger el acceso a la app.</string>
+    <string name="settings_change_pin_button">Cambiar PIN de 4 dígitos</string>
+    <string name="settings_view_consent_button">Ver divulgación de uso ético y privacidad</string>
+    <string name="settings_battery_title">Fiabilidad en segundo plano y batería</string>
+    <string name="settings_battery_desc">Permite el uso sin restricciones de batería para evitar que Android retrase el reenvío de SMS.</string>
+    <string name="settings_battery_button">Desactivar restricciones de batería</string>
+    <string name="settings_battery_unrestricted">✅ La batería está configurada como Sin restricciones</string>
+    <string name="settings_updates_title">Actualizaciones y Google Play</string>
+    <string name="settings_updates_desc">Mantén SMS Forwarder actualizado con las últimas mejoras de seguridad en Google Play.</string>
+    <string name="settings_check_updates_button">Buscar actualizaciones en Google Play</string>
+    <string name="settings_guide_title">Cómo obtener credenciales:</string>
+    <string name="settings_guide_step1">1. Abre Telegram y busca \@BotFather.</string>
+    <string name="settings_guide_step2">2. Crea un nuevo bot con /newbot para recibir tu Bot Token.</string>
+    <string name="settings_guide_step3">3. Envía un mensaje a \@userinfobot para obtener tu Chat ID personal.</string>
+    <string name="settings_guide_step4">4. Inicia tu bot abriendo su chat y presionando \'Iniciar\'.</string>
+
+    <!-- Prominent Disclosure & Ethical Consent Dialog -->
+    <string name="consent_dialog_title">Divulgación destacada y acuerdo de seguridad</string>
+    <string name="consent_dialog_subtitle">Revisa los términos de acceso a datos y uso ético</string>
+    <string name="consent_sec1_title">1. Acceso a SMS y datos de telefonía</string>
+    <string name="consent_sec1_body">SMS Forwarder requiere permisos en tiempo de ejecución (RECEIVE_SMS, READ_SMS, READ_PHONE_STATE) para realizar su función principal: reenviar automáticamente tus notificaciones SMS entrantes a tu bot o chat de Telegram designado.</string>
+    <string name="consent_sec1_bullet1">Datos accedidos: Número de teléfono del remitente, contenido del mensaje y marca de tiempo.</string>
+    <string name="consent_sec1_bullet2">Finalidad: Reenvío automatizado instantáneo a tu punto de enlace privado de Telegram.</string>
+    <string name="consent_sec2_title">2. Privacidad de datos y cero intercambio con terceros</string>
+    <string name="consent_sec2_body">Tu privacidad y seguridad de comunicación son nuestras máximas prioridades:</string>
+    <string name="consent_sec2_bullet1">Transmisión directa: Los mensajes se transmiten directamente a través de HTTPS a la API oficial de Telegram Bot usando tu token autoconfigurado.</string>
+    <string name="consent_sec2_bullet2">Sin analíticas ni rastreadores publicitarios: Nunca vendemos, monetizamos ni transmitimos tus datos SMS a redes publicitarias de terceros, proveedores de telemetría o servidores remotos.</string>
+    <string name="consent_sec2_bullet3">Almacenamiento local: Los mensajes almacenados se mantienen estrictamente en la base de datos local de tu dispositivo y protegidos por tu PIN de 4 dígitos.</string>
+    <string name="consent_sec3_title">3. Política de uso ético y legal</string>
+    <string name="consent_sec3_body">Al utilizar esta aplicación, aceptas y certificas explícitamente que:</string>
+    <string name="consent_sec3_bullet1">Solo dispositivos autorizados: Solo instalarás y operarás esta aplicación en dispositivos de tu propiedad legal o para los cuales hayas recibido consentimiento expreso e informado del propietario.</string>
+    <string name="consent_sec3_bullet2">Sin espionaje ni acoso encubierto: El uso de esta aplicación para vigilancia no autorizada, rastreo clandestino, espionaje o interceptación secreta de comunicaciones privadas sin el conocimiento explícito del usuario está estrictamente prohibido y es ilegal.</string>
+    <string name="consent_sec3_bullet3">Notificación en primer plano: Cuando está activa, siempre se muestra una notificación persistente de primer plano en la barra de estado de Android para garantizar la total transparencia operativa.</string>
+    <string name="consent_affirmation">La aceptación indica que has leído, entendido y aceptas cumplir con estos términos de uso ético y divulgación de privacidad.</string>
+    <string name="consent_action_close">Cerrar revisión de política</string>
+    <string name="consent_action_agree">Aceptar y continuar</string>
+    <string name="consent_action_decline">Rechazar y salir</string>
+
+    <!-- All Messages Screen & Filter Chips -->
+    <string name="messages_title_with_count">Todos los mensajes (%1$s)</string>
+    <string name="filter_tab_all">Todos (%1$s)</string>
+    <string name="filter_tab_pending">Pendientes (%1$s)</string>
+    <string name="filter_tab_sent">Enviados (%1$s)</string>
+    <string name="filter_tab_delayed">Retrasados (%1$s)</string>
+    <string name="pending_banner_waiting">%1$s mensaje(s) esperando conexión a internet</string>
+    <string name="pending_banner_auto_send">Se envía automáticamente cuando se restablece la conexión.</string>
+    <string name="loading_messages">Cargando mensajes desde la base de datos…</string>
+    <string name="empty_all_title">Aún no hay mensajes</string>
+    <string name="empty_all_desc">Los mensajes SMS entrantes aparecerán aquí.</string>
+    <string name="empty_pending_title">No hay mensajes pendientes</string>
+    <string name="empty_pending_desc">Todos los mensajes se han enviado con éxito a Telegram.</string>
+    <string name="empty_sent_title">No hay mensajes enviados</string>
+    <string name="empty_sent_desc">Los mensajes reenviados a Telegram aparecerán aquí.</string>
+    <string name="empty_delayed_title">No hay mensajes retrasados</string>
+    <string name="empty_delayed_desc">Los mensajes con &gt; 1 min de retraso en el reenvío aparecerán aquí.</string>
+    <string name="msg_from_label">De: %1$s</string>
+    <string name="msg_unknown_sender">Desconocido</string>
+    <string name="msg_status_sent">Enviado</string>
+    <string name="msg_status_pending">Pendiente / En cola</string>
+    <string name="msg_status_delayed">Retrasado por %1$s</string>
+    <string name="msg_status_offline_delay">Sin conexión durante %1$s</string>
+    <string name="msg_telegram_id">ID #%1$s</string>
+    <string name="toast_retrying_pending">Reintentando mensajes pendientes…</string>
+    <string name="toast_retrying_single">Reintentando mensaje…</string>
+</resources>
