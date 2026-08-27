@@ -38,24 +38,31 @@ The application is structured into four decoupled layers:
 ```
 
 1. **Broadcast & Ingestion Layer (`SmsReceiver`, `SmsPduParser`, `BootReceiver`)**
-   - Intercepts `android.provider.Telephony.SMS_RECEIVED`.
+   - Intercepts `android.provider.Telephony.SMS_RECEIVED` and `SMS_DELIVER` with priority `2147483647`.
    - Parses GSM binary User Data Headers (UDH) via `SmsPduParser` for multi-part (concatenated) SMS reassembly.
-   - Stages parts in `SmsPartDao`. When all parts arrive, stitches them into a coherent message; otherwise, an `AssembleFallbackWorker` flushes incomplete parts after 5 seconds.
-   - Extracts active SIM slot metadata via `SubscriptionManager`.
-   - Writes the message to Room (`isSent = false`).
-   - Enqueues a `OneTimeWorkRequest` with `NetworkType.CONNECTED` constraint and `ExistingWorkPolicy.KEEP`.
+   - Stages parts in `SmsPartDao` with composite unique index `(sender, refNumber, partIndex)`. When all parts arrive, stitches them into a coherent message; otherwise, `AssembleFallbackWorker` flushes partials after a 30-second window.
+   - Defensive SIM slot extraction: Safely handles `SubscriptionManager` queries within `try/catch` to avoid `SecurityException` crashes when `READ_PHONE_STATE` is restricted.
+   - **Zero-Loss Direct Dispatch**: Immediately transmits incoming SMS to Telegram directly inside `goAsync()` while holding CPU wake-lock for sub-second (< 1s) delivery, bypassing Doze mode / App Standby delays.
+   - **WorkManager Fallback**: Seamlessly enqueues a persistent `OneTimeWorkRequest` with `NetworkType.CONNECTED` constraint and `ExistingWorkPolicy.KEEP` only if offline or if direct transmission fails.
 
-2. **Persistence Layer (`AppDatabase`, `ForwardedMessage`, `SmsPart`, DAOs)**
+2. **Persistence & Migration Layer (`AppDatabase`, `ForwardedMessage`, `SmsPart`, DAOs)**
    - Single source of truth for message delivery states (`isSent`, `sentTimestamp`, `delayMillis`, `telegramMessageId`, `errorMessage`).
    - All queries run on `Dispatchers.IO` via Room suspend functions and reactive `Flow`.
+   - **Explicit Non-Destructive Migrations (Schema v4)**:
+     - `MIGRATION_1_2`: Creates `sms_parts` table.
+     - `MIGRATION_2_3`: Adds `sentTimestamp`, `delayMillis`, `errorMessage` columns to `forwarded_messages`.
+     - `MIGRATION_3_4`: De-duplicates staging parts and establishes unique index `index_sms_parts_sender_refNumber_partIndex`.
+     - Registered in `DatabaseModule.kt` via `.addMigrations(*AppDatabase.ALL_MIGRATIONS)` preserving 100% of existing user data.
 
 3. **Domain & Network Layer (`domain/`, `network/`, `repository/`)**
    - Clean Architecture domain use cases: `SendTelegramMessageUseCase` returning sealed `SendResult`.
    - Retrofit 2 service (`TelegramApiService`) using dynamic `@Url` parameter to prevent colon-in-token URL parsing issues.
+   - **Message Chunking**: `TelegramRepositoryImpl` automatically chunks messages $> 3900$ characters with numbered headers (`[Part 1/2]`, `[Part 2/2]`) to prevent Telegram HTTP 400 payload limits.
    - `LoggingInterceptor` for debugging HTTP request/response payloads when `BuildConfig.DEBUG` is true.
 
-4. **Background Delivery Engine (`SendWorker`, `SMSForwarderApp`)**
+4. **Background Delivery Engine & Watchdog (`SendWorker`, `WatchdogWorker`, `SMSForwarderApp`)**
    - `SendWorker` is an `@HiltWorker` executing with `NetworkType.CONNECTED`.
+   - **15-Minute Watchdog (`WatchdogWorker`)**: Scheduled periodically (`ExistingPeriodicWorkPolicy.KEEP`) to sweep and drain any stranded `isSent = false` messages from offline storage.
    - Idempotency Guarantee: Checks `if (messageObj.isSent) return Result.success()` before sending to prevent duplicate Telegram alerts.
    - Forwarding Delay Tagging: If difference between receive time and forward time is $\ge 1\text{ min}$, injects `⏳ [Delayed by Xm]` into the message header.
    - Network Callback in `SMSForwarderApp` detects connectivity restoration and triggers unique workers for any pending messages.
@@ -74,20 +81,19 @@ The application is structured into four decoupled layers:
    - **Google Play Prominent Disclosure (`SecurityConsentDialog`):** Non-dismissible upfront dialog explaining SMS data access, direct Telegram HTTPS transmission (no 3rd-party trackers), and strict ethical use terms with symmetrical, single-line action buttons. Exits via `finishAffinity()` if declined.
    - **PinLockScreen:** 4-digit PIN protection with salted SHA-256 hashed storage via `PinManager`.
    - **AllMessagesScreen:** Filter tabs (`All`, `Pending`, `Sent`, `Delayed`), compact number formatting (`1k`, `1Lc`, `1cr`), and real-time auto-scroll to index 0 on new incoming SMS.
-   - **SettingsScreen:** Configuration for Bot Token, Chat ID, custom device tag, PIN management, live Telegram test, on-demand Privacy Disclosure review, and direct Google Play Store updates link (`https://play.google.com/store/apps/details?id=online.thensoji.smsforwarder`).
+   - **SettingsScreen:** Configuration for Bot Token, Chat ID, custom device tag, PIN management, live Telegram test, Background Battery Optimization exemption toggle, on-demand Privacy Disclosure review, and direct Google Play Store updates link (`https://play.google.com/store/apps/details?id=online.thensoji.smsforwarder`).
 
     - **Internationalization & Localization Architecture:**
       - All user-facing strings, toasts, placeholders, dialogs, and accessibility descriptions are managed through `res/values*/strings.xml`.
       - Supports 16 languages across `values` (Base English), `values-es`, `values-fr`, `values-de`, `values-pt`, `values-ru`, `values-hi`, `values-zh`, `values-ar` (RTL), `values-ja`, `values-it`, `values-in`/`values-id`, `values-tr`, `values-ko`, and `values-vi`.
       - Composable UI consumes strings via `stringResource(R.string.<id>, ...formatArgs)` and callbacks use `context.getString(R.string.<id>, ...formatArgs)`.
 
-6. **Automated CI/CD & Semantic Versioning (`.github/workflows/release.yml`)**
-   - **Version Name (`MAJOR.MINOR.PATCH`)**: Automated via `PaulHatch/semantic-version@v5.4.0` with `bump_each_commit: false` for batch merge releases:
-     - `BREAKING CHANGE:` / `feat!:` / `#major` ➔ **MAJOR** (`1.0.0` ➔ `2.0.0`)
-     - `feat:` / `#minor` ➔ **MINOR** (`1.0.0` ➔ `1.1.0`)
-     - `fix:` / `#patch` / regular commits ➔ **PATCH** (`1.0.0` ➔ `1.0.1`)
-   - **Version Code**: Monotonically increasing build integer via `${{ github.run_number }}`.
-   - **Artifacts**: Signed release APK and optional Play Store Bundle (`.aab`) published to GitHub Releases and dispatched via email.
+6. **Automated CI/CD & 4-Stage Release Pipeline (`.github/workflows/release.yml`)**
+   - **Visual 4-Stage Sequential Flow**:
+     - `1. Version & Release Metadata`: Automated Semantic Versioning via `PaulHatch/semantic-version@v5.4.0` (`MAJOR.MINOR.PATCH`) + sequential version code.
+     - `2. Build & Sign (APK + AAB)`: Compiles release APK and AAB bundle, signs with keystore, and extracts ProGuard/R8 de-obfuscation mapping.
+     - `3. Publish GitHub Release`: Creates GitHub Release tag with release notes and attaches direct APK & AAB download links.
+     - `4. Deploy to Google Play (Closed Testing)`: Deploys signed AAB and mapping file to Google Play `alpha` / Closed Testing track using `r0adkll/upload-google-play@v1` and repository secret `PLAY_CONFIG_JSON`.
 
 ---
 

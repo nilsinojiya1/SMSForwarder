@@ -17,23 +17,25 @@ Built using modern Android architecture principles (**Jetpack Compose**, **Mater
 
 ## 🌟 Key Features
 
-- ⚡ **Real-Time SMS Forwarding:** Intercepts incoming SMS broadcasts instantly and forwards sender details, timestamp, SIM slot, and body to Telegram.
+- ⚡ **Zero-Loss Sub-Second Forwarding (< 1s):** Direct in-receiver dispatch forwards incoming SMS to Telegram instantly within `goAsync()` while holding the CPU wake lock, bypassing Android Doze mode and App Standby delays.
 - 🛡️ **Prominent Disclosure & Ethical Use Consent:** Google Play compliant upfront disclosure explaining data access (`RECEIVE_SMS`, `READ_SMS`, `READ_PHONE_STATE`), zero 3rd-party tracking, direct Telegram API transmission, and strict anti-stalkerware terms with balanced single-line action buttons.
 - 🔒 **4-Digit App PIN Security:** Protects app access with a secure 4-digit PIN screen (SHA-256 hashed). Prompts for setup on first launch and unlocks seamlessly on subsequent opens.
 - ✨ **Fluid Motion & Screen Transitions:** Material 3 shared-axis and slide-fade transitions across all screens (`NavHost`), modal slide-up for PIN changes, smooth scale-in on PIN unlock, and crossfading TopAppBar titles.
 - 📳 **Tactile Haptic Feedback & Interactive Press Scale:** Physical vibration pulses (`CLICK`, `TICK`, `SUCCESS`, `ERROR`) paired with responsive spring-press visual depression (`Modifier.bounceClickable`, `Modifier.pressScale`) across keypad digits, buttons, filter chips, and action cards.
 - ❌ **Animated Error Shake:** Lock screen dots indicator dynamically shakes horizontally on invalid PIN entries for clear visual feedback.
 - 📱 **Multi-Device Identification:** Easily run the app on multiple phones forwarding to the same Telegram chat with auto-detected hardware names or custom tags (e.g., `📱 [Pixel 7 (Work)]`).
-- 🧩 **Multi-Part Concatenated SMS Reassembly:** Binary UDH (User Data Header) parser stages and reassembles fragmented long carrier SMS messages into a single complete Telegram notification.
+- 🧩 **Multi-Part Concatenated SMS Reassembly:** Binary UDH (User Data Header) parser stages and reassembles fragmented long carrier SMS messages into a single complete Telegram notification with unique composite indexing and a 30-second assembly window.
+- 📑 **Large Message Auto-Chunking:** Automatically splits long SMS exceeding 3900 characters into numbered parts (`[Part 1/2]`, `[Part 2/2]`) to avoid Telegram API 4096-character payload limits.
 - ⏳ **Forwarding Delay Tracking (> 1 min):** Automatically detects if a message was delayed due to airplane mode or network downtime and injects a delayed badge (e.g., `⏳ [Delayed by 15m]`).
-- 📶 **Dual-SIM Slot Awareness:** Identifies and tags incoming messages by their active SIM slot (`SIM 1` vs `SIM 2`).
-- 🌐 **Offline Resilience & Auto-Drain:** When offline, messages queue in Room. WorkManager and real-time network callbacks automatically send pending messages once internet returns—with strict single-send idempotency.
+- 📶 **Dual-SIM Slot Awareness:** Identifies and tags incoming messages by their active SIM slot (`SIM 1` vs `SIM 2`) with defensive `SecurityException` fallbacks.
+- 🐕 **15-Minute Watchdog & Offline Auto-Drain:** WorkManager periodic watchdog sweeps and drains any stranded unsent messages from Room storage, ensuring zero message loss across reboots and offline periods.
+- 🔋 **Battery Optimization Exemption:** In-app one-tap settings toggle to exempt the app from OEM battery optimizations for 100% reliable background execution.
 - 📋 **All Messages Screen with Live Filters:** View all incoming messages categorized with filter chips (**All**, **Pending**, **Sent**, **Delayed**) with compact number formatting (`1k`, `1Lc`, `1cr`) and automatic top-scrolling on new incoming SMS.
 - ⚙️ **In-App Bot Setup & Live Connection Test:** Configure and test your Telegram Bot Token & Chat ID directly within the app, plus re-examine Ethical Use & Privacy Disclosures anytime.
 - 🌍 **Full Multi-Language Localization (16 Languages):** Comprehensive internationalization supporting English, Spanish (Español), French (Français), German (Deutsch), Portuguese (Português), Russian (Русский), Hindi (हिन्दी), Chinese Simplified (简体中文), Arabic (العربية with RTL support), Japanese (日本語), Italian (Italiano), Indonesian (Bahasa Indonesia), Turkish (Türkçe), Korean (한국어), and Vietnamese (Tiếng Việt).
 - 🛍️ **Direct Google Play Store Updates:** Check and receive the latest app updates directly from the official [Google Play Store listing](https://play.google.com/store/apps/details?id=online.thensoji.smsforwarder).
-- 🔄 **Boot Persistence:** Automatically resumes background listeners when the Android device reboots (`RECEIVE_BOOT_COMPLETED`).
-- 🤖 **Automated CI/CD & Semantic Versioning:** GitHub Actions pipeline with automated Semantic Versioning (`MAJOR.MINOR.PATCH` e.g., `1.0.0`) based on commit conventions and sequential build code generation.
+- 🔄 **Boot Persistence:** Automatically resumes background listeners and enqueues watchdog workers when the Android device reboots (`RECEIVE_BOOT_COMPLETED`).
+- 🤖 **Automated 4-Stage CI/CD & Play Store Deployment:** Visual GitHub Actions pipeline with Semantic Versioning, keystore signing, GitHub Releases, and direct AAB bundle deployment to Google Play **Closed Testing**.
 
 ---
 
@@ -225,8 +227,9 @@ SMSforwarder/
 │   │   │   │   ├── PinManager.kt      # Salted SHA-256 PIN hashing & verification
 │   │   │   │   └── SmsPduParser.kt    # Binary GSM UDH concatenated SMS reassembly
 │   │   │   ├── worker/                # Background WorkManager Workers
-│   │   │   │   ├── AssembleFallbackWorker.kt # 5s timeout flusher for incomplete SMS parts
-│   │   │   │   └── SendWorker.kt      # @HiltWorker for idempotent Telegram forwarding
+│   │   │   │   ├── AssembleFallbackWorker.kt # 30s timeout flusher for incomplete SMS parts
+│   │   │   │   ├── SendWorker.kt      # @HiltWorker for idempotent Telegram forwarding
+│   │   │   │   └── WatchdogWorker.kt  # 15-minute periodic watchdog to sweep stranded messages
 │   │   │   ├── MainActivity.kt        # Single activity entry point hosting MainScreen
 │   │   │   └── SMSForwarderApp.kt     # Application class with Hilt & Network Callback
 │   │   ├── res/                       # Android App Resources & 16-Language Localizations
