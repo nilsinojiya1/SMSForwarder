@@ -63,4 +63,20 @@ class MessageRepository @Inject constructor(
     suspend fun updateMessage(message: ForwardedMessage) = withContext(Dispatchers.IO) {
         dao.update(message)
     }
+
+    suspend fun isDuplicateOrNearby(
+        sender: String?,
+        rawBody: String,
+        timestamp: Long,
+        toleranceMillis: Long = 30_000L
+    ): Boolean = withContext(Dispatchers.IO) {
+        val minTime = timestamp - toleranceMillis
+        val maxTime = timestamp + toleranceMillis
+        val candidates = dao.getNearbyMessages(sender, minTime, maxTime)
+        candidates.any { candidate ->
+            candidate.body == rawBody ||
+                    candidate.body.contains(rawBody) ||
+                    (rawBody.length >= 10 && candidate.body.contains(rawBody.take(20)))
+        }
+    }
 }

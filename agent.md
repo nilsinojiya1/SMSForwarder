@@ -37,13 +37,13 @@ The application is structured into four decoupled layers:
                               (ViewModel ◄── Compose UI)
 ```
 
-1. **Broadcast & Ingestion Layer (`SmsReceiver`, `SmsPduParser`, `BootReceiver`)**
-   - Intercepts `android.provider.Telephony.SMS_RECEIVED` and `SMS_DELIVER` with priority `2147483647`.
-   - Parses GSM binary User Data Headers (UDH) via `SmsPduParser` for multi-part (concatenated) SMS reassembly.
-   - Stages parts in `SmsPartDao` with composite unique index `(sender, refNumber, partIndex)`. When all parts arrive, stitches them into a coherent message; otherwise, `AssembleFallbackWorker` flushes partials after a 30-second window.
-   - Defensive SIM slot extraction: Safely handles `SubscriptionManager` queries within `try/catch` to avoid `SecurityException` crashes when `READ_PHONE_STATE` is restricted.
-   - **Zero-Loss Direct Dispatch**: Immediately transmits incoming SMS to Telegram directly inside `goAsync()` while holding CPU wake-lock for sub-second (< 1s) delivery, bypassing Doze mode / App Standby delays.
-   - **WorkManager Fallback**: Seamlessly enqueues a persistent `OneTimeWorkRequest` with `NetworkType.CONNECTED` constraint and `ExistingWorkPolicy.KEEP` only if offline or if direct transmission fails.
+1. **Dual-Channel Ingestion Layer (`SmsReceiver`, `SmsInboxSyncHelper`, `SmsContentObserver`, `SmsPduParser`)**
+   - **Channel 1 (Real-Time Broadcast)**: Intercepts `android.provider.Telephony.SMS_RECEIVED` with priority `2147483647`. Transmits directly inside `goAsync()` while holding CPU wake-lock for instant (< 1s) delivery.
+   - **Channel 2 (System SMS Inbox Reconciliation)**: `SmsInboxSyncHelper` queries `Telephony.Sms.Inbox.CONTENT_URI` (`content://sms/inbox`) using `READ_SMS` permission. Ensures that any SMS arriving during Doze mode, rebooting, or delivered silently by carrier services is immediately captured, deduplicated, and forwarded.
+   - **Real-Time Database Observer**: `SmsContentObserver` monitors `Telephony.Sms.CONTENT_URI` in real time, triggering instant debounced reconciliation whenever a new message is written to device storage.
+   - **Multi-Part Reassembly**: Parses GSM binary User Data Headers (UDH) via `SmsPduParser`. Stages parts in `SmsPartDao` with composite unique index `(sender, refNumber, partIndex)`.
+   - **Deduplication Engine**: `MessageRepository.isDuplicateOrNearby` prevents double-forwarding across broadcast and inbox sync channels.
+   - **WorkManager Fallback**: Enqueues persistent `OneTimeWorkRequest` with `NetworkType.CONNECTED` constraint only if offline or if direct transmission fails.
 
 2. **Persistence & Migration Layer (`AppDatabase`, `ForwardedMessage`, `SmsPart`, DAOs)**
    - Single source of truth for message delivery states (`isSent`, `sentTimestamp`, `delayMillis`, `telegramMessageId`, `errorMessage`).
