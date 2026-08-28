@@ -17,7 +17,7 @@ Built using modern Android architecture principles (**Jetpack Compose**, **Mater
 
 ## 🌟 Key Features
 
-- ⚡ **Zero-Loss Sub-Second Forwarding (< 1s):** Direct in-receiver dispatch forwards incoming SMS to Telegram instantly within `goAsync()` while holding the CPU wake lock, bypassing Android Doze mode and App Standby delays.
+- ⚡ **Dual-Channel Zero-Loss Ingestion:** Combines real-time `SMS_RECEIVED` broadcast interception (< 1s delivery) with automated Telephony System SMS Inbox (`content://sms/inbox`) reconciliation and `ContentObserver` live sync. Even if the device was turned off, in deep Doze mode, or silently received carrier messages, not a single SMS is ever missed.
 - 🛡️ **Prominent Disclosure & Ethical Use Consent:** Google Play compliant upfront disclosure explaining data access (`RECEIVE_SMS`, `READ_SMS`, `READ_PHONE_STATE`), zero 3rd-party tracking, direct Telegram API transmission, and strict anti-stalkerware terms with balanced single-line action buttons.
 - 🔒 **4-Digit App PIN Security:** Protects app access with a secure 4-digit PIN screen (SHA-256 hashed). Prompts for setup on first launch and unlocks seamlessly on subsequent opens.
 - ✨ **Fluid Motion & Screen Transitions:** Material 3 shared-axis and slide-fade transitions across all screens (`NavHost`), modal slide-up for PIN changes, smooth scale-in on PIN unlock, and crossfading TopAppBar titles.

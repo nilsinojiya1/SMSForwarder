@@ -14,12 +14,14 @@ import androidx.work.WorkerParameters
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import online.thensoji.smsforwarder.repository.MessageRepository
+import online.thensoji.smsforwarder.util.SmsInboxSyncHelper
 
 @HiltWorker
 class WatchdogWorker @AssistedInject constructor(
     @Assisted appContext: Context,
     @Assisted params: WorkerParameters,
-    private val messageRepository: MessageRepository
+    private val messageRepository: MessageRepository,
+    private val inboxSyncHelper: SmsInboxSyncHelper
 ) : CoroutineWorker(appContext, params) {
 
     companion object {
@@ -29,6 +31,17 @@ class WatchdogWorker @AssistedInject constructor(
 
     override suspend fun doWork(): Result {
         return try {
+            // 1. Reconcile with Android's system SMS inbox in case any broadcast was dropped or missed
+            try {
+                val newlyIngested = inboxSyncHelper.syncInboxMessages()
+                if (newlyIngested > 0) {
+                    Log.d(TAG, "Watchdog inbox scan successfully recovered $newlyIngested missed message(s).")
+                }
+            } catch (e: Exception) {
+                Log.w(TAG, "Inbox sync warning in Watchdog: ${e.message}")
+            }
+
+            // 2. Drain any unsent messages from Room database
             val unsent = messageRepository.getUnsentMessages()
             if (unsent.isNotEmpty()) {
                 Log.d(TAG, "Watchdog found ${unsent.size} unsent message(s). Enqueuing SendWorker.")
