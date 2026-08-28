@@ -24,12 +24,14 @@ import online.thensoji.smsforwarder.data.ForwardedMessage
 import online.thensoji.smsforwarder.domain.model.SendResult
 import online.thensoji.smsforwarder.domain.usecase.SendTelegramMessageUseCase
 import online.thensoji.smsforwarder.repository.MessageRepository
+import online.thensoji.smsforwarder.util.SmsInboxSyncHelper
 import javax.inject.Inject
 
 @HiltViewModel
 class MessageViewModel @Inject constructor(
     private val repository: MessageRepository,
-    private val sendTelegramMessageUseCase: SendTelegramMessageUseCase
+    private val sendTelegramMessageUseCase: SendTelegramMessageUseCase,
+    private val inboxSyncHelper: SmsInboxSyncHelper
 ) : ViewModel() {
 
     private val _isLoading = MutableStateFlow(true)
@@ -58,6 +60,9 @@ class MessageViewModel @Inject constructor(
     fun refreshMessages() {
         viewModelScope.launch {
             _isRefreshing.value = true
+            try {
+                inboxSyncHelper.syncInboxMessages(forceFullWindow = true)
+            } catch (_: Exception) {}
             repository.getAllMessages()
             delay(300)
             _isRefreshing.value = false

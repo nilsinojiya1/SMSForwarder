@@ -18,7 +18,10 @@ import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import android.provider.Telephony
 import online.thensoji.smsforwarder.repository.MessageRepository
+import online.thensoji.smsforwarder.service.SmsContentObserver
+import online.thensoji.smsforwarder.util.SmsInboxSyncHelper
 import online.thensoji.smsforwarder.worker.SendWorker
 import javax.inject.Inject
 
@@ -40,6 +43,12 @@ class SMSForwarderApp : Application(), Configuration.Provider {
     @Inject
     lateinit var messageRepository: MessageRepository
 
+    @Inject
+    lateinit var inboxSyncHelper: SmsInboxSyncHelper
+
+    @Inject
+    lateinit var smsContentObserver: SmsContentObserver
+
     override val workManagerConfiguration: Configuration
         get() = Configuration.Builder()
             .setWorkerFactory(workerFactory)
@@ -48,8 +57,22 @@ class SMSForwarderApp : Application(), Configuration.Provider {
     override fun onCreate() {
         super.onCreate()
         schedulePeriodicWatchdog()
+        registerSmsContentObserver()
         registerNetworkCallback()
         triggerPendingMessagesDispatch()
+    }
+
+    private fun registerSmsContentObserver() {
+        try {
+            contentResolver.registerContentObserver(
+                Telephony.Sms.CONTENT_URI,
+                true,
+                smsContentObserver
+            )
+            Log.d(TAG, "SmsContentObserver registered successfully.")
+        } catch (e: Exception) {
+            Log.w(TAG, "Could not register SmsContentObserver: ${e.message}")
+        }
     }
 
     private fun schedulePeriodicWatchdog() {
@@ -96,6 +119,13 @@ class SMSForwarderApp : Application(), Configuration.Provider {
     private fun triggerPendingMessagesDispatch() {
         CoroutineScope(Dispatchers.IO).launch {
             try {
+                // First, sync any missing messages from device inbox
+                try {
+                    inboxSyncHelper.syncInboxMessages()
+                } catch (e: Exception) {
+                    Log.w(TAG, "Startup inbox sync warning: ${e.message}")
+                }
+
                 val unsent = messageRepository.getUnsentMessages()
                 if (unsent.isNotEmpty()) {
                     Log.d(TAG, "Found ${unsent.size} pending unsent message(s). Enqueuing unique workers.")
