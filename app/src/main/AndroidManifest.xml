@@ -60,10 +60,6 @@
             </intent-filter>
         </receiver>
 
-        <service
-            android:name=".service.ForwardingService"
-            android:enabled="true"
-            android:exported="false" />
 
         <provider
             android:name="androidx.startup.InitializationProvider"

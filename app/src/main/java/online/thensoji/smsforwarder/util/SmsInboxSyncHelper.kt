@@ -12,13 +12,12 @@ import androidx.work.Data
 import androidx.work.ExistingWorkPolicy
 import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.OutOfQuotaPolicy
 import androidx.work.WorkManager
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import online.thensoji.smsforwarder.data.ForwardedMessage
-import online.thensoji.smsforwarder.domain.model.SendResult
-import online.thensoji.smsforwarder.domain.usecase.SendTelegramMessageUseCase
 import online.thensoji.smsforwarder.repository.MessageRepository
 import online.thensoji.smsforwarder.worker.SendWorker
 import javax.inject.Inject
@@ -27,12 +26,11 @@ import javax.inject.Singleton
 @Singleton
 class SmsInboxSyncHelper @Inject constructor(
     @ApplicationContext private val context: Context,
-    private val repository: MessageRepository,
-    private val sendTelegramMessageUseCase: SendTelegramMessageUseCase
+    private val repository: MessageRepository
 ) {
 
     companion object {
-        private const val TAG = "SmsInboxSyncHelper"
+        private const val TAG = "SMSF SmsInboxSyncHelper"
         private const val PREFS_NAME = "sms_forwarder_prefs"
         private const val KEY_LAST_INBOX_SYNC_TIME = "last_inbox_sync_timestamp"
         private const val DEFAULT_LOOKBACK_MILLIS = 48 * 60 * 60 * 1000L // 48 hours fallback
@@ -97,7 +95,12 @@ class SmsInboxSyncHelper @Inject constructor(
 
                     if (rawBody.isBlank()) continue
 
-                    // Deduplicate against existing Room database
+                    // Deduplicate against existing Room database using native systemSmsId
+                    if (smsId != -1L && repository.existsBySystemSmsId(smsId)) {
+                        continue
+                    }
+
+                    // Fallback content-based deduplication
                     val isDuplicate = repository.isDuplicateOrNearby(sender, rawBody, timestamp)
                     if (isDuplicate) {
                         continue
@@ -105,27 +108,29 @@ class SmsInboxSyncHelper @Inject constructor(
 
                     // Newly discovered message!
                     val simSlot = resolveSimSlotFromSubId(subId)
-                    val fullMessage = MessageFormatter.format(context, sender, simSlot, timestamp, rawBody)
-                    Log.d(TAG, "Discovered missing SMS in system inbox (smsId: $smsId, sender: $sender, date: $timestamp). Ingesting...")
+                    Log.d(TAG, "[SMSF-DEBUG] Discovered new SMS in system inbox (systemId: $smsId, sender: $sender, date: $timestamp). Ingesting...")
 
-                    val forwarded = ForwardedMessage(
+                    val initialForwarded = ForwardedMessage(
+                        systemSmsId = if (smsId != -1L) smsId else null,
                         sender = sender,
-                        body = fullMessage,
+                        body = rawBody,
                         timestamp = timestamp,
                         isSent = false,
                         telegramMessageId = null
                     )
-                    val insertedId = repository.insertMessage(forwarded)
+                    val insertedId = repository.insertMessage(initialForwarded)
+                    val fullMessage = MessageFormatter.format(context, sender, simSlot, timestamp, rawBody, messageId = insertedId)
+                    repository.updateMessage(initialForwarded.copy(id = insertedId, body = fullMessage))
                     newlyIngestedCount++
 
-                    // Dispatch immediately or via WorkManager
-                    dispatchIngestedMessage(insertedId, fullMessage, timestamp)
+                    // Dispatch via unique WorkManager
+                    dispatchIngestedMessage(insertedId)
                 }
             }
 
             // Update watermark
             prefs.edit().putLong(KEY_LAST_INBOX_SYNC_TIME, now).apply()
-            Log.d(TAG, "Inbox scan complete. Ingested and queued $newlyIngestedCount new message(s).")
+            Log.d(TAG, "[SMSF-DEBUG] Inbox scan complete. Ingested and queued $newlyIngestedCount new message(s).")
         } catch (e: Exception) {
             Log.e(TAG, "Error scanning system SMS inbox", e)
         }
@@ -144,57 +149,25 @@ class SmsInboxSyncHelper @Inject constructor(
         }
     }
 
-    private suspend fun dispatchIngestedMessage(messageId: Long, messageBody: String, timestamp: Long) {
-        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        val botToken = prefs.getString("bot_token", null)
-        val chatId = prefs.getString("chat_id", null)
+    private fun dispatchIngestedMessage(messageId: Long) {
+        val constraints = Constraints.Builder()
+            .setRequiredNetworkType(NetworkType.CONNECTED)
+            .build()
 
-        var sentDirectly = false
-        if (!botToken.isNullOrEmpty() && !chatId.isNullOrEmpty()) {
-            try {
-                val now = System.currentTimeMillis()
-                val delayMillis = (now - timestamp).coerceAtLeast(0)
-                val payload = if (delayMillis >= 60_000L) {
-                    MessageFormatter.injectDelayTag(messageBody, delayMillis)
-                } else {
-                    messageBody
-                }
+        val input = Data.Builder()
+            .putLong("messageId", messageId)
+            .build()
 
-                val sendResult = sendTelegramMessageUseCase(botToken, chatId, payload)
-                if (sendResult is SendResult.Success) {
-                    repository.markAsSent(
-                        id = messageId,
-                        telegramMessageId = sendResult.telegramMessageId,
-                        sentTimestamp = now,
-                        delayMillis = delayMillis
-                    )
-                    sentDirectly = true
-                    Log.d(TAG, "Ingested SMS $messageId forwarded directly to Telegram.")
-                }
-            } catch (e: Exception) {
-                Log.w(TAG, "Direct send failed for ingested SMS $messageId, enqueuing WorkManager: ${e.message}")
-            }
-        }
+        val work = OneTimeWorkRequestBuilder<SendWorker>()
+            .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
+            .setConstraints(constraints)
+            .setInputData(input)
+            .build()
 
-        if (!sentDirectly) {
-            val constraints = Constraints.Builder()
-                .setRequiredNetworkType(NetworkType.CONNECTED)
-                .build()
-
-            val input = Data.Builder()
-                .putLong("messageId", messageId)
-                .build()
-
-            val work = OneTimeWorkRequestBuilder<SendWorker>()
-                .setConstraints(constraints)
-                .setInputData(input)
-                .build()
-
-            WorkManager.getInstance(context).enqueueUniqueWork(
-                "send_sms_$messageId",
-                ExistingWorkPolicy.KEEP,
-                work
-            )
-        }
+        WorkManager.getInstance(context).enqueueUniqueWork(
+            "send_sms_$messageId",
+            ExistingWorkPolicy.KEEP,
+            work
+        )
     }
 }

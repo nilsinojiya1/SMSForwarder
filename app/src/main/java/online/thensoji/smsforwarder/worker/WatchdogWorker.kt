@@ -9,6 +9,8 @@ import androidx.work.Data
 import androidx.work.ExistingWorkPolicy
 import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.OutOfQuotaPolicy
+import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import dagger.assisted.Assisted
@@ -25,7 +27,7 @@ class WatchdogWorker @AssistedInject constructor(
 ) : CoroutineWorker(appContext, params) {
 
     companion object {
-        private const val TAG = "WatchdogWorker"
+        private const val TAG = "SMSF WatchdogWorker"
         const val WORK_NAME = "periodic_sms_watchdog"
     }
 
@@ -55,6 +57,7 @@ class WatchdogWorker @AssistedInject constructor(
                         .putLong("messageId", msg.id)
                         .build()
                     val work = OneTimeWorkRequestBuilder<SendWorker>()
+                        .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
                         .setConstraints(constraints)
                         .setInputData(input)
                         .build()

@@ -16,7 +16,7 @@ class TelegramRepositoryImpl @Inject constructor(
 ) : TelegramRepository {
 
     companion object {
-        private const val TAG = "TelegramRepository"
+        private const val TAG = "SMSF TelegramRepository"
     }
 
     override suspend fun sendMessage(
@@ -48,6 +48,8 @@ class TelegramRepositoryImpl @Inject constructor(
         chatId: String,
         text: String
     ): SendResult {
+        val snippet = text.lines().firstOrNull { it.isNotBlank() } ?: text.take(30)
+        Log.d(TAG, "[SMSF-DEBUG] TelegramRepository: Dispatching HTTP request to Telegram for: '$snippet'")
         return try {
             val request = SendMessageRequest(
                 chatId = chatId,
@@ -59,7 +61,7 @@ class TelegramRepositoryImpl @Inject constructor(
                 val body = response.body()
                 if (body != null && body.ok) {
                     val messageId = body.result?.messageId?.toString()
-                    Log.d(TAG, "Message sent successfully. ID: $messageId")
+                    Log.d(TAG, "[SMSF-DEBUG] TelegramRepository: Telegram API SUCCESS -> message_id: $messageId")
                     SendResult.Success(messageId)
                 } else {
                     val errorDescription = body?.description ?: "Unknown Telegram API response"

@@ -5,6 +5,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 import online.thensoji.smsforwarder.data.ForwardedMessage
 import online.thensoji.smsforwarder.data.ForwardedMessageDao
+import online.thensoji.smsforwarder.util.MessageFormatter
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -58,6 +59,14 @@ class MessageRepository @Inject constructor(
         dao.getById(id)
     }
 
+    suspend fun getBySystemSmsId(systemSmsId: Long): ForwardedMessage? = withContext(Dispatchers.IO) {
+        dao.getBySystemSmsId(systemSmsId)
+    }
+
+    suspend fun existsBySystemSmsId(systemSmsId: Long): Boolean = withContext(Dispatchers.IO) {
+        dao.existsBySystemSmsId(systemSmsId)
+    }
+
     suspend fun getMessageById(id: Long): ForwardedMessage? = getById(id)
 
     suspend fun updateMessage(message: ForwardedMessage) = withContext(Dispatchers.IO) {
@@ -68,15 +77,31 @@ class MessageRepository @Inject constructor(
         sender: String?,
         rawBody: String,
         timestamp: Long,
-        toleranceMillis: Long = 30_000L
+        toleranceMillis: Long = 3000L
     ): Boolean = withContext(Dispatchers.IO) {
+        val cleanRaw = MessageFormatter.extractRawBody(rawBody)
+        if (cleanRaw.isBlank()) return@withContext false
+
         val minTime = timestamp - toleranceMillis
         val maxTime = timestamp + toleranceMillis
-        val candidates = dao.getNearbyMessages(sender, minTime, maxTime)
+        val candidates = dao.getNearbyMessagesByTime(minTime, maxTime)
+        val normSender = normalizeSender(sender)
+
         candidates.any { candidate ->
-            candidate.body == rawBody ||
-                    candidate.body.contains(rawBody) ||
-                    (rawBody.length >= 10 && candidate.body.contains(rawBody.take(20)))
+            val candidateNormSender = normalizeSender(candidate.sender)
+            val senderMatches = normSender.isEmpty() || candidateNormSender.isEmpty() || normSender == candidateNormSender
+            if (!senderMatches) return@any false
+
+            val candidateRaw = MessageFormatter.extractRawBody(candidate.body)
+            candidateRaw == cleanRaw
+        }
+    }
+
+    companion object {
+        fun normalizeSender(sender: String?): String {
+            if (sender.isNullOrBlank()) return ""
+            val digits = sender.filter { it.isDigit() }
+            return if (digits.length >= 7) digits.takeLast(10) else sender.trim().lowercase()
         }
     }
 }

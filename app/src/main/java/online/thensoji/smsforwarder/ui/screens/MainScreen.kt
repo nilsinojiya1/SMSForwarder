@@ -156,35 +156,35 @@ fun MainScreen() {
             enterTransition = {
                 slideIntoContainer(
                     towards = AnimatedContentTransitionScope.SlideDirection.Start,
-                    animationSpec = tween(durationMillis = 350, easing = FastOutSlowInEasing)
-                ) + fadeIn(animationSpec = tween(300))
+                    animationSpec = tween(durationMillis = 550, easing = FastOutSlowInEasing)
+                ) + fadeIn(animationSpec = tween(500))
             },
             exitTransition = {
                 slideOutOfContainer(
                     towards = AnimatedContentTransitionScope.SlideDirection.Start,
                     targetOffset = { it / 4 },
                     animationSpec = tween(durationMillis = 350, easing = FastOutSlowInEasing)
-                ) + fadeOut(animationSpec = tween(250))
+                ) + fadeOut(animationSpec = tween(550))
             },
             popEnterTransition = {
                 slideIntoContainer(
                     towards = AnimatedContentTransitionScope.SlideDirection.End,
                     initialOffset = { -it / 4 },
-                    animationSpec = tween(durationMillis = 350, easing = FastOutSlowInEasing)
-                ) + fadeIn(animationSpec = tween(300))
+                    animationSpec = tween(durationMillis = 550, easing = FastOutSlowInEasing)
+                ) + fadeIn(animationSpec = tween(500))
             },
             popExitTransition = {
                 slideOutOfContainer(
                     towards = AnimatedContentTransitionScope.SlideDirection.End,
-                    animationSpec = tween(durationMillis = 350, easing = FastOutSlowInEasing)
-                ) + fadeOut(animationSpec = tween(250))
+                    animationSpec = tween(durationMillis = 550, easing = FastOutSlowInEasing)
+                ) + fadeOut(animationSpec = tween(550))
             }
         ) {
             // First-time 4-digit PIN setup screen
             composable(
                 route = "setup_pin",
                 exitTransition = {
-                    fadeOut(animationSpec = tween(300))
+                    fadeOut(animationSpec = tween(500))
                 }
             ) {
                 PinLockScreen(
@@ -201,7 +201,7 @@ fun MainScreen() {
             composable(
                 route = "unlock_pin",
                 exitTransition = {
-                    fadeOut(animationSpec = tween(300))
+                    fadeOut(animationSpec = tween(500))
                 }
             ) {
                 PinLockScreen(
@@ -220,23 +220,23 @@ fun MainScreen() {
                 enterTransition = {
                     slideIntoContainer(
                         towards = AnimatedContentTransitionScope.SlideDirection.Up,
-                        animationSpec = tween(durationMillis = 350, easing = FastOutSlowInEasing)
-                    ) + fadeIn(animationSpec = tween(300))
+                        animationSpec = tween(durationMillis = 550, easing = FastOutSlowInEasing)
+                    ) + fadeIn(animationSpec = tween(500))
                 },
                 exitTransition = {
                     slideOutOfContainer(
                         towards = AnimatedContentTransitionScope.SlideDirection.Down,
-                        animationSpec = tween(durationMillis = 300, easing = FastOutSlowInEasing)
-                    ) + fadeOut(animationSpec = tween(250))
+                        animationSpec = tween(durationMillis = 500, easing = FastOutSlowInEasing)
+                    ) + fadeOut(animationSpec = tween(550))
                 },
                 popEnterTransition = {
-                    fadeIn(animationSpec = tween(300))
+                    fadeIn(animationSpec = tween(500))
                 },
                 popExitTransition = {
                     slideOutOfContainer(
                         towards = AnimatedContentTransitionScope.SlideDirection.Down,
-                        animationSpec = tween(durationMillis = 300, easing = FastOutSlowInEasing)
-                    ) + fadeOut(animationSpec = tween(250))
+                        animationSpec = tween(durationMillis = 500, easing = FastOutSlowInEasing)
+                    ) + fadeOut(animationSpec = tween(550))
                 }
             ) {
                 PinLockScreen(
@@ -255,16 +255,16 @@ fun MainScreen() {
                 route = "home",
                 enterTransition = {
                     if (initialState.destination.route == "unlock_pin" || initialState.destination.route == "setup_pin") {
-                        fadeIn(animationSpec = tween(380)) + scaleIn(
+                        fadeIn(animationSpec = tween(580)) + scaleIn(
                             initialScale = 0.95f,
-                            animationSpec = tween(380, easing = FastOutSlowInEasing)
+                            animationSpec = tween(580, easing = FastOutSlowInEasing)
                         )
                     } else {
                         slideIntoContainer(
                             towards = AnimatedContentTransitionScope.SlideDirection.End,
                             initialOffset = { -it / 4 },
-                            animationSpec = tween(durationMillis = 350, easing = FastOutSlowInEasing)
-                        ) + fadeIn(animationSpec = tween(300))
+                            animationSpec = tween(durationMillis = 550, easing = FastOutSlowInEasing)
+                        ) + fadeIn(animationSpec = tween(500))
                     }
                 }
             ) {

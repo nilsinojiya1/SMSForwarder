@@ -10,6 +10,7 @@ import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.ExistingWorkPolicy
 import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.OutOfQuotaPolicy
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import dagger.hilt.EntryPoint
@@ -27,7 +28,7 @@ import java.util.concurrent.TimeUnit
 class BootReceiver : BroadcastReceiver() {
 
     companion object {
-        private const val TAG = "BootReceiver"
+        private const val TAG = "SMSF BootReceiver"
     }
 
     @EntryPoint
@@ -61,7 +62,7 @@ class BootReceiver : BroadcastReceiver() {
                 val workManager = WorkManager.getInstance(context)
                 workManager.enqueueUniquePeriodicWork(
                     WatchdogWorker.WORK_NAME,
-                    ExistingPeriodicWorkPolicy.KEEP,
+                    ExistingPeriodicWorkPolicy.UPDATE,
                     watchdogRequest
                 )
 
@@ -74,6 +75,7 @@ class BootReceiver : BroadcastReceiver() {
                             .putLong("messageId", msg.id)
                             .build()
                         val work = OneTimeWorkRequestBuilder<SendWorker>()
+                            .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
                             .setConstraints(constraints)
                             .setInputData(input)
                             .build()

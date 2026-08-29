@@ -8,6 +8,7 @@ import androidx.work.Data
 import androidx.work.ExistingWorkPolicy
 import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.OutOfQuotaPolicy
 import androidx.work.WorkManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
@@ -79,9 +80,11 @@ class MessageViewModel @Inject constructor(
 
             val input = Data.Builder()
                 .putLong("messageId", messageId)
+                .putBoolean("isManualResend", true)
                 .build()
 
             val work = OneTimeWorkRequestBuilder<SendWorker>()
+                .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
                 .setConstraints(constraints)
                 .setInputData(input)
                 .build()
@@ -109,15 +112,17 @@ class MessageViewModel @Inject constructor(
             for (msg in unsent) {
                 val input = Data.Builder()
                     .putLong("messageId", msg.id)
+                    .putBoolean("isManualResend", true)
                     .build()
                 val work = OneTimeWorkRequestBuilder<SendWorker>()
+                    .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
                     .setConstraints(constraints)
                     .setInputData(input)
                     .build()
 
                 workManager.enqueueUniqueWork(
                     "send_sms_${msg.id}",
-                    ExistingWorkPolicy.KEEP,
+                    ExistingWorkPolicy.REPLACE,
                     work
                 )
             }

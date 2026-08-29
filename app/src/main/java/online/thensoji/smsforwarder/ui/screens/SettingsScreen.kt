@@ -26,6 +26,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -54,6 +56,8 @@ fun SettingsScreen(
 ) {
     val context = LocalContext.current
     val view = LocalView.current
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val focusManager = LocalFocusManager.current
     val sharedPreferences = remember {
         context.getSharedPreferences("sms_forwarder_prefs", Context.MODE_PRIVATE)
     }
@@ -150,6 +154,8 @@ fun SettingsScreen(
         val saveInteraction = remember { MutableInteractionSource() }
         Button(
             onClick = {
+                keyboardController?.hide()
+                focusManager.clearFocus()
                 HapticFeedbackHelper.performHaptic(context, view, HapticType.SUCCESS)
                 sharedPreferences.edit {
                     putString("device_name", deviceName.trim())
@@ -169,6 +175,8 @@ fun SettingsScreen(
         val testInteraction = remember { MutableInteractionSource() }
         OutlinedButton(
             onClick = {
+                keyboardController?.hide()
+                focusManager.clearFocus()
                 HapticFeedbackHelper.performHaptic(context, view, HapticType.CLICK)
                 val token = botToken.trim()
                 val chat = chatId.trim()

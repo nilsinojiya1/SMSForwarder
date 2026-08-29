@@ -24,8 +24,14 @@ interface ForwardedMessageDao {
     @Query("SELECT * FROM forwarded_messages WHERE id = :id LIMIT 1")
     suspend fun getById(id: Long): ForwardedMessage?
 
-    @Query("SELECT * FROM forwarded_messages WHERE partsGroupingId = :groupingId ORDER BY id ASC")
-    suspend fun getByGroupingId(groupingId: String): List<ForwardedMessage>
+    @Query("SELECT * FROM forwarded_messages WHERE systemSmsId = :systemSmsId LIMIT 1")
+    suspend fun getBySystemSmsId(systemSmsId: Long): ForwardedMessage?
+
+    @Query("SELECT EXISTS(SELECT 1 FROM forwarded_messages WHERE systemSmsId = :systemSmsId)")
+    suspend fun existsBySystemSmsId(systemSmsId: Long): Boolean
+
+    @Query("SELECT * FROM forwarded_messages WHERE timestamp BETWEEN :minTimestamp AND :maxTimestamp ORDER BY timestamp DESC")
+    suspend fun getNearbyMessagesByTime(minTimestamp: Long, maxTimestamp: Long): List<ForwardedMessage>
 
     @Query("SELECT * FROM forwarded_messages WHERE sender = :sender AND timestamp BETWEEN :minTimestamp AND :maxTimestamp")
     suspend fun getNearbyMessages(sender: String?, minTimestamp: Long, maxTimestamp: Long): List<ForwardedMessage>

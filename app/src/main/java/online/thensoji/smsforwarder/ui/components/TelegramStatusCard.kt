@@ -16,10 +16,19 @@ import online.thensoji.smsforwarder.R
 @Composable
 fun TelegramStatusCard(
     isConfigured: Boolean,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onClick: (() -> Unit)? = null
 ) {
+    val cardModifier = if (onClick != null) {
+        modifier
+            .fillMaxWidth()
+            .bounceClickable(onClick = onClick)
+    } else {
+        modifier.fillMaxWidth()
+    }
+
     Card(
-        modifier = modifier.fillMaxWidth(),
+        modifier = cardModifier,
         colors = CardDefaults.cardColors(
             containerColor = if (isConfigured) {
                 MaterialTheme.colorScheme.secondaryContainer

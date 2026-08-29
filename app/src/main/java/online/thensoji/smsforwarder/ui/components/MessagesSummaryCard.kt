@@ -15,10 +15,19 @@ fun MessagesSummaryCard(
     sentCount: Int,
     pendingCount: Int,
     delayedCount: Int,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onClick: (() -> Unit)? = null
 ) {
+    val cardModifier = if (onClick != null) {
+        modifier
+            .fillMaxWidth()
+            .bounceClickable(onClick = onClick)
+    } else {
+        modifier.fillMaxWidth()
+    }
+
     Card(
-        modifier = modifier.fillMaxWidth(),
+        modifier = cardModifier,
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
     ) {
         Column(modifier = Modifier.padding(14.dp)) {
