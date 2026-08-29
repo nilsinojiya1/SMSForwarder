@@ -73,20 +73,24 @@ object MessageFormatter {
         sender: String,
         simSlot: Int,
         timestamp: Long,
-        body: String
+        body: String,
+        messageId: Long? = null
     ): String {
         val deviceName = getDeviceName(context)
         val dateString = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date(timestamp))
         val slotText = if (simSlot >= 0) "${simSlot + 1}" else "Unknown"
 
-        return """
-            📱 [$deviceName]
-            From: $sender
-            SIM Slot: $slotText
-            Time: $dateString
+        val sb = StringBuilder()
+        sb.append("📱 [").append(deviceName).append("]\n")
+        if (messageId != null && messageId > 0) {
+            sb.append("ID: #").append(messageId).append("\n")
+        }
+        sb.append("From: ").append(sender).append("\n")
+        sb.append("SIM Slot: ").append(slotText).append("\n")
+        sb.append("Time: ").append(dateString).append("\n\n")
+        sb.append(body)
 
-            $body
-        """.trimIndent()
+        return sb.toString()
     }
 
     fun injectDelayTag(originalBody: String, delayMillis: Long): String {
@@ -103,5 +107,11 @@ object MessageFormatter {
         } else {
             "$delayText\n$originalBody"
         }
+    }
+
+    fun extractRawBody(formattedOrRawBody: String): String {
+        val delimiter = "\n\n"
+        val idx = formattedOrRawBody.indexOf(delimiter)
+        return if (idx != -1) formattedOrRawBody.substring(idx + delimiter.length).trim() else formattedOrRawBody.trim()
     }
 }

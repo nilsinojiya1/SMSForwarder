@@ -98,15 +98,19 @@ fun HomeScreen(
             }
         )
 
-        // Status Card: Telegram Config
-        TelegramStatusCard(isConfigured = isConfigured)
+        // Status Card: Telegram Config (Clickable -> Settings)
+        TelegramStatusCard(
+            isConfigured = isConfigured,
+            onClick = onOpenSettings
+        )
 
-        // Statistics Card: Messages Summary
+        // Statistics Card: Messages Summary (Clickable -> All Messages)
         MessagesSummaryCard(
             totalCount = totalCount,
             sentCount = sentCount,
             pendingCount = pendingCount,
-            delayedCount = delayedCount
+            delayedCount = delayedCount,
+            onClick = onOpenMessages
         )
 
         Spacer(modifier = Modifier.height(4.dp))

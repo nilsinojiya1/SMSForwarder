@@ -10,31 +10,29 @@ import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
 import androidx.work.Constraints
 import androidx.work.Data
+import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.ExistingWorkPolicy
 import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.OutOfQuotaPolicy
+import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import android.provider.Telephony
 import online.thensoji.smsforwarder.repository.MessageRepository
-import online.thensoji.smsforwarder.service.SmsContentObserver
 import online.thensoji.smsforwarder.util.SmsInboxSyncHelper
 import online.thensoji.smsforwarder.worker.SendWorker
-import javax.inject.Inject
-
-import androidx.work.ExistingPeriodicWorkPolicy
-import androidx.work.PeriodicWorkRequestBuilder
-import java.util.concurrent.TimeUnit
 import online.thensoji.smsforwarder.worker.WatchdogWorker
+import java.util.concurrent.TimeUnit
+import javax.inject.Inject
 
 @HiltAndroidApp
 class SMSForwarderApp : Application(), Configuration.Provider {
 
     companion object {
-        private const val TAG = "SMSForwarderApp"
+        private const val TAG = "SMSF SMSForwarderApp"
     }
 
     @Inject
@@ -46,9 +44,6 @@ class SMSForwarderApp : Application(), Configuration.Provider {
     @Inject
     lateinit var inboxSyncHelper: SmsInboxSyncHelper
 
-    @Inject
-    lateinit var smsContentObserver: SmsContentObserver
-
     override val workManagerConfiguration: Configuration
         get() = Configuration.Builder()
             .setWorkerFactory(workerFactory)
@@ -57,22 +52,8 @@ class SMSForwarderApp : Application(), Configuration.Provider {
     override fun onCreate() {
         super.onCreate()
         schedulePeriodicWatchdog()
-        registerSmsContentObserver()
         registerNetworkCallback()
         triggerPendingMessagesDispatch()
-    }
-
-    private fun registerSmsContentObserver() {
-        try {
-            contentResolver.registerContentObserver(
-                Telephony.Sms.CONTENT_URI,
-                true,
-                smsContentObserver
-            )
-            Log.d(TAG, "SmsContentObserver registered successfully.")
-        } catch (e: Exception) {
-            Log.w(TAG, "Could not register SmsContentObserver: ${e.message}")
-        }
     }
 
     private fun schedulePeriodicWatchdog() {
@@ -87,10 +68,10 @@ class SMSForwarderApp : Application(), Configuration.Provider {
 
             WorkManager.getInstance(applicationContext).enqueueUniquePeriodicWork(
                 WatchdogWorker.WORK_NAME,
-                ExistingPeriodicWorkPolicy.KEEP,
+                ExistingPeriodicWorkPolicy.UPDATE,
                 watchdogRequest
             )
-            Log.d(TAG, "Periodic WatchdogWorker scheduled successfully.")
+            Log.d(TAG, "Periodic WatchdogWorker scheduled successfully with UPDATE policy.")
         } catch (e: Exception) {
             Log.e(TAG, "Failed to schedule WatchdogWorker", e)
         }
@@ -121,14 +102,15 @@ class SMSForwarderApp : Application(), Configuration.Provider {
             try {
                 // First, sync any missing messages from device inbox
                 try {
-                    inboxSyncHelper.syncInboxMessages()
+                    val syncedCount = inboxSyncHelper.syncInboxMessages()
+                    Log.d(TAG, "[SMSF-DEBUG] Startup/Network trigger: inboxSyncHelper synced $syncedCount message(s).")
                 } catch (e: Exception) {
-                    Log.w(TAG, "Startup inbox sync warning: ${e.message}")
+                    Log.w(TAG, "[SMSF-DEBUG] Startup inbox sync warning: ${e.message}")
                 }
 
                 val unsent = messageRepository.getUnsentMessages()
                 if (unsent.isNotEmpty()) {
-                    Log.d(TAG, "Found ${unsent.size} pending unsent message(s). Enqueuing unique workers.")
+                    Log.d(TAG, "[SMSF-DEBUG] triggerPendingMessagesDispatch: Found ${unsent.size} pending unsent message(s): [${unsent.joinToString { "#${it.id}" }}]. Enqueuing SendWorker(s)...")
                     val workManager = WorkManager.getInstance(applicationContext)
                     val constraints = Constraints.Builder()
                         .setRequiredNetworkType(NetworkType.CONNECTED)
@@ -139,6 +121,7 @@ class SMSForwarderApp : Application(), Configuration.Provider {
                             .putLong("messageId", msg.id)
                             .build()
                         val work = OneTimeWorkRequestBuilder<SendWorker>()
+                            .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
                             .setConstraints(constraints)
                             .setInputData(input)
                             .build()
@@ -150,9 +133,11 @@ class SMSForwarderApp : Application(), Configuration.Provider {
                             work
                         )
                     }
+                } else {
+                    Log.d(TAG, "[SMSF-DEBUG] triggerPendingMessagesDispatch: No pending unsent messages found.")
                 }
             } catch (e: Exception) {
-                Log.e(TAG, "Error triggering pending messages dispatch", e)
+                Log.e(TAG, "[SMSF-DEBUG] Error triggering pending messages dispatch", e)
             }
         }
     }

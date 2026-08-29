@@ -37,22 +37,24 @@ The application is structured into four decoupled layers:
                               (ViewModel ◄── Compose UI)
 ```
 
-1. **Dual-Channel Ingestion Layer (`SmsReceiver`, `SmsInboxSyncHelper`, `SmsContentObserver`, `SmsPduParser`)**
-   - **Channel 1 (Real-Time Broadcast)**: Intercepts `android.provider.Telephony.SMS_RECEIVED` with priority `2147483647`. Transmits directly inside `goAsync()` while holding CPU wake-lock for instant (< 1s) delivery.
-   - **Channel 2 (System SMS Inbox Reconciliation)**: `SmsInboxSyncHelper` queries `Telephony.Sms.Inbox.CONTENT_URI` (`content://sms/inbox`) using `READ_SMS` permission. Ensures that any SMS arriving during Doze mode, rebooting, or delivered silently by carrier services is immediately captured, deduplicated, and forwarded.
-   - **Real-Time Database Observer**: `SmsContentObserver` monitors `Telephony.Sms.CONTENT_URI` in real time, triggering instant debounced reconciliation whenever a new message is written to device storage.
-   - **Multi-Part Reassembly**: Parses GSM binary User Data Headers (UDH) via `SmsPduParser`. Stages parts in `SmsPartDao` with composite unique index `(sender, refNumber, partIndex)`.
-   - **Deduplication Engine**: `MessageRepository.isDuplicateOrNearby` prevents double-forwarding across broadcast and inbox sync channels.
-   - **WorkManager Fallback**: Enqueues persistent `OneTimeWorkRequest` with `NetworkType.CONNECTED` constraint only if offline or if direct transmission fails.
+1. **Trigger & Query Ingestion Layer (`SmsReceiver`, `SmsInboxSyncHelper`)**
+   - **Real-Time Trigger (SmsReceiver Doorbell)**: Catches `android.provider.Telephony.SMS_RECEIVED` with maximum priority `2147483647`. Wakes up the CPU with a `PARTIAL_WAKE_LOCK`, waits 300ms for Android's Telephony subsystem to finalize writing to the system inbox, and triggers `SmsInboxSyncHelper`.
+   - **Single Source of Truth (`SmsInboxSyncHelper`)**: Reads complete, system-assembled messages directly from `Telephony.Sms.Inbox.CONTENT_URI` (`content://sms/inbox`).
+   - **Native System ID Deduplication (`systemSmsId`)**: Uses Android's internal `_ID` for 100% duplicate immunity (`existsBySystemSmsId`).
+   - **Zero Loss Recovery**: Automatically runs on app launch, network connection restored, device boot, and 15-minute background watchdog sweeps.
+   - **Defensive Fallback**: If inbox queries return empty on rare OEM delays, `SmsReceiver` seamlessly ingests the direct intent payload so no SMS is ever dropped.
 
-2. **Persistence & Migration Layer (`AppDatabase`, `ForwardedMessage`, `SmsPart`, DAOs)**
-   - Single source of truth for message delivery states (`isSent`, `sentTimestamp`, `delayMillis`, `telegramMessageId`, `errorMessage`).
+2. **Persistence & Migration Layer (`AppDatabase`, `ForwardedMessage`, `ForwardedMessageDao`)**
+   - Single source of truth for message delivery states (`isSent`, `sentTimestamp`, `delayMillis`, `telegramMessageId`, `systemSmsId`, `errorMessage`).
+   - Hard `UNIQUE` index on `systemSmsId` to reject duplicate insertions at the SQLite engine level.
    - All queries run on `Dispatchers.IO` via Room suspend functions and reactive `Flow`.
-   - **Explicit Non-Destructive Migrations (Schema v4)**:
-     - `MIGRATION_1_2`: Creates `sms_parts` table.
+   - **Explicit Non-Destructive Migrations (Schema v6)**:
+     - `MIGRATION_1_2`: Creates legacy `sms_parts` table.
      - `MIGRATION_2_3`: Adds `sentTimestamp`, `delayMillis`, `errorMessage` columns to `forwarded_messages`.
-     - `MIGRATION_3_4`: De-duplicates staging parts and establishes unique index `index_sms_parts_sender_refNumber_partIndex`.
-     - Registered in `DatabaseModule.kt` via `.addMigrations(*AppDatabase.ALL_MIGRATIONS)` preserving 100% of existing user data.
+     - `MIGRATION_3_4`: De-duplicates staging parts.
+     - `MIGRATION_4_5`: Adds `systemSmsId` column with `UNIQUE` index to `forwarded_messages`.
+     - `MIGRATION_5_6`: Drops obsolete `sms_parts` table.
+     - Registered in `DatabaseModule.kt` via `.addMigrations(*AppDatabase.ALL_MIGRATIONS)` preserving 100% of user data.
 
 3. **Domain & Network Layer (`domain/`, `network/`, `repository/`)**
    - Clean Architecture domain use cases: `SendTelegramMessageUseCase` returning sealed `SendResult`.

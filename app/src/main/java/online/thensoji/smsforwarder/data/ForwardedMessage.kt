@@ -1,11 +1,18 @@
 package online.thensoji.smsforwarder.data
 
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "forwarded_messages")
+@Entity(
+    tableName = "forwarded_messages",
+    indices = [
+        Index(value = ["systemSmsId"], unique = true)
+    ]
+)
 data class ForwardedMessage(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val systemSmsId: Long? = null,
     val sender: String?,
     val body: String,
     val timestamp: Long,

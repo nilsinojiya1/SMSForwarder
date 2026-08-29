@@ -41,4 +41,14 @@ class MessageFormatterUnitTest {
         assertTrue(delayed.contains("⏳ [Delayed by 2m]"))
         assertTrue(delayed.startsWith("📱 [Pixel 7]\n⏳ [Delayed by 2m]"))
     }
+
+    @Test
+    fun testExtractRawBody() {
+        val formatted = "📱 [Pixel 7]\nID: #32\nFrom: 123456\nSIM Slot: 1\nTime: 2026-08-27 12:00:00\n\nTest message body"
+        val raw = MessageFormatter.extractRawBody(formatted)
+        assertEquals("Test message body", raw)
+
+        val unformatted = "Hello World"
+        assertEquals("Hello World", MessageFormatter.extractRawBody(unformatted))
+    }
 }

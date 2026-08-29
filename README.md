@@ -17,14 +17,14 @@ Built using modern Android architecture principles (**Jetpack Compose**, **Mater
 
 ## 🌟 Key Features
 
-- ⚡ **Dual-Channel Zero-Loss Ingestion:** Combines real-time `SMS_RECEIVED` broadcast interception (< 1s delivery) with automated Telephony System SMS Inbox (`content://sms/inbox`) reconciliation and `ContentObserver` live sync. Even if the device was turned off, in deep Doze mode, or silently received carrier messages, not a single SMS is ever missed.
+- ⚡ **Trigger & Query Zero-Loss Ingestion:** Uses `SmsReceiver` as a real-time wake-up doorbell holding a CPU `WakeLock`, paired with automated Telephony System SMS Inbox (`content://sms/inbox`) querying and native `systemSmsId` deduplication. Even if the device was turned off, in deep Doze mode, or received multi-part carrier messages, not a single SMS is ever missed or duplicated.
 - 🛡️ **Prominent Disclosure & Ethical Use Consent:** Google Play compliant upfront disclosure explaining data access (`RECEIVE_SMS`, `READ_SMS`, `READ_PHONE_STATE`), zero 3rd-party tracking, direct Telegram API transmission, and strict anti-stalkerware terms with balanced single-line action buttons.
 - 🔒 **4-Digit App PIN Security:** Protects app access with a secure 4-digit PIN screen (SHA-256 hashed). Prompts for setup on first launch and unlocks seamlessly on subsequent opens.
 - ✨ **Fluid Motion & Screen Transitions:** Material 3 shared-axis and slide-fade transitions across all screens (`NavHost`), modal slide-up for PIN changes, smooth scale-in on PIN unlock, and crossfading TopAppBar titles.
 - 📳 **Tactile Haptic Feedback & Interactive Press Scale:** Physical vibration pulses (`CLICK`, `TICK`, `SUCCESS`, `ERROR`) paired with responsive spring-press visual depression (`Modifier.bounceClickable`, `Modifier.pressScale`) across keypad digits, buttons, filter chips, and action cards.
 - ❌ **Animated Error Shake:** Lock screen dots indicator dynamically shakes horizontally on invalid PIN entries for clear visual feedback.
 - 📱 **Multi-Device Identification:** Easily run the app on multiple phones forwarding to the same Telegram chat with auto-detected hardware names or custom tags (e.g., `📱 [Pixel 7 (Work)]`).
-- 🧩 **Multi-Part Concatenated SMS Reassembly:** Binary UDH (User Data Header) parser stages and reassembles fragmented long carrier SMS messages into a single complete Telegram notification with unique composite indexing and a 30-second assembly window.
+- 🧩 **Native Multi-Part Concatenated SMS Reassembly:** Reads complete, auto-concatenated long carrier SMS messages directly from Android's system telephony provider with native `_ID` assignment.
 - 📑 **Large Message Auto-Chunking:** Automatically splits long SMS exceeding 3900 characters into numbered parts (`[Part 1/2]`, `[Part 2/2]`) to avoid Telegram API 4096-character payload limits.
 - ⏳ **Forwarding Delay Tracking (> 1 min):** Automatically detects if a message was delayed due to airplane mode or network downtime and injects a delayed badge (e.g., `⏳ [Delayed by 15m]`).
 - 📶 **Dual-SIM Slot Awareness:** Identifies and tags incoming messages by their active SIM slot (`SIM 1` vs `SIM 2`) with defensive `SecurityException` fallbacks.
@@ -46,11 +46,16 @@ https://github.com/user-attachments/assets/76e29038-b1ce-46b8-8ee2-718703e1e0ba
 
 ## 🏗️ Architecture & Data Flow
 ```text
-[Incoming SMS Broadcast] 
+[Incoming Carrier SMS] 
        │
-       ▼
-[SmsReceiver (BroadcastReceiver)]
-       │  (Extracts SIM metadata & stages multi-part PDUs in SmsPartDao)
+       ├────────────────────────────────────────┐
+       ▼                                        ▼
+[SmsReceiver (Doorbell)]             [Android Telephony Subsystem]
+ (Acquires CPU WakeLock)              (Assembles & saves to content://sms/inbox)
+       │                                        │
+       ▼ (Waits 300ms)                          │
+[SmsInboxSyncHelper] ◄──────────────────────────┘
+       │  (Reads complete assembled SMS & deduplicates by native systemSmsId)
        ▼
 [Room SQLite (AppDatabase)] ◄─── Persists message (isSent = false)
        │
@@ -167,12 +172,10 @@ SMSforwarder/
 ├── app/
 │   ├── src/main/
 │   │   ├── java/online/thensoji/smsforwarder/
-│   │   │   ├── data/                  # Room Entities (ForwardedMessage, SmsPart) & DAOs
-│   │   │   │   ├── AppDatabase.kt
-│   │   │   │   ├── ForwardedMessage.kt
-│   │   │   │   ├── ForwardedMessageDao.kt
-│   │   │   │   ├── SmsPart.kt
-│   │   │   │   └── SmsPartDao.kt
+│   │   │   ├── data/                  # Room Entities (ForwardedMessage) & DAOs
+│   │   │   │   ├── AppDatabase.kt     # Room database (Schema v6 migrations)
+│   │   │   │   ├── ForwardedMessage.kt# Message entity with UNIQUE systemSmsId index
+│   │   │   │   └── ForwardedMessageDao.kt
 │   │   │   ├── di/                    # Dagger Hilt Dependency Injection Modules
 │   │   │   │   ├── DatabaseModule.kt
 │   │   │   │   ├── NetworkModule.kt
@@ -189,10 +192,9 @@ SMSforwarder/
 │   │   │   ├── repository/            # Repository Implementations
 │   │   │   │   ├── MessageRepository.kt
 │   │   │   │   └── TelegramRepositoryImpl.kt
-│   │   │   ├── service/               # Broadcast Receivers & Android Services
+│   │   │   ├── service/               # Broadcast Receivers
 │   │   │   │   ├── BootReceiver.kt    # BOOT_COMPLETED receiver
-│   │   │   │   ├── ForwardingService.kt
-│   │   │   │   └── SmsReceiver.kt     # SMS_RECEIVED interceptor & SIM slot extractor
+│   │   │   │   └── SmsReceiver.kt     # SMS_RECEIVED doorbell trigger & WakeLock holder
 │   │   │   ├── ui/                    # Jetpack Compose Presentation Layer
 │   │   │   │   ├── components/        # Atomic UI widgets & interactive modifiers
 │   │   │   │   │   ├── ClickModifiers.kt       # bounceClickable & pressScale animations
@@ -225,9 +227,8 @@ SMSforwarder/
 │   │   │   │   ├── MessageFormatter.kt# Time, device tags & compact number formatting
 │   │   │   │   ├── PermissionUtils.kt # Runtime SMS permission validation
 │   │   │   │   ├── PinManager.kt      # Salted SHA-256 PIN hashing & verification
-│   │   │   │   └── SmsPduParser.kt    # Binary GSM UDH concatenated SMS reassembly
+│   │   │   │   └── SmsInboxSyncHelper.kt # Telephony inbox query & systemSmsId deduplication
 │   │   │   ├── worker/                # Background WorkManager Workers
-│   │   │   │   ├── AssembleFallbackWorker.kt # 30s timeout flusher for incomplete SMS parts
 │   │   │   │   ├── SendWorker.kt      # @HiltWorker for idempotent Telegram forwarding
 │   │   │   │   └── WatchdogWorker.kt  # 15-minute periodic watchdog to sweep stranded messages
 │   │   │   ├── MainActivity.kt        # Single activity entry point hosting MainScreen

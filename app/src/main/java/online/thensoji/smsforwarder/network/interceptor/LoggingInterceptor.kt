@@ -10,7 +10,7 @@ import java.util.concurrent.TimeUnit
 class LoggingInterceptor : Interceptor {
 
     companion object {
-        private const val TAG = "TelegramHttpLog"
+        private const val TAG = "SMSF TelegramHttpLog"
     }
 
     override fun intercept(chain: Interceptor.Chain): Response {

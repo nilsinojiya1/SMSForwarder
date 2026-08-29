@@ -3,6 +3,8 @@ package online.thensoji.smsforwarder.service
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.os.Build
+import android.os.PowerManager
 import android.provider.Telephony
 import android.telephony.SubscriptionManager
 import android.util.Log
@@ -11,6 +13,7 @@ import androidx.work.Data
 import androidx.work.ExistingWorkPolicy
 import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.OutOfQuotaPolicy
 import androidx.work.WorkManager
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
@@ -18,32 +21,26 @@ import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import online.thensoji.smsforwarder.data.ForwardedMessage
-import online.thensoji.smsforwarder.data.SmsPart
-import online.thensoji.smsforwarder.data.SmsPartDao
-import online.thensoji.smsforwarder.domain.model.SendResult
-import online.thensoji.smsforwarder.domain.usecase.SendTelegramMessageUseCase
 import online.thensoji.smsforwarder.repository.MessageRepository
 import online.thensoji.smsforwarder.util.MessageFormatter
-import online.thensoji.smsforwarder.util.SmsPduParser
-import online.thensoji.smsforwarder.worker.AssembleFallbackWorker
+import online.thensoji.smsforwarder.util.SmsInboxSyncHelper
 import online.thensoji.smsforwarder.worker.SendWorker
-import java.util.concurrent.TimeUnit
 
 class SmsReceiver : BroadcastReceiver() {
 
     companion object {
-        private const val TAG = "SmsReceiver"
-        private const val FALLBACK_DELAY_SECONDS = 30L
+        private const val TAG = "SMSF SmsReceiver"
+        private const val WAKELOCK_TIMEOUT_MS = 60_000L
     }
 
     @EntryPoint
     @InstallIn(SingletonComponent::class)
     interface SmsReceiverEntryPoint {
         fun getRepository(): MessageRepository
-        fun getSmsPartDao(): SmsPartDao
-        fun getSendTelegramMessageUseCase(): SendTelegramMessageUseCase
+        fun getSmsInboxSyncHelper(): SmsInboxSyncHelper
     }
 
     override fun onReceive(context: Context, intent: Intent) {
@@ -59,8 +56,7 @@ class SmsReceiver : BroadcastReceiver() {
             SmsReceiverEntryPoint::class.java
         )
         val repository = entryPoint.getRepository()
-        val smsPartDao = entryPoint.getSmsPartDao()
-        val sendTelegramMessageUseCase = entryPoint.getSendTelegramMessageUseCase()
+        val inboxSyncHelper = entryPoint.getSmsInboxSyncHelper()
 
         val messages = try {
             Telephony.Sms.Intents.getMessagesFromIntent(intent)
@@ -74,91 +70,88 @@ class SmsReceiver : BroadcastReceiver() {
         // Defensive SIM slot extraction (Guards against SecurityException or null subManager)
         val simSlot = extractSimSlotSafely(context, intent)
 
-        @Suppress("DEPRECATION")
-        val pdus = try {
-            intent.extras?.get("pdus") as? Array<*>
-        } catch (e: Exception) {
-            null
+        // Acquire a CPU wake-lock to guarantee full execution during background/kill Doze states
+        val powerManager = context.getSystemService(Context.POWER_SERVICE) as? PowerManager
+        val wakeLock = powerManager?.newWakeLock(
+            PowerManager.PARTIAL_WAKE_LOCK,
+            "SMSForwarder:SmsReceiverWakeLock"
+        )?.apply {
+            setReferenceCounted(false)
+            try {
+                acquire(WAKELOCK_TIMEOUT_MS)
+            } catch (e: Exception) {
+                Log.w(TAG, "Could not acquire WakeLock: ${e.message}")
+            }
         }
 
         val pendingResult = goAsync()
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                for (i in messages.indices) {
-                    val sms = messages[i] ?: continue
-                    val rawPdu = pdus?.getOrNull(i) as? ByteArray
-                    val sender = sms.originatingAddress ?: "Unknown"
-                    val timestamp = sms.timestampMillis
-                    val body = sms.messageBody ?: ""
+                Log.d(TAG, "[SMSF-DEBUG] SmsReceiver doorbell triggered. Initiating Trigger & Query pipeline...")
+                
+                // Allow Android Telephony Provider ~300ms to finalize writing assembled SMS to content://sms/inbox
+                delay(300L)
+                val syncedCount = inboxSyncHelper.syncInboxMessages()
+                Log.d(TAG, "[SMSF-DEBUG] Trigger & Query: Inbox query synced $syncedCount message(s).")
 
-                    val concatInfo = SmsPduParser.getConcatInfo(sms, rawPdu)
+                // Fallback: If content://sms query found 0 messages (e.g. OEM delay), ingest from broadcast payload directly
+                val nonNullMessages = messages.filterNotNull()
+                if (syncedCount == 0 && nonNullMessages.isNotEmpty()) {
+                    val firstMsg = nonNullMessages.first()
+                    val sender = firstMsg.originatingAddress ?: "Unknown"
+                    val timestamp = firstMsg.timestampMillis
+                    val combinedBody = nonNullMessages.joinToString("") { it.messageBody ?: "" }
 
-                    if (concatInfo == null || concatInfo.totalParts <= 1) {
-                        // Single-part standard SMS
-                        val fullMessage = MessageFormatter.format(context, sender, simSlot, timestamp, body)
-                        val forwarded = ForwardedMessage(
+                    if (repository.isDuplicateOrNearby(sender, combinedBody, timestamp)) {
+                        Log.d(TAG, "[SMSF-DEBUG] Duplicate SMS detected in fallback. Skipping.")
+                    } else {
+                        val initialForwarded = ForwardedMessage(
                             sender = sender,
-                            body = fullMessage,
+                            body = combinedBody,
                             timestamp = timestamp,
                             isSent = false,
                             telegramMessageId = null
                         )
-                        val id = repository.insertMessage(forwarded)
-                        dispatchMessage(context, repository, sendTelegramMessageUseCase, id, fullMessage, timestamp)
-                    } else {
-                        // Multi-part concatenated SMS
-                        Log.d(
-                            TAG,
-                            "Staging SMS part ${concatInfo.partIndex}/${concatInfo.totalParts} (ref: ${concatInfo.refNumber}) from $sender"
-                        )
+                        val id = repository.insertMessage(initialForwarded)
+                        val fullMessage = MessageFormatter.format(context, sender, simSlot, timestamp, combinedBody, messageId = id)
+                        repository.updateMessage(initialForwarded.copy(id = id, body = fullMessage))
+                        Log.d(TAG, "[SMSF-DEBUG] Fallback inserted SMS ID #$id ($sender). Dispatching...")
 
-                        smsPartDao.insertPart(
-                            SmsPart(
-                                sender = sender,
-                                simSlot = simSlot,
-                                timestamp = timestamp,
-                                refNumber = concatInfo.refNumber,
-                                totalParts = concatInfo.totalParts,
-                                partIndex = concatInfo.partIndex,
-                                partBody = body
-                            )
-                        )
-
-                        val existingParts = smsPartDao.getPartsForRef(sender, concatInfo.refNumber)
-
-                        if (existingParts.size >= concatInfo.totalParts) {
-                            // All parts arrived! Assemble sequentially
-                            val fullBody = existingParts.sortedBy { it.partIndex }.joinToString("") { it.partBody }
-                            val fullMessage = MessageFormatter.format(context, sender, simSlot, timestamp, fullBody)
-                            Log.d(TAG, "Reassembled complete SMS (${existingParts.size} parts): $fullMessage")
-
-                            val forwarded = ForwardedMessage(
-                                sender = sender,
-                                body = fullMessage,
-                                timestamp = timestamp,
-                                isSent = false,
-                                telegramMessageId = null
-                            )
-                            val id = repository.insertMessage(forwarded)
-                            smsPartDao.deletePartsForRef(sender, concatInfo.refNumber)
-                            dispatchMessage(context, repository, sendTelegramMessageUseCase, id, fullMessage, timestamp)
-                        } else {
-                            // Schedule 30s fallback worker to flush partials if remaining parts are delayed
-                            enqueueFallbackAssemblyWorker(context, sender, concatInfo.refNumber, simSlot, timestamp)
-                        }
+                        dispatchMessage(context, id)
                     }
                 }
             } catch (e: Exception) {
-                Log.e(TAG, "Error processing incoming SMS in SmsReceiver", e)
+                Log.e(TAG, "[SMSF-DEBUG] Error processing incoming SMS in SmsReceiver", e)
             } finally {
+                try {
+                    if (wakeLock?.isHeld == true) {
+                        wakeLock.release()
+                    }
+                } catch (e: Exception) {
+                    Log.w(TAG, "Error releasing wake lock: ${e.message}")
+                }
                 pendingResult.finish()
             }
         }
     }
 
     private fun extractSimSlotSafely(context: Context, intent: Intent): Int {
+        val slotFromExtras = intent.getIntExtra("slot", -1)
+        if (slotFromExtras != -1) return slotFromExtras
+
+        val simId = intent.getIntExtra("simId", -1)
+        if (simId != -1) return simId
+
+        val simSlot = intent.getIntExtra("simSlot", -1)
+        if (simSlot != -1) return simSlot
+
+        val subscriptionId = intent.getIntExtra("subscription", -1)
+        if (subscriptionId != -1 && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
+            val subSlot = SubscriptionManager.getSlotIndex(subscriptionId)
+            if (subSlot != -1) return subSlot
+        }
+
         return try {
-            val subscriptionId = intent.getIntExtra("subscription", -1)
             if (subscriptionId != -1) {
                 val subManager = context.getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE) as? SubscriptionManager
                 val subInfo = subManager?.getActiveSubscriptionInfo(subscriptionId)
@@ -175,49 +168,12 @@ class SmsReceiver : BroadcastReceiver() {
         }
     }
 
-    private suspend fun dispatchMessage(
+    private fun dispatchMessage(
         context: Context,
-        repository: MessageRepository,
-        sendTelegramMessageUseCase: SendTelegramMessageUseCase,
-        messageId: Long,
-        messageBody: String,
-        timestamp: Long
+        messageId: Long
     ) {
-        val prefs = context.getSharedPreferences("sms_forwarder_prefs", Context.MODE_PRIVATE)
-        val botToken = prefs.getString("bot_token", null)
-        val chatId = prefs.getString("chat_id", null)
-
-        var sentDirectly = false
-        if (!botToken.isNullOrEmpty() && !chatId.isNullOrEmpty()) {
-            try {
-                val now = System.currentTimeMillis()
-                val delayMillis = (now - timestamp).coerceAtLeast(0)
-                val payload = if (delayMillis >= 60_000L) {
-                    MessageFormatter.injectDelayTag(messageBody, delayMillis)
-                } else {
-                    messageBody
-                }
-
-                val sendResult = sendTelegramMessageUseCase(botToken, chatId, payload)
-                if (sendResult is SendResult.Success) {
-                    repository.markAsSent(
-                        id = messageId,
-                        telegramMessageId = sendResult.telegramMessageId,
-                        sentTimestamp = now,
-                        delayMillis = delayMillis
-                    )
-                    sentDirectly = true
-                    Log.d(TAG, "Message $messageId forwarded directly to Telegram via SmsReceiver.")
-                }
-            } catch (e: Exception) {
-                Log.w(TAG, "Direct send in SmsReceiver failed, delegating to WorkManager: ${e.message}")
-            }
-        }
-
-        // If direct send failed or device was offline, enqueue WorkManager for persistent retries
-        if (!sentDirectly) {
-            enqueueSendWorker(context, messageId)
-        }
+        Log.d(TAG, "[SMSF-DEBUG] dispatchMessage: Enqueuing unique expedited SendWorker for ID #$messageId")
+        enqueueSendWorker(context, messageId)
     }
 
     private fun enqueueSendWorker(context: Context, messageId: Long) {
@@ -230,6 +186,7 @@ class SmsReceiver : BroadcastReceiver() {
             .build()
 
         val work = OneTimeWorkRequestBuilder<SendWorker>()
+            .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
             .setConstraints(constraints)
             .setInputData(input)
             .build()
@@ -239,28 +196,6 @@ class SmsReceiver : BroadcastReceiver() {
             ExistingWorkPolicy.KEEP,
             work
         )
-    }
-
-    private fun enqueueFallbackAssemblyWorker(
-        context: Context,
-        sender: String,
-        refNumber: Int,
-        simSlot: Int,
-        timestamp: Long
-    ) {
-        val input = Data.Builder()
-            .putString("sender", sender)
-            .putInt("refNumber", refNumber)
-            .putInt("simSlot", simSlot)
-            .putLong("timestamp", timestamp)
-            .build()
-
-        val work = OneTimeWorkRequestBuilder<AssembleFallbackWorker>()
-            .setInputData(input)
-            .setInitialDelay(FALLBACK_DELAY_SECONDS, TimeUnit.SECONDS)
-            .build()
-
-        WorkManager.getInstance(context).enqueue(work)
     }
 }
 

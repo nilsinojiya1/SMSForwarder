@@ -9,7 +9,6 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import online.thensoji.smsforwarder.data.AppDatabase
 import online.thensoji.smsforwarder.data.ForwardedMessageDao
-import online.thensoji.smsforwarder.data.SmsPartDao
 import javax.inject.Singleton
 
 @Module
@@ -26,7 +25,4 @@ object DatabaseModule {
 
     @Provides
     fun provideForwardedMessageDao(db: AppDatabase): ForwardedMessageDao = db.forwardedMessageDao()
-
-    @Provides
-    fun provideSmsPartDao(db: AppDatabase): SmsPartDao = db.smsPartDao()
 }

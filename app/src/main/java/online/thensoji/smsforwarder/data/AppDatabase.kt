@@ -6,13 +6,12 @@ import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 
 @Database(
-    entities = [ForwardedMessage::class, SmsPart::class],
-    version = 4,
+    entities = [ForwardedMessage::class],
+    version = 6,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun forwardedMessageDao(): ForwardedMessageDao
-    abstract fun smsPartDao(): SmsPartDao
 
     companion object {
         val MIGRATION_1_2 = object : Migration(1, 2) {
@@ -62,10 +61,28 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        val MIGRATION_4_5 = object : Migration(4, 5) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE `forwarded_messages` ADD COLUMN `systemSmsId` INTEGER")
+                db.execSQL(
+                    "CREATE UNIQUE INDEX IF NOT EXISTS `index_forwarded_messages_systemSmsId` " +
+                            "ON `forwarded_messages` (`systemSmsId`)"
+                )
+            }
+        }
+
+        val MIGRATION_5_6 = object : Migration(5, 6) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("DROP TABLE IF EXISTS `sms_parts`")
+            }
+        }
+
         val ALL_MIGRATIONS = arrayOf(
             MIGRATION_1_2,
             MIGRATION_2_3,
-            MIGRATION_3_4
+            MIGRATION_3_4,
+            MIGRATION_4_5,
+            MIGRATION_5_6
         )
     }
 }
