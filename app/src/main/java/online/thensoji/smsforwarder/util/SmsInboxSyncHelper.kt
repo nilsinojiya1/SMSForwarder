@@ -154,9 +154,9 @@ class SmsInboxSyncHelper @Inject constructor(
             .setRequiredNetworkType(NetworkType.CONNECTED)
             .build()
 
-        val input = Data.Builder()
-            .putLong("messageId", messageId)
-            .build()
+            val input = Data.Builder()
+                .putLong("messageId", messageId)
+                .build()
 
         val work = OneTimeWorkRequestBuilder<SendWorker>()
             .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
@@ -164,10 +164,11 @@ class SmsInboxSyncHelper @Inject constructor(
             .setInputData(input)
             .build()
 
-        WorkManager.getInstance(context).enqueueUniqueWork(
-            "send_sms_$messageId",
-            ExistingWorkPolicy.KEEP,
-            work
-        )
+            WorkManager.getInstance(context).enqueueUniqueWork(
+                "send_sms_$messageId",
+                ExistingWorkPolicy.KEEP,
+                work
+            )
+        }
     }
 }
