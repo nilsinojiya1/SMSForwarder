@@ -36,9 +36,6 @@ interface ForwardedMessageDao {
     @Query("SELECT * FROM forwarded_messages WHERE sender = :sender AND timestamp BETWEEN :minTimestamp AND :maxTimestamp")
     suspend fun getNearbyMessages(sender: String?, minTimestamp: Long, maxTimestamp: Long): List<ForwardedMessage>
 
-    @Query("SELECT * FROM forwarded_messages WHERE sender = :sender AND timestamp BETWEEN :minTimestamp AND :maxTimestamp")
-    suspend fun getNearbyMessages(sender: String?, minTimestamp: Long, maxTimestamp: Long): List<ForwardedMessage>
-
     @Delete
     suspend fun delete(message: ForwardedMessage)
 

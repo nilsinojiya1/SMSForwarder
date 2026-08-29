@@ -169,6 +169,5 @@ class SmsInboxSyncHelper @Inject constructor(
                 ExistingWorkPolicy.KEEP,
                 work
             )
-        }
     }
 }
