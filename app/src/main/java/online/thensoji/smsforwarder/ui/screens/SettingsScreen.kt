@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -16,6 +17,7 @@ import android.provider.Settings
 import androidx.compose.material.icons.filled.BatteryChargingFull
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.RocketLaunch
 import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.Shop
 import androidx.compose.material.icons.filled.Smartphone
@@ -46,12 +48,14 @@ import online.thensoji.smsforwarder.ui.components.TelegramGuideCard
 import online.thensoji.smsforwarder.ui.components.pressScale
 import online.thensoji.smsforwarder.ui.util.HapticFeedbackHelper
 import online.thensoji.smsforwarder.ui.util.HapticType
+import online.thensoji.smsforwarder.util.AutoStartHelper
 import online.thensoji.smsforwarder.util.MessageFormatter
 
 @Composable
 fun SettingsScreen(
     onChangePin: (() -> Unit)? = null,
     onReviewConsent: (() -> Unit)? = null,
+    onOpenDebug: (() -> Unit)? = null,
     viewModel: MessageViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
@@ -340,6 +344,49 @@ fun SettingsScreen(
             }
         }
 
+        // OEM Auto-start / Background Whitelist Section
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+        ) {
+            Column(modifier = Modifier.padding(14.dp)) {
+                Text(
+                    text = stringResource(R.string.settings_autostart_title),
+                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.titleMedium
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = stringResource(R.string.settings_autostart_desc),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(modifier = Modifier.height(10.dp))
+                val autoStartInteraction = remember { MutableInteractionSource() }
+                OutlinedButton(
+                    onClick = {
+                        HapticFeedbackHelper.performHaptic(context, view, HapticType.CLICK)
+                        val opened = AutoStartHelper.openAutoStartSettings(context)
+                        if (!opened) {
+                            Toast.makeText(
+                                context,
+                                context.getString(R.string.settings_autostart_fallback),
+                                Toast.LENGTH_LONG
+                            ).show()
+                        }
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .pressScale(autoStartInteraction, scaleDown = 0.96f),
+                    interactionSource = autoStartInteraction
+                ) {
+                    Icon(Icons.Filled.RocketLaunch, contentDescription = null, modifier = Modifier.size(16.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(stringResource(R.string.settings_autostart_button))
+                }
+            }
+        }
+
         // Updates & Google Play Section
         Card(
             modifier = Modifier.fillMaxWidth(),
@@ -392,11 +439,35 @@ fun SettingsScreen(
         // Credentials Help Guide
         TelegramGuideCard()
 
-        // App Version & Build Code Footer
+        // App Version & Build Code Footer (tap repeatedly to reveal Developer Options)
+        var versionTapCount by remember { mutableStateOf(0) }
+        val versionInteraction = remember { MutableInteractionSource() }
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 14.dp),
+                .padding(vertical = 14.dp)
+                .pressScale(versionInteraction, scaleDown = 0.94f)
+                .clickable(interactionSource = versionInteraction, indication = null) {
+                    if (onOpenDebug == null) return@clickable
+                    versionTapCount++
+                    val remaining = 7 - versionTapCount
+                    when {
+                        remaining <= 0 -> {
+                            versionTapCount = 0
+                            HapticFeedbackHelper.performHaptic(context, view, HapticType.SUCCESS)
+                            Toast.makeText(context, context.getString(R.string.dev_unlocked), Toast.LENGTH_SHORT).show()
+                            onOpenDebug()
+                        }
+                        remaining in 1..3 -> {
+                            HapticFeedbackHelper.performHaptic(context, view, HapticType.TICK)
+                            Toast.makeText(
+                                context,
+                                context.getString(R.string.dev_unlock_progress, remaining),
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    }
+                },
             contentAlignment = Alignment.Center
         ) {
             Text(

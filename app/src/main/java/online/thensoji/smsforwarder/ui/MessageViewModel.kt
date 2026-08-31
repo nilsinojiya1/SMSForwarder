@@ -25,6 +25,7 @@ import online.thensoji.smsforwarder.data.ForwardedMessage
 import online.thensoji.smsforwarder.domain.model.SendResult
 import online.thensoji.smsforwarder.domain.usecase.SendTelegramMessageUseCase
 import online.thensoji.smsforwarder.repository.MessageRepository
+import online.thensoji.smsforwarder.util.HeartbeatManager
 import online.thensoji.smsforwarder.util.SmsInboxSyncHelper
 import javax.inject.Inject
 
@@ -163,6 +164,30 @@ class MessageViewModel @Inject constructor(
                 is SendResult.Error -> {
                     onComplete(false, result.errorMessage)
                 }
+            }
+        }
+    }
+
+    fun sendHeartbeatTest(
+        context: Context,
+        botToken: String,
+        chatId: String,
+        onComplete: (Boolean, String?) -> Unit
+    ) {
+        viewModelScope.launch {
+            val pending = repository.getUnsentCount()
+            val total = repository.getTotalCount()
+            val lastReceived = repository.getLatestReceivedTimestamp()
+            val lastForwarded = repository.getLastForwardedTimestamp()
+            val message = HeartbeatManager.buildPingMessage(
+                context, pending, total, lastReceived, lastForwarded
+            )
+            when (val result = sendTelegramMessageUseCase(botToken, chatId, message)) {
+                is SendResult.Success -> {
+                    HeartbeatManager.recordLastSent(context)
+                    onComplete(true, null)
+                }
+                is SendResult.Error -> onComplete(false, result.errorMessage)
             }
         }
     }
