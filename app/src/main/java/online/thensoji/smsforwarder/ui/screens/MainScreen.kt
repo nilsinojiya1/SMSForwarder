@@ -87,6 +87,7 @@ fun MainScreen() {
         "settings" -> stringResource(R.string.nav_settings)
         "messages" -> stringResource(R.string.nav_messages)
         "change_pin" -> stringResource(R.string.nav_change_pin)
+        "debug" -> stringResource(R.string.dev_title)
         else -> stringResource(R.string.app_name)
     }
 
@@ -277,8 +278,13 @@ fun MainScreen() {
             composable("settings") {
                 SettingsScreen(
                     onChangePin = { navController.navigate("change_pin") },
-                    onReviewConsent = { showConsentReviewDialog = true }
+                    onReviewConsent = { showConsentReviewDialog = true },
+                    onOpenDebug = { navController.navigate("debug") }
                 )
+            }
+
+            composable("debug") {
+                DeveloperScreen()
             }
 
             composable("messages") {

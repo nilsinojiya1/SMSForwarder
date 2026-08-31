@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
+
+    <!-- Hidden Developer / Diagnostics screen (unlocked by tapping the version footer). -->
+    <string name="dev_title">Developer Options</string>
+    <string name="dev_heartbeat_section">Telegram Heartbeat</string>
+    <string name="dev_heartbeat_desc">Periodically pings a separate Telegram bot so you can confirm this device is still forwarding in the background. If the pings stop arriving, the app was killed by the system. Only you receive these.</string>
+    <string name="dev_heartbeat_enable">Enable heartbeat pings</string>
+    <string name="dev_heartbeat_token_label">Heartbeat Bot Token</string>
+    <string name="dev_heartbeat_token_placeholder">123456789:ABCdef-separate-bot-token</string>
+    <string name="dev_heartbeat_chat_label">Heartbeat Chat ID</string>
+    <string name="dev_heartbeat_chat_placeholder">Defaults to your main Chat ID</string>
+    <string name="dev_heartbeat_interval_label">Ping interval</string>
+
+    <string name="dev_interval_15m">Every 15 minutes</string>
+    <string name="dev_interval_30m">Every 30 minutes</string>
+    <string name="dev_interval_1h">Every 1 hour</string>
+    <string name="dev_interval_2h">Every 2 hours</string>
+    <string name="dev_interval_5h">Every 5 hours</string>
+
+    <string name="dev_save">Save</string>
+    <string name="dev_saved">Developer settings saved</string>
+    <string name="dev_send_test">Send test heartbeat now</string>
+    <string name="dev_sending">Sending…</string>
+    <string name="dev_test_empty">Enter a heartbeat bot token first</string>
+    <string name="dev_test_success">Heartbeat sent \u2713</string>
+    <string name="dev_test_failed">Heartbeat failed: %1$s</string>
+    <string name="dev_last_sent">Last heartbeat sent: %1$s</string>
+    <string name="dev_value_never">Never</string>
+
+    <string name="dev_unlock_progress">%1$d step(s) away from Developer Options</string>
+    <string name="dev_unlocked">Developer Options unlocked</string>
+
+    <!-- Background-health card shown on the Overview screen when heartbeat is enabled. -->
+    <string name="health_title">Background Health</string>
+    <string name="health_heartbeat_active">Heartbeat monitoring active</string>
+    <string name="health_last_ping">Last ping: %1$s</string>
+    <string name="health_interval">Interval: %1$s</string>
+    <string name="health_battery_ok">Battery unrestricted \u2713</string>
+    <string name="health_battery_warn">Battery optimized — app may be killed</string>
+    <string name="health_never">Never</string>
+
+    <!-- Heartbeat ping message body sent to Telegram. -->
+    <string name="ping_title">🩺 SMS Forwarder Heartbeat</string>
+    <string name="ping_device">📱 Device: %1$s</string>
+    <string name="ping_version">🏷️ App version: %1$s</string>
+    <string name="ping_time">🕒 Ping time: %1$s</string>
+    <string name="ping_interval">🔁 Interval: %1$s</string>
+    <string name="ping_battery">🔋 Battery: %1$d%%%2$s</string>
+    <string name="ping_charging"> (charging)</string>
+    <string name="ping_battery_opt">⚙️ Battery unrestricted: %1$s</string>
+    <string name="ping_last_open">👁️ Last app open: %1$s</string>
+    <string name="ping_last_sms">📥 Last SMS received: %1$s</string>
+    <string name="ping_last_forward">📤 Last forward sent: %1$s</string>
+    <string name="ping_pending">⏳ Pending (unsent): %1$d</string>
+    <string name="ping_total">🗂️ Total forwarded: %1$d</string>
+    <string name="ping_yes">Yes</string>
+    <string name="ping_no">No</string>
+    <string name="ping_never">Never</string>
+
+</resources>

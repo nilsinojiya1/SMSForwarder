@@ -1,6 +1,7 @@
 package online.thensoji.smsforwarder.ui.screens
 
 import android.content.Context
+import android.os.PowerManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -24,6 +25,7 @@ import online.thensoji.smsforwarder.ui.MessageViewModel
 import online.thensoji.smsforwarder.ui.components.*
 import online.thensoji.smsforwarder.ui.util.HapticFeedbackHelper
 import online.thensoji.smsforwarder.ui.util.HapticType
+import online.thensoji.smsforwarder.util.HeartbeatManager
 import online.thensoji.smsforwarder.util.MessageFormatter
 import online.thensoji.smsforwarder.util.PermissionUtils
 
@@ -57,6 +59,14 @@ fun HomeScreen(
         mutableStateOf(MessageFormatter.getDeviceName(context))
     }
 
+    var heartbeatEnabled by remember { mutableStateOf(HeartbeatManager.isEnabled(context)) }
+    var heartbeatLastSent by remember { mutableStateOf(HeartbeatManager.getLastSent(context)) }
+    var heartbeatInterval by remember { mutableStateOf(HeartbeatManager.getIntervalMinutes(context)) }
+    val powerManager = remember { context.getSystemService(Context.POWER_SERVICE) as? PowerManager }
+    var batteryUnrestricted by remember {
+        mutableStateOf(powerManager?.isIgnoringBatteryOptimizations(context.packageName) ?: false)
+    }
+
     val messages by viewModel.messages.collectAsState()
 
     LaunchedEffect(Unit) {
@@ -64,6 +74,10 @@ fun HomeScreen(
         chatId = sharedPreferences.getString("chat_id", "") ?: ""
         deviceName = MessageFormatter.getDeviceName(context)
         hasPermissions = PermissionUtils.checkAllPermissions(context)
+        heartbeatEnabled = HeartbeatManager.isEnabled(context)
+        heartbeatLastSent = HeartbeatManager.getLastSent(context)
+        heartbeatInterval = HeartbeatManager.getIntervalMinutes(context)
+        batteryUnrestricted = powerManager?.isIgnoringBatteryOptimizations(context.packageName) ?: false
         viewModel.refreshMessages()
     }
 
@@ -112,6 +126,15 @@ fun HomeScreen(
             delayedCount = delayedCount,
             onClick = onOpenMessages
         )
+
+        // Background-health card (only visible once heartbeat monitoring is enabled)
+        if (heartbeatEnabled) {
+            HeartbeatHealthCard(
+                lastSentMillis = heartbeatLastSent,
+                intervalMinutes = heartbeatInterval,
+                batteryUnrestricted = batteryUnrestricted
+            )
+        }
 
         Spacer(modifier = Modifier.height(4.dp))
 

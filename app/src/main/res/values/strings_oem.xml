@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
+
+    <!-- OEM Auto-start / background-run whitelist card. -->
+    <string name="settings_autostart_title">Auto-start &amp; Background</string>
+    <string name="settings_autostart_desc">On Xiaomi, Oppo, Vivo, Realme, Huawei, OnePlus, Samsung and similar phones you must allow this app to auto-start and run in the background. Otherwise the system stops it and SMS forwarding silently fails.</string>
+    <string name="settings_autostart_button">Open Auto-start settings</string>
+    <string name="settings_autostart_fallback">Couldn\'t find the Auto-start screen. Opened App info instead — enable Autostart / Allow background activity manually.</string>
+
+</resources>

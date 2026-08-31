@@ -21,6 +21,18 @@ interface ForwardedMessageDao {
     @Query("SELECT * FROM forwarded_messages WHERE isSent = 0 ORDER BY timestamp ASC, id ASC")
     suspend fun getUnsentMessages(): List<ForwardedMessage>
 
+    @Query("SELECT COUNT(*) FROM forwarded_messages")
+    suspend fun getTotalCount(): Int
+
+    @Query("SELECT COUNT(*) FROM forwarded_messages WHERE isSent = 0")
+    suspend fun getUnsentCount(): Int
+
+    @Query("SELECT MAX(timestamp) FROM forwarded_messages")
+    suspend fun getLatestReceivedTimestamp(): Long?
+
+    @Query("SELECT MAX(sentTimestamp) FROM forwarded_messages WHERE isSent = 1")
+    suspend fun getLastForwardedTimestamp(): Long?
+
     @Query("SELECT * FROM forwarded_messages WHERE id = :id LIMIT 1")
     suspend fun getById(id: Long): ForwardedMessage?
 

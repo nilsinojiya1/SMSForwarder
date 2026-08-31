@@ -28,6 +28,22 @@ class MessageRepository @Inject constructor(
         dao.getUnsentMessages()
     }
 
+    suspend fun getTotalCount(): Int = withContext(Dispatchers.IO) {
+        dao.getTotalCount()
+    }
+
+    suspend fun getUnsentCount(): Int = withContext(Dispatchers.IO) {
+        dao.getUnsentCount()
+    }
+
+    suspend fun getLatestReceivedTimestamp(): Long? = withContext(Dispatchers.IO) {
+        dao.getLatestReceivedTimestamp()
+    }
+
+    suspend fun getLastForwardedTimestamp(): Long? = withContext(Dispatchers.IO) {
+        dao.getLastForwardedTimestamp()
+    }
+
     suspend fun markAsSent(
         id: Long,
         telegramMessageId: String?,
