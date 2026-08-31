@@ -1,6 +1,9 @@
 package online.thensoji.smsforwarder.ui.screens
 
+import android.Manifest
 import android.content.Context
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.PowerManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -19,6 +22,7 @@ import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import online.thensoji.smsforwarder.R
 import online.thensoji.smsforwarder.ui.MessageViewModel
@@ -43,6 +47,23 @@ fun HomeScreen(
         contract = ActivityResultContracts.RequestMultiplePermissions()
     ) {
         hasPermissions = PermissionUtils.checkAllPermissions(context)
+    }
+
+    // Dedicated notification-permission request (Android 13+). Requested once on launch so the
+    // persistent keep-alive notification can be shown even for users who already granted SMS perms.
+    val notificationPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { }
+
+    LaunchedEffect(Unit) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.POST_NOTIFICATIONS
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
     }
 
     val sharedPreferences = remember {

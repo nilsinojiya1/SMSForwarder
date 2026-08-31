@@ -29,12 +29,15 @@ Built using modern Android architecture principles (**Jetpack Compose**, **Mater
 - ⏳ **Forwarding Delay Tracking (> 1 min):** Automatically detects if a message was delayed due to airplane mode or network downtime and injects a delayed badge (e.g., `⏳ [Delayed by 15m]`).
 - 📶 **Dual-SIM Slot Awareness:** Identifies and tags incoming messages by their active SIM slot (`SIM 1` vs `SIM 2`) with defensive `SecurityException` fallbacks.
 - 🐕 **15-Minute Watchdog & Offline Auto-Drain:** WorkManager periodic watchdog sweeps and drains any stranded unsent messages from Room storage, ensuring zero message loss across reboots and offline periods.
+- 🟢 **Always-On Keep-Alive Foreground Service:** A persistent `specialUse` foreground service (`ForwarderService`, `START_STICKY`) holds the app in the foreground bucket so aggressive OEM ROMs are far less likely to force-stop it. While alive it hosts a `SmsContentObserver` on `content://sms`, catching messages even if a broadcast is dropped. Toggle it on/off in Settings (enabled by default).
+- 🚀 **Per-OEM Auto-start Deep-Links:** One-tap access to the manufacturer Auto-start / Background manager (MIUI, ColorOS, FuntouchOS, EMUI, One UI, OxygenOS, and more) via `AutoStartHelper`, with an App-Info fallback when no OEM screen exists. Backed by an Android 11+ `<queries>` block for package visibility.
+- 🩺 **Opt-In Telegram Heartbeat Monitoring:** A hidden Developer screen (unlocked by tapping the version footer 7×) lets selected users configure a *separate* heartbeat bot that pings a Telegram chat every 15m / 30m / 1h / 2h / 5h. Each ping carries a rich diagnostic snapshot (device, app version, battery %, battery-optimization status, last app-open, last SMS received, last forward sent, pending & total counts). If pings stop arriving, you know that device force-stopped the app. A matching **Background Health** card surfaces the status on the Home screen.
 - 🔋 **Battery Optimization Exemption:** In-app one-tap settings toggle to exempt the app from OEM battery optimizations for 100% reliable background execution.
 - 📋 **All Messages Screen with Live Filters:** View all incoming messages categorized with filter chips (**All**, **Pending**, **Sent**, **Delayed**) with compact number formatting (`1k`, `1Lc`, `1cr`) and automatic top-scrolling on new incoming SMS.
 - ⚙️ **In-App Bot Setup & Live Connection Test:** Configure and test your Telegram Bot Token & Chat ID directly within the app, plus re-examine Ethical Use & Privacy Disclosures anytime.
 - 🌍 **Full Multi-Language Localization (16 Languages):** Comprehensive internationalization supporting English, Spanish (Español), French (Français), German (Deutsch), Portuguese (Português), Russian (Русский), Hindi (हिन्दी), Chinese Simplified (简体中文), Arabic (العربية with RTL support), Japanese (日本語), Italian (Italiano), Indonesian (Bahasa Indonesia), Turkish (Türkçe), Korean (한국어), and Vietnamese (Tiếng Việt).
 - 🛍️ **Direct Google Play Store Updates:** Check and receive the latest app updates directly from the official [Google Play Store listing](https://play.google.com/store/apps/details?id=online.thensoji.smsforwarder).
-- 🔄 **Boot Persistence:** Automatically resumes background listeners and enqueues watchdog workers when the Android device reboots (`RECEIVE_BOOT_COMPLETED`).
+- 🔄 **Boot Persistence & Hardened Restart:** Automatically resumes background listeners, restarts the keep-alive service, and enqueues watchdog workers when the device reboots. The `BootReceiver` is `directBootAware` and also listens to `USER_PRESENT` so it recovers on first unlock even when a ROM blocks `BOOT_COMPLETED`.
 - 🤖 **Automated 4-Stage CI/CD & Play Store Deployment:** Visual GitHub Actions pipeline with Semantic Versioning, keystore signing, GitHub Releases, and direct AAB bundle deployment to Google Play **Closed Testing**.
 
 ---
@@ -55,7 +58,8 @@ https://github.com/user-attachments/assets/76e29038-b1ce-46b8-8ee2-718703e1e0ba
        │                                        │
        ▼ (Waits 300ms)                          │
 [SmsInboxSyncHelper] ◄──────────────────────────┘
-       │  (Reads complete assembled SMS & deduplicates by native systemSmsId)
+       │  ▲ (Reads complete assembled SMS & deduplicates by native systemSmsId)
+       │  └───── [ForwarderService → SmsContentObserver] (always-on foreground fallback)
        ▼
 [Room SQLite (AppDatabase)] ◄─── Persists message (isSent = false)
        │
@@ -71,6 +75,11 @@ https://github.com/user-attachments/assets/76e29038-b1ce-46b8-8ee2-718703e1e0ba
        │
        ▼
 [Jetpack Compose UI (MessageViewModel)] ───► Real-time StateFlow updates
+
+Reliability & Monitoring (parallel):
+[ForwarderService] ──► Keeps process alive (specialUse FGS, START_STICKY) + hosts SmsContentObserver
+[WatchdogWorker]   ──► 15-min sweep to drain stranded unsent messages
+[HeartbeatWorker]  ──► Opt-in periodic Telegram ping with device-health diagnostics
 ```
 
 ---
@@ -155,10 +164,21 @@ cd SMSForwarder
    - Tap **Save Settings** and test via **Test Telegram Connection**.
    - Keep the app updated by tapping **Check for Updates on Google Play**.
 
-### 3. Battery Optimization (Recommended)
+### 3. Battery Optimization & Background Reliability (Recommended)
 
-To prevent OEM battery managers (Doze mode) from delaying background forwarders:
-- Go to Android **Settings > Apps > SMS Forwarder > Battery > Set to "Unrestricted"**.
+To prevent OEM battery managers (Doze mode) from delaying or killing background forwarders:
+- Go to Android **Settings > Apps > SMS Forwarder > Battery > Set to "Unrestricted"** (or use the in-app **Battery Optimization** toggle in Settings).
+- Tap **Open Auto-start settings** in the app's Settings to allow the app to auto-start on Xiaomi/MIUI, Oppo/Realme (ColorOS), Vivo, Huawei, Samsung, OnePlus and similar ROMs.
+- Keep the **Keep-alive Service** toggle enabled (default) so the persistent foreground service holds the app resident. On aggressive ROMs, avoid swiping the app away from Recents.
+- Grant the **notification permission** (Android 13+) so the persistent keep-alive notification and status are visible.
+
+### 4. Optional: Telegram Heartbeat Monitoring (Advanced)
+
+To remotely confirm a device is still forwarding in the background:
+1. In **Settings**, tap the version footer (e.g. `v1.0.0(1)`) **7 times** to unlock **Developer Options**.
+2. Enter a **separate** heartbeat Bot Token (the chat defaults to your main Chat ID).
+3. Enable heartbeats and pick an interval (15m / 30m / 1h / 2h / 5h).
+4. Use **Send test heartbeat now** to verify. If scheduled pings stop arriving, that device force-stopped the app.
 
 ---
 
@@ -192,14 +212,17 @@ SMSforwarder/
 │   │   │   ├── repository/            # Repository Implementations
 │   │   │   │   ├── MessageRepository.kt
 │   │   │   │   └── TelegramRepositoryImpl.kt
-│   │   │   ├── service/               # Broadcast Receivers
-│   │   │   │   ├── BootReceiver.kt    # BOOT_COMPLETED receiver
+│   │   │   ├── service/               # Broadcast Receivers & Services
+│   │   │   │   ├── BootReceiver.kt    # Direct-boot-aware BOOT_COMPLETED / USER_PRESENT restart
+│   │   │   │   ├── ForwarderService.kt# Always-on specialUse keep-alive foreground service
+│   │   │   │   ├── SmsContentObserver.kt # ContentObserver on content://sms (hosted by service)
 │   │   │   │   └── SmsReceiver.kt     # SMS_RECEIVED doorbell trigger & WakeLock holder
 │   │   │   ├── ui/                    # Jetpack Compose Presentation Layer
 │   │   │   │   ├── components/        # Atomic UI widgets & interactive modifiers
 │   │   │   │   │   ├── ClickModifiers.kt       # bounceClickable & pressScale animations
 │   │   │   │   │   ├── DeviceTagCard.kt        # Multi-device hardware tag badge
 │   │   │   │   │   ├── EmptyMessagesView.kt    # Tab-specific empty illustration views
+│   │   │   │   │   ├── HeartbeatHealthCard.kt  # Background-health status card (Home screen)
 │   │   │   │   │   ├── LoadingMessagesView.kt  # Loading indicator view
 │   │   │   │   │   ├── MessageCard.kt          # Message item card with delay & retry actions
 │   │   │   │   │   ├── MessageFilterTabs.kt    # Interactive filter chips with haptics
@@ -214,21 +237,27 @@ SMSforwarder/
 │   │   │   │   │   └── TelegramStatusCard.kt   # Configuration status card
 │   │   │   │   ├── screens/           # Full-screen Composables
 │   │   │   │   │   ├── AllMessagesScreen.kt    # Message list with live filter tabs & refresh
-│   │   │   │   │   ├── HomeScreen.kt           # Dashboard overview & quick actions
+│   │   │   │   │   ├── DeveloperScreen.kt      # Hidden heartbeat monitoring config (7-tap unlock)
+│   │   │   │   │   ├── HomeScreen.kt           # Dashboard overview, health card & quick actions
 │   │   │   │   │   ├── MainScreen.kt           # NavHost with Material 3 motion transitions
 │   │   │   │   │   ├── PinLockScreen.kt        # 4-digit PIN setup, unlock & change
-│   │   │   │   │   └── SettingsScreen.kt       # Bot token, chat ID, PIN & Google Play update
+│   │   │   │   │   └── SettingsScreen.kt       # Bot token, keep-alive, auto-start, PIN & updates
 │   │   │   │   ├── theme/             # Material 3 Color, Theme, Typography
 │   │   │   │   ├── util/              # UI Utilities
 │   │   │   │   │   └── HapticFeedbackHelper.kt # Hardware Vibrator & View haptic feedback
 │   │   │   │   └── MessageViewModel.kt# MVVM StateFlow ViewModel
 │   │   │   ├── util/                  # Shared Utilities
+│   │   │   │   ├── AutoStartHelper.kt # Per-OEM auto-start / background manager deep-links
 │   │   │   │   ├── ConsentManager.kt  # Ethical consent persistence
+│   │   │   │   ├── HeartbeatManager.kt# Heartbeat prefs, scheduling & diagnostic ping builder
+│   │   │   │   ├── KeepAliveManager.kt# Keep-alive service controller & enabled pref
 │   │   │   │   ├── MessageFormatter.kt# Time, device tags & compact number formatting
+│   │   │   │   ├── NotificationHelper.kt # Foreground & keep-alive notification builders
 │   │   │   │   ├── PermissionUtils.kt # Runtime SMS permission validation
 │   │   │   │   ├── PinManager.kt      # Salted SHA-256 PIN hashing & verification
 │   │   │   │   └── SmsInboxSyncHelper.kt # Telephony inbox query & systemSmsId deduplication
 │   │   │   ├── worker/                # Background WorkManager Workers
+│   │   │   │   ├── HeartbeatWorker.kt # @HiltWorker periodic Telegram heartbeat ping
 │   │   │   │   ├── SendWorker.kt      # @HiltWorker for idempotent Telegram forwarding
 │   │   │   │   └── WatchdogWorker.kt  # 15-minute periodic watchdog to sweep stranded messages
 │   │   │   ├── MainActivity.kt        # Single activity entry point hosting MainScreen
@@ -250,7 +279,7 @@ SMSforwarder/
 │   │   │   ├── values-tr/strings.xml  # Turkish (Türkçe)
 │   │   │   ├── values-ko/strings.xml  # Korean (한국어)
 │   │   │   └── values-vi/strings.xml  # Vietnamese (Tiếng Việt)
-│   │   └── AndroidManifest.xml        # Declared permissions (SMS, PHONE_STATE, VIBRATE)
+│   │   └── AndroidManifest.xml        # Permissions (SMS, PHONE_STATE, FOREGROUND_SERVICE_SPECIAL_USE, POST_NOTIFICATIONS), keep-alive service & OEM queries
 │   ├── build.gradle.kts               # Module build configuration & signing configs
 │   └── proguard-rules.pro             # Optimized R8 / ProGuard minification rules
 ├── gradle/
