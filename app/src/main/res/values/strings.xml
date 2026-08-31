@@ -25,6 +25,8 @@
     <string name="notification_active_title">SMS Forwarder Active</string>
     <string name="notification_active_desc">Monitoring incoming SMS text messages</string>
     <string name="notification_sending_title">Forwarding SMS to Telegram</string>
+    <string name="keepalive_notification_title">SMS Forwarder is active</string>
+    <string name="keepalive_notification_desc">Listening for incoming SMS in the background</string>
 
     <!-- PIN Lock & Security -->
     <string name="pin_title_unlock">Enter PIN</string>

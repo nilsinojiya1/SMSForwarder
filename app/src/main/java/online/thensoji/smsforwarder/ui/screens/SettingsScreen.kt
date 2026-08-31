@@ -49,6 +49,7 @@ import online.thensoji.smsforwarder.ui.components.pressScale
 import online.thensoji.smsforwarder.ui.util.HapticFeedbackHelper
 import online.thensoji.smsforwarder.ui.util.HapticType
 import online.thensoji.smsforwarder.util.AutoStartHelper
+import online.thensoji.smsforwarder.util.KeepAliveManager
 import online.thensoji.smsforwarder.util.MessageFormatter
 
 @Composable
@@ -78,6 +79,7 @@ fun SettingsScreen(
     }
     var isTokenVisible by remember { mutableStateOf(false) }
     var isTestingConnection by remember { mutableStateOf(false) }
+    var keepAliveEnabled by remember { mutableStateOf(KeepAliveManager.isEnabled(context)) }
 
     val powerManager = remember { context.getSystemService(Context.POWER_SERVICE) as? PowerManager }
     var isIgnoringBatteryOptimizations by remember {
@@ -270,6 +272,46 @@ fun SettingsScreen(
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(stringResource(R.string.settings_view_consent_button))
                     }
+                }
+            }
+        }
+
+        // Keep-alive Foreground Service Section
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+        ) {
+            Column(modifier = Modifier.padding(14.dp)) {
+                Text(
+                    text = stringResource(R.string.settings_keepalive_title),
+                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.titleMedium
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = stringResource(R.string.settings_keepalive_desc),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(modifier = Modifier.height(10.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = stringResource(R.string.settings_keepalive_switch),
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.weight(1f)
+                    )
+                    Switch(
+                        checked = keepAliveEnabled,
+                        onCheckedChange = { checked ->
+                            HapticFeedbackHelper.performHaptic(context, view, HapticType.TICK)
+                            keepAliveEnabled = checked
+                            KeepAliveManager.setEnabled(context, checked)
+                        }
+                    )
                 }
             }
         }

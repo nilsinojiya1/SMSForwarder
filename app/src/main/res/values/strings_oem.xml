@@ -7,4 +7,9 @@
     <string name="settings_autostart_button">Open Auto-start settings</string>
     <string name="settings_autostart_fallback">Couldn\'t find the Auto-start screen. Opened App info instead — enable Autostart / Allow background activity manually.</string>
 
+    <!-- Persistent keep-alive foreground service toggle. -->
+    <string name="settings_keepalive_title">Keep-alive Service</string>
+    <string name="settings_keepalive_desc">Runs a persistent background service with an ongoing notification so the system is much less likely to kill the app. Strongly recommended for reliable SMS forwarding.</string>
+    <string name="settings_keepalive_switch">Keep app running in background</string>
+
 </resources>

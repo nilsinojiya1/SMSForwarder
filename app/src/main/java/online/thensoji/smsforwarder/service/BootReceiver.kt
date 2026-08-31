@@ -21,6 +21,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import online.thensoji.smsforwarder.repository.MessageRepository
+import online.thensoji.smsforwarder.util.KeepAliveManager
 import online.thensoji.smsforwarder.worker.SendWorker
 import online.thensoji.smsforwarder.worker.WatchdogWorker
 import java.util.concurrent.TimeUnit
@@ -50,6 +51,14 @@ class BootReceiver : BroadcastReceiver() {
         val pendingResult = goAsync()
         CoroutineScope(Dispatchers.IO).launch {
             try {
+                // 0. (Re)start the always-on keep-alive service. BOOT_COMPLETED / USER_PRESENT are
+                //    allowed exemptions for starting a foreground service from the background.
+                try {
+                    KeepAliveManager.startIfEnabled(context)
+                } catch (e: Exception) {
+                    Log.w(TAG, "Could not start keep-alive service on boot: ${e.message}")
+                }
+
                 // 1. Ensure Watchdog is scheduled
                 val constraints = Constraints.Builder()
                     .setRequiredNetworkType(NetworkType.CONNECTED)

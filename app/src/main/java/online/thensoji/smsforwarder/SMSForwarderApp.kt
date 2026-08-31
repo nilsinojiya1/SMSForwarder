@@ -23,6 +23,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import online.thensoji.smsforwarder.repository.MessageRepository
 import online.thensoji.smsforwarder.util.HeartbeatManager
+import online.thensoji.smsforwarder.util.KeepAliveManager
 import online.thensoji.smsforwarder.util.SmsInboxSyncHelper
 import online.thensoji.smsforwarder.worker.SendWorker
 import online.thensoji.smsforwarder.worker.WatchdogWorker
@@ -54,6 +55,7 @@ class SMSForwarderApp : Application(), Configuration.Provider {
         super.onCreate()
         schedulePeriodicWatchdog()
         HeartbeatManager.applySchedule(this)
+        KeepAliveManager.startIfEnabled(this)
         registerNetworkCallback()
         triggerPendingMessagesDispatch()
     }
