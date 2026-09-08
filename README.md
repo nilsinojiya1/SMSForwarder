@@ -6,12 +6,12 @@
 [![Google Play](https://img.shields.io/badge/Google%20Play-SMS%20Forwarder-34A853.svg?logo=googleplay&logoColor=white)](https://play.google.com/store/apps/details?id=online.thensoji.smsforwarder)
 [![Hilt](https://img.shields.io/badge/Dagger-Hilt%202.60.1-brightgreen.svg)](https://dagger.dev/hilt/)
 [![Room](https://img.shields.io/badge/AndroidX-Room%202.8.4-orange.svg)](https://developer.android.com/training/data-storage/room)
-[![Retrofit](https://img.shields.io/badge/Retrofit-2.11.0-red.svg)](https://square.github.io/retrofit/)
+[![Retrofit](https://img.shields.io/badge/Retrofit-3.0.0-red.svg)](https://square.github.io/retrofit/)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 A robust, modern, and privacy-first Android application that automatically captures incoming SMS text messages and forwards them in real-time to your private **Telegram** chat or group.
 
-Built using modern Android architecture principles (**Jetpack Compose**, **Material 3**, **Clean Architecture + MVVM**, **Dagger Hilt**, **Retrofit 2**, **Room SQLite Database**, and **WorkManager**), ensuring zero message loss, multi-part message reassembly, offline queue recovery, multi-device identification, tactile haptic feedback, fluid screen transitions, and 4-digit PIN security.
+Built using modern Android architecture principles (**Jetpack Compose**, **Material 3**, **Clean Architecture + MVVM**, **Dagger Hilt**, **Retrofit 3**, **Room SQLite Database**, and **WorkManager**), ensuring zero message loss, multi-part message reassembly, offline queue recovery, multi-device identification, tactile haptic feedback, fluid screen transitions, and 4-digit PIN security.
 
 ---
 
@@ -33,7 +33,7 @@ Built using modern Android architecture principles (**Jetpack Compose**, **Mater
 - 🚀 **Per-OEM Auto-start Deep-Links:** One-tap access to the manufacturer Auto-start / Background manager (MIUI, ColorOS, FuntouchOS, EMUI, One UI, OxygenOS, and more) via `AutoStartHelper`, with an App-Info fallback when no OEM screen exists. Backed by an Android 11+ `<queries>` block for package visibility.
 - 🩺 **Opt-In Telegram Heartbeat Monitoring:** A hidden Developer screen (unlocked by tapping the version footer 7×) lets selected users configure a *separate* heartbeat bot that pings a Telegram chat every 15m / 30m / 1h / 2h / 5h. Each ping carries a rich diagnostic snapshot (device, app version, battery %, battery-optimization status, last app-open, last SMS received, last forward sent, pending & total counts). If pings stop arriving, you know that device force-stopped the app. A matching **Background Health** card surfaces the status on the Home screen.
 - 🔋 **Battery Optimization Exemption:** In-app one-tap settings toggle to exempt the app from OEM battery optimizations for 100% reliable background execution.
-- 📋 **All Messages Screen with Live Filters:** View all incoming messages categorized with filter chips (**All**, **Pending**, **Sent**, **Delayed**) with compact number formatting (`1k`, `1Lc`, `1cr`) and automatic top-scrolling on new incoming SMS.
+- 📋 **All Messages Screen with Live Filters & Inbox Sync:** View all incoming messages categorized with filter chips (**All**, **Pending**, **Sent**, **Delayed**) with compact number formatting (`1k`, `1Lc`, `1cr`), swipe/pull refresh with full inbox sync, and automatic top-scrolling on new incoming SMS.
 - ⚙️ **In-App Bot Setup & Live Connection Test:** Configure and test your Telegram Bot Token & Chat ID directly within the app, plus re-examine Ethical Use & Privacy Disclosures anytime.
 - 🌍 **Full Multi-Language Localization (16 Languages):** Comprehensive internationalization supporting English, Spanish (Español), French (Français), German (Deutsch), Portuguese (Português), Russian (Русский), Hindi (हिन्दी), Chinese Simplified (简体中文), Arabic (العربية with RTL support), Japanese (日本語), Italian (Italiano), Indonesian (Bahasa Indonesia), Turkish (Türkçe), Korean (한국어), and Vietnamese (Tiếng Việt).
 - 🛍️ **Direct Google Play Store Updates:** Check and receive the latest app updates directly from the official [Google Play Store listing](https://play.google.com/store/apps/details?id=online.thensoji.smsforwarder).
@@ -67,7 +67,7 @@ https://github.com/user-attachments/assets/76e29038-b1ce-46b8-8ee2-718703e1e0ba
 [WorkManager (SendWorker)] ───► [SendTelegramMessageUseCase]
        │                                     │
        │                                     ▼
-       │                            [TelegramApiService (Retrofit 2)]
+       │                            [TelegramApiService (Retrofit 3)]
        │                                     │
        ├────────── On Success ───────────────┘
        ▼
@@ -97,7 +97,7 @@ Reliability & Monitoring (parallel):
 | **Dependency Injection** | Dagger Hilt 2.60.1 (`hilt-android`, `hilt-work`, `hilt-navigation-compose`) |
 | **Local Persistence** | AndroidX Room 2.8.4 (Coroutines KTX & KSP CodeGen) |
 | **Background Scheduling** | AndroidX WorkManager 2.11.2 (`work-runtime-ktx`) |
-| **Networking** | Retrofit 2.11.0, OkHttp 5.5.0, Gson Converter 2.11.0, Logging Interceptor |
+| **Networking** | Retrofit 3.0.0, OkHttp 5.5.0, Gson Converter 3.0.0, Gson 2.14.0, Logging Interceptor |
 | **Concurrency** | Kotlin Coroutines & Flow (`StateFlow`, `SharingStarted`) |
 | **Security & Distribution** | SHA-256 PIN Hashing, Google Play Store (`online.thensoji.smsforwarder`) |
 
