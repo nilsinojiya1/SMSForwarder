@@ -9,8 +9,8 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.MonitorHeart
-import androidx.compose.material.icons.filled.Send
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
@@ -33,6 +33,7 @@ import online.thensoji.smsforwarder.ui.MessageViewModel
 import online.thensoji.smsforwarder.ui.components.pressScale
 import online.thensoji.smsforwarder.ui.util.HapticFeedbackHelper
 import online.thensoji.smsforwarder.ui.util.HapticType
+import online.thensoji.smsforwarder.util.AppConstants
 import online.thensoji.smsforwarder.util.HeartbeatManager
 
 @Composable
@@ -48,8 +49,8 @@ fun DeveloperScreen(
     var token by remember { mutableStateOf(HeartbeatManager.getToken(context)) }
     var chatId by remember {
         mutableStateOf(
-            context.getSharedPreferences("sms_forwarder_prefs", Context.MODE_PRIVATE)
-                .getString(HeartbeatManager.KEY_CHAT_ID, "") ?: ""
+            context.getSharedPreferences(AppConstants.PREFS_MAIN, Context.MODE_PRIVATE)
+                .getString(AppConstants.KEY_HEARTBEAT_CHAT_ID, "") ?: ""
         )
     }
     var intervalMinutes by remember { mutableStateOf(HeartbeatManager.getIntervalMinutes(context)) }
@@ -232,7 +233,7 @@ fun DeveloperScreen(
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(stringResource(R.string.dev_sending))
             } else {
-                Icon(Icons.Filled.Send, contentDescription = null, modifier = Modifier.size(16.dp))
+                Icon(Icons.AutoMirrored.Filled.Send, contentDescription = null, modifier = Modifier.size(16.dp))
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(stringResource(R.string.dev_send_test))
             }

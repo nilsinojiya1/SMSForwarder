@@ -80,8 +80,8 @@ class MessageViewModel @Inject constructor(
                 .build()
 
             val input = Data.Builder()
-                .putLong("messageId", messageId)
-                .putBoolean("isManualResend", true)
+                .putLong(online.thensoji.smsforwarder.util.AppConstants.KEY_WORK_MESSAGE_ID, messageId)
+                .putBoolean(online.thensoji.smsforwarder.util.AppConstants.KEY_WORK_IS_MANUAL_RESEND, true)
                 .build()
 
             val work = OneTimeWorkRequestBuilder<SendWorker>()
@@ -91,7 +91,7 @@ class MessageViewModel @Inject constructor(
                 .build()
 
             WorkManager.getInstance(context).enqueueUniqueWork(
-                "send_sms_$messageId",
+                "${online.thensoji.smsforwarder.util.AppConstants.WORK_NAME_SEND_PREFIX}$messageId",
                 ExistingWorkPolicy.REPLACE,
                 work
             )
@@ -112,8 +112,8 @@ class MessageViewModel @Inject constructor(
 
             for (msg in unsent) {
                 val input = Data.Builder()
-                    .putLong("messageId", msg.id)
-                    .putBoolean("isManualResend", true)
+                    .putLong(online.thensoji.smsforwarder.util.AppConstants.KEY_WORK_MESSAGE_ID, msg.id)
+                    .putBoolean(online.thensoji.smsforwarder.util.AppConstants.KEY_WORK_IS_MANUAL_RESEND, true)
                     .build()
                 val work = OneTimeWorkRequestBuilder<SendWorker>()
                     .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
@@ -122,7 +122,7 @@ class MessageViewModel @Inject constructor(
                     .build()
 
                 workManager.enqueueUniqueWork(
-                    "send_sms_${msg.id}",
+                    "${online.thensoji.smsforwarder.util.AppConstants.WORK_NAME_SEND_PREFIX}${msg.id}",
                     ExistingWorkPolicy.REPLACE,
                     work
                 )

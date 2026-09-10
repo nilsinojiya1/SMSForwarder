@@ -64,18 +64,18 @@ fun SettingsScreen(
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
     val sharedPreferences = remember {
-        context.getSharedPreferences("sms_forwarder_prefs", Context.MODE_PRIVATE)
+        context.getSharedPreferences(online.thensoji.smsforwarder.util.AppConstants.PREFS_MAIN, Context.MODE_PRIVATE)
     }
 
     val defaultDeviceName = remember { MessageFormatter.getDefaultDeviceName() }
     var deviceName by remember {
-        mutableStateOf(sharedPreferences.getString("device_name", "") ?: "")
+        mutableStateOf(sharedPreferences.getString(online.thensoji.smsforwarder.util.AppConstants.KEY_DEVICE_NAME, "") ?: "")
     }
     var botToken by remember {
-        mutableStateOf(sharedPreferences.getString("bot_token", "") ?: "")
+        mutableStateOf(sharedPreferences.getString(online.thensoji.smsforwarder.util.AppConstants.KEY_BOT_TOKEN, "") ?: "")
     }
     var chatId by remember {
-        mutableStateOf(sharedPreferences.getString("chat_id", "") ?: "")
+        mutableStateOf(sharedPreferences.getString(online.thensoji.smsforwarder.util.AppConstants.KEY_CHAT_ID, "") ?: "")
     }
     var isTokenVisible by remember { mutableStateOf(false) }
     var isTestingConnection by remember { mutableStateOf(false) }
@@ -164,9 +164,9 @@ fun SettingsScreen(
                 focusManager.clearFocus()
                 HapticFeedbackHelper.performHaptic(context, view, HapticType.SUCCESS)
                 sharedPreferences.edit {
-                    putString("device_name", deviceName.trim())
-                    putString("bot_token", botToken.trim())
-                    putString("chat_id", chatId.trim())
+                    putString(online.thensoji.smsforwarder.util.AppConstants.KEY_DEVICE_NAME, deviceName.trim())
+                    putString(online.thensoji.smsforwarder.util.AppConstants.KEY_BOT_TOKEN, botToken.trim())
+                    putString(online.thensoji.smsforwarder.util.AppConstants.KEY_CHAT_ID, chatId.trim())
                 }
                 Toast.makeText(context, context.getString(R.string.settings_save_success), Toast.LENGTH_SHORT).show()
             },

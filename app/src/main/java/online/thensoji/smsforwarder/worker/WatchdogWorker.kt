@@ -16,6 +16,7 @@ import androidx.work.WorkerParameters
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import online.thensoji.smsforwarder.repository.MessageRepository
+import online.thensoji.smsforwarder.util.AppConstants
 import online.thensoji.smsforwarder.util.SmsInboxSyncHelper
 
 @HiltWorker
@@ -28,7 +29,7 @@ class WatchdogWorker @AssistedInject constructor(
 
     companion object {
         private const val TAG = "SMSF WatchdogWorker"
-        const val WORK_NAME = "periodic_sms_watchdog"
+        const val WORK_NAME = AppConstants.WORK_NAME_WATCHDOG
     }
 
     override suspend fun doWork(): Result {
@@ -54,7 +55,7 @@ class WatchdogWorker @AssistedInject constructor(
 
                 for (msg in unsent) {
                     val input = Data.Builder()
-                        .putLong("messageId", msg.id)
+                        .putLong(AppConstants.KEY_WORK_MESSAGE_ID, msg.id)
                         .build()
                     val work = OneTimeWorkRequestBuilder<SendWorker>()
                         .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
@@ -63,7 +64,7 @@ class WatchdogWorker @AssistedInject constructor(
                         .build()
 
                     workManager.enqueueUniqueWork(
-                        "send_sms_${msg.id}",
+                        "${AppConstants.WORK_NAME_SEND_PREFIX}${msg.id}",
                         ExistingWorkPolicy.KEEP,
                         work
                     )

@@ -8,6 +8,7 @@ import android.os.IBinder
 import android.provider.Telephony
 import android.util.Log
 import dagger.hilt.android.AndroidEntryPoint
+import online.thensoji.smsforwarder.util.AppConstants
 import online.thensoji.smsforwarder.util.NotificationHelper
 import javax.inject.Inject
 
@@ -33,7 +34,7 @@ class ForwarderService : Service() {
 
     companion object {
         private const val TAG = "SMSF ForwarderService"
-        const val ACTION_STOP = "online.thensoji.smsforwarder.action.STOP_KEEPALIVE"
+        const val ACTION_STOP = AppConstants.ACTION_STOP_KEEPALIVE
     }
 
     override fun onCreate() {
@@ -60,12 +61,12 @@ class ForwarderService : Service() {
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
                 startForeground(
-                    NotificationHelper.KEEP_ALIVE_NOTIFICATION_ID,
+                    AppConstants.NOTIFICATION_ID_KEEP_ALIVE,
                     notification,
                     ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE
                 )
             } else {
-                startForeground(NotificationHelper.KEEP_ALIVE_NOTIFICATION_ID, notification)
+                startForeground(AppConstants.NOTIFICATION_ID_KEEP_ALIVE, notification)
             }
         } catch (e: Exception) {
             Log.e(TAG, "Failed to enter foreground state", e)

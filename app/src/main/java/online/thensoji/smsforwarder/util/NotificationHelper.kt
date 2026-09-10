@@ -12,16 +12,12 @@ import online.thensoji.smsforwarder.R
 
 object NotificationHelper {
 
-    const val CHANNEL_ID = "sms_forwarding_channel"
-    const val NOTIFICATION_ID = 1001
-    const val KEEP_ALIVE_NOTIFICATION_ID = 1002
-
     fun createNotificationChannel(context: Context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val name = context.getString(R.string.notification_channel_name)
             val descriptionText = context.getString(R.string.notification_channel_desc)
             val importance = NotificationManager.IMPORTANCE_LOW
-            val channel = NotificationChannel(CHANNEL_ID, name, importance).apply {
+            val channel = NotificationChannel(AppConstants.NOTIFICATION_CHANNEL_ID, name, importance).apply {
                 description = descriptionText
                 setShowBadge(false)
             }
@@ -33,7 +29,7 @@ object NotificationHelper {
     fun buildForegroundInfo(context: Context): ForegroundInfo {
         createNotificationChannel(context)
 
-        val notification: Notification = NotificationCompat.Builder(context, CHANNEL_ID)
+        val notification: Notification = NotificationCompat.Builder(context, AppConstants.NOTIFICATION_CHANNEL_ID)
             .setContentTitle(context.getString(R.string.notification_sending_title))
             .setContentText(context.getString(R.string.notification_active_desc))
             .setSmallIcon(R.mipmap.ic_launcher)
@@ -42,7 +38,7 @@ object NotificationHelper {
             .setCategory(NotificationCompat.CATEGORY_SERVICE)
             .build()
 
-        return ForegroundInfo(NOTIFICATION_ID, notification)
+        return ForegroundInfo(AppConstants.NOTIFICATION_ID_SENDING, notification)
     }
 
     /** Persistent notification for the always-on keep-alive foreground service. */
@@ -61,7 +57,7 @@ object NotificationHelper {
             null
         }
 
-        return NotificationCompat.Builder(context, CHANNEL_ID)
+        return NotificationCompat.Builder(context, AppConstants.NOTIFICATION_CHANNEL_ID)
             .setContentTitle(context.getString(R.string.keepalive_notification_title))
             .setContentText(context.getString(R.string.keepalive_notification_desc))
             .setSmallIcon(R.mipmap.ic_launcher)

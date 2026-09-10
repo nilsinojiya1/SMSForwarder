@@ -5,6 +5,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 import online.thensoji.smsforwarder.data.ForwardedMessage
 import online.thensoji.smsforwarder.data.ForwardedMessageDao
+import online.thensoji.smsforwarder.util.AppConstants
 import online.thensoji.smsforwarder.util.MessageFormatter
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -89,28 +90,37 @@ class MessageRepository @Inject constructor(
         dao.update(message)
     }
 
-    suspend fun isDuplicateOrNearby(
+    suspend fun findMatchingNearbyMessage(
         sender: String?,
         rawBody: String,
         timestamp: Long,
-        toleranceMillis: Long = 3000L
-    ): Boolean = withContext(Dispatchers.IO) {
+        toleranceMillis: Long = AppConstants.DEDUP_TOLERANCE_MS
+    ): ForwardedMessage? = withContext(Dispatchers.IO) {
         val cleanRaw = MessageFormatter.extractRawBody(rawBody)
-        if (cleanRaw.isBlank()) return@withContext false
+        if (cleanRaw.isBlank()) return@withContext null
 
         val minTime = timestamp - toleranceMillis
         val maxTime = timestamp + toleranceMillis
         val candidates = dao.getNearbyMessagesByTime(minTime, maxTime)
         val normSender = normalizeSender(sender)
 
-        candidates.any { candidate ->
+        candidates.firstOrNull { candidate ->
             val candidateNormSender = normalizeSender(candidate.sender)
             val senderMatches = normSender.isEmpty() || candidateNormSender.isEmpty() || normSender == candidateNormSender
-            if (!senderMatches) return@any false
+            if (!senderMatches) return@firstOrNull false
 
             val candidateRaw = MessageFormatter.extractRawBody(candidate.body)
             candidateRaw == cleanRaw
         }
+    }
+
+    suspend fun isDuplicateOrNearby(
+        sender: String?,
+        rawBody: String,
+        timestamp: Long,
+        toleranceMillis: Long = AppConstants.DEDUP_TOLERANCE_MS
+    ): Boolean = withContext(Dispatchers.IO) {
+        findMatchingNearbyMessage(sender, rawBody, timestamp, toleranceMillis) != null
     }
 
     companion object {

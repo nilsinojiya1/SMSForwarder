@@ -14,16 +14,15 @@ import online.thensoji.smsforwarder.service.ForwarderService
 object KeepAliveManager {
 
     private const val TAG = "SMSF KeepAliveManager"
-    private const val PREFS = "sms_forwarder_prefs"
-    const val KEY_ENABLED = "keep_alive_enabled"
 
     /** Enabled by default: the whole point of the app is reliable background delivery. */
     fun isEnabled(context: Context): Boolean =
-        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getBoolean(KEY_ENABLED, true)
+        context.getSharedPreferences(AppConstants.PREFS_MAIN, Context.MODE_PRIVATE)
+            .getBoolean(AppConstants.KEY_KEEP_ALIVE_ENABLED, true)
 
     fun setEnabled(context: Context, enabled: Boolean) {
-        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit {
-            putBoolean(KEY_ENABLED, enabled)
+        context.getSharedPreferences(AppConstants.PREFS_MAIN, Context.MODE_PRIVATE).edit {
+            putBoolean(AppConstants.KEY_KEEP_ALIVE_ENABLED, enabled)
         }
         if (enabled) start(context) else stop(context)
     }

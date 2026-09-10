@@ -7,6 +7,7 @@ import online.thensoji.smsforwarder.domain.model.SendResult
 import online.thensoji.smsforwarder.domain.repository.TelegramRepository
 import online.thensoji.smsforwarder.network.datasource.TelegramRemoteDataSource
 import online.thensoji.smsforwarder.network.model.SendMessageRequest
+import online.thensoji.smsforwarder.util.AppConstants
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -24,7 +25,7 @@ class TelegramRepositoryImpl @Inject constructor(
         chatId: String,
         message: String
     ): SendResult = withContext(Dispatchers.IO) {
-        val maxChunkSize = 3900
+        val maxChunkSize = AppConstants.TELEGRAM_MAX_CHUNK_SIZE
         if (message.length <= maxChunkSize) {
             sendSingleMessage(botToken, chatId, message)
         } else {

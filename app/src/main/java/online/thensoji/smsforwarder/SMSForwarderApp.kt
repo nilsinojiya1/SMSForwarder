@@ -122,7 +122,7 @@ class SMSForwarderApp : Application(), Configuration.Provider {
 
                     for (msg in unsent) {
                         val input = Data.Builder()
-                            .putLong("messageId", msg.id)
+                            .putLong(online.thensoji.smsforwarder.util.AppConstants.KEY_WORK_MESSAGE_ID, msg.id)
                             .build()
                         val work = OneTimeWorkRequestBuilder<SendWorker>()
                             .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
@@ -132,7 +132,7 @@ class SMSForwarderApp : Application(), Configuration.Provider {
 
                         // ExistingWorkPolicy.KEEP guarantees we never duplicate work or send twice
                         workManager.enqueueUniqueWork(
-                            "send_sms_${msg.id}",
+                            "${online.thensoji.smsforwarder.util.AppConstants.WORK_NAME_SEND_PREFIX}${msg.id}",
                             ExistingWorkPolicy.KEEP,
                             work
                         )

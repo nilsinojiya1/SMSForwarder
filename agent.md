@@ -1,7 +1,7 @@
 # AGENT RUNBOOK & OPERATIONAL MANUAL: SMSForwarder
 
 > **Target Environment:** Android (minSdk 26, targetSdk 37, compileSdk 37)  
-> **Primary Stack:** Kotlin 2.4.10, Jetpack Compose (M3), Clean Architecture + MVVM, Dagger Hilt 2.60.1, Room 2.8.4, Retrofit 2.11.0, WorkManager 2.11.2, OkHttp 5.5.0  
+> **Primary Stack:** Kotlin 2.4.10, Jetpack Compose (M3, BOM 2026.08.00), Clean Architecture + MVVM, Dagger Hilt 2.60.1, Room 2.8.4, Retrofit 3.0.0, WorkManager 2.11.2, OkHttp 5.5.0, Gson 2.14.0, KSP 2.3.10  
 > **Package Namespace:** `online.thensoji.smsforwarder`  
 > **Play Store ID:** `online.thensoji.smsforwarder`
 
@@ -10,12 +10,13 @@
 ## 1. Agent Persona & Role
 
 You are an **Expert Android Software Architect & Principal Mobile Systems Engineer**. You specialize in:
-- High-reliability, background-tolerant Android services, broadcast receivers, and WorkManager workflows.
+- High-reliability, background-tolerant Android services, broadcast receivers, ContentObservers, and WorkManager workflows.
 - Modern Android Architecture (Clean Architecture, MVVM, Repository Pattern, Unidirectional Data Flow).
 - Jetpack Compose with Material 3 styling, Motion Design System, and atomic, decoupled UI components.
 - Hardware & View tactile haptics, spring physics animations, and interactive press states.
 - Hardened dependency injection using Dagger Hilt and Hilt WorkManager integration.
 - Offline-first SQLite persistence using Room and Kotlin Coroutines/Flow.
+- OEM battery optimization survival (Auto-start deep-links, `specialUse` Keep-Alive Foreground Service).
 - R8 / ProGuard minification rules, Google Play Store compliance, and secure app lock mechanisms.
 
 When tasked with reading, refactoring, testing, or extending this codebase, maintain the highest standards of code cleanliness, battery efficiency, backwards compatibility, and memory safety.
@@ -26,22 +27,23 @@ When tasked with reading, refactoring, testing, or extending this codebase, main
 
 ### System Architecture
 
-The application is structured into four decoupled layers:
+The application is structured into decoupled layers:
 
 ```text
 [Broadcast / System Events] ──► [Persistence Layer] ──► [Domain / UseCases] ──► [Network Layer]
- (SmsReceiver, BootReceiver)   (Room DAOs & Entities)  (SendTelegramMessage)    (Retrofit 2 Service)
-                                         ▲
+ (SmsReceiver, BootReceiver,   (Room DAOs & Entities)  (SendTelegramMessage)    (Retrofit 3 Service)
+  ForwarderService + Observer)           ▲
                                          │
                                 [Presentation Layer]
                               (ViewModel ◄── Compose UI)
 ```
 
-1. **Trigger & Query Ingestion Layer (`SmsReceiver`, `SmsInboxSyncHelper`)**
+1. **Trigger & Ingestion Reliability Layer (`SmsReceiver`, `ForwarderService`, `SmsContentObserver`, `SmsInboxSyncHelper`)**
    - **Real-Time Trigger (SmsReceiver Doorbell)**: Catches `android.provider.Telephony.SMS_RECEIVED` with maximum priority `2147483647`. Wakes up the CPU with a `PARTIAL_WAKE_LOCK`, waits 300ms for Android's Telephony subsystem to finalize writing to the system inbox, and triggers `SmsInboxSyncHelper`.
+   - **Always-On Keep-Alive Foreground Service (`ForwarderService`)**: Declared as `specialUse` foreground service (`START_STICKY`) holding the app in the foreground bucket against aggressive OEM ROM killers. While active, hosts `SmsContentObserver` on `content://sms` to capture messages even if broadcasts are delayed or dropped. Controlled via `KeepAliveManager`.
    - **Single Source of Truth (`SmsInboxSyncHelper`)**: Reads complete, system-assembled messages directly from `Telephony.Sms.Inbox.CONTENT_URI` (`content://sms/inbox`).
-   - **Native System ID Deduplication (`systemSmsId`)**: Uses Android's internal `_ID` for 100% duplicate immunity (`existsBySystemSmsId`).
-   - **Zero Loss Recovery**: Automatically runs on app launch, network connection restored, device boot, and 15-minute background watchdog sweeps.
+   - **Native System ID Deduplication (`systemSmsId`)**: Uses Android's internal `_ID` for 100% duplicate immunity (`existsBySystemSmsId`), paired with content/timestamp proximity fallback deduplication (`isDuplicateOrNearby`).
+   - **Zero Loss Recovery**: Automatically runs on app launch, network connection restored, device boot (`directBootAware` + `USER_PRESENT`), and 15-minute background watchdog sweeps.
    - **Defensive Fallback**: If inbox queries return empty on rare OEM delays, `SmsReceiver` seamlessly ingests the direct intent payload so no SMS is ever dropped.
 
 2. **Persistence & Migration Layer (`AppDatabase`, `ForwardedMessage`, `ForwardedMessageDao`)**
@@ -58,19 +60,21 @@ The application is structured into four decoupled layers:
 
 3. **Domain & Network Layer (`domain/`, `network/`, `repository/`)**
    - Clean Architecture domain use cases: `SendTelegramMessageUseCase` returning sealed `SendResult`.
-   - Retrofit 2 service (`TelegramApiService`) using dynamic `@Url` parameter to prevent colon-in-token URL parsing issues.
+   - Retrofit 3 service (`TelegramApiService`) using dynamic `@Url` parameter to prevent colon-in-token URL parsing issues.
    - **Message Chunking**: `TelegramRepositoryImpl` automatically chunks messages $> 3900$ characters with numbered headers (`[Part 1/2]`, `[Part 2/2]`) to prevent Telegram HTTP 400 payload limits.
    - `LoggingInterceptor` for debugging HTTP request/response payloads when `BuildConfig.DEBUG` is true.
 
-4. **Background Delivery Engine & Watchdog (`SendWorker`, `WatchdogWorker`, `SMSForwarderApp`)**
-   - `SendWorker` is an `@HiltWorker` executing with `NetworkType.CONNECTED`.
-   - **15-Minute Watchdog (`WatchdogWorker`)**: Scheduled periodically (`ExistingPeriodicWorkPolicy.KEEP`) to sweep and drain any stranded `isSent = false` messages from offline storage.
+4. **Background Delivery Engine, Watchdog & Heartbeat Diagnostics (`SendWorker`, `WatchdogWorker`, `HeartbeatWorker`, `SMSForwarderApp`)**
+   - `SendWorker` is an `@HiltWorker` executing with `NetworkType.CONNECTED` and `OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST`.
+   - **15-Minute Watchdog (`WatchdogWorker`)**: Scheduled periodically (`ExistingPeriodicWorkPolicy.UPDATE`) to sweep and drain any stranded `isSent = false` messages from offline storage.
+   - **Opt-In Telegram Heartbeat (`HeartbeatWorker`, `HeartbeatManager`)**: Scheduled at intervals (15m/30m/1h/2h/5h) to ping a separate Telegram bot with device diagnostics (battery %, battery optimization exemption status, last app open, last SMS received, last forward sent, pending/total count).
    - Idempotency Guarantee: Checks `if (messageObj.isSent) return Result.success()` before sending to prevent duplicate Telegram alerts.
    - Forwarding Delay Tagging: If difference between receive time and forward time is $\ge 1\text{ min}$, injects `⏳ [Delayed by Xm]` into the message header.
-   - Network Callback in `SMSForwarderApp` detects connectivity restoration and triggers unique workers for any pending messages.
+   - Network Callback in `SMSForwarderApp` detects connectivity restoration and triggers unique workers for pending messages.
 
-5. **Presentation, Motion & Security Layer (`ui/screens/`, `ui/components/`, `ui/util/`, `util/`, `MessageViewModel`)**
+5. **Presentation, Motion, Security & OEM Integration Layer (`ui/screens/`, `ui/components/`, `ui/util/`, `util/`, `MessageViewModel`)**
    - **Startup Flow:** `Launch` ──► `SecurityConsentDialog (ConsentManager)` ──► `PinLockScreen (PinManager)` ──► `HomeScreen / Navigation`.
+   - **OEM Auto-Start Integration (`AutoStartHelper.kt`):** Deep-links to manufacturer background / auto-start managers across MIUI, ColorOS, FuntouchOS, EMUI, One UI, OxygenOS, etc. Backed by manifest `<queries>` package visibility.
    - **Material 3 Motion & Transitions (`MainScreen.kt`):**
      - Global `NavHost` enter/exit/pop transitions: `slideIntoContainer(SlideDirection.Start/End)` + `fadeIn()` / `fadeOut()` with `FastOutSlowInEasing`.
      - PIN Unlock -> Home: Smooth `fadeIn` + `scaleIn(0.95f)`.
@@ -82,13 +86,13 @@ The application is structured into four decoupled layers:
      - `PinDotsIndicator.kt`: Animated horizontal shake effect on incorrect PIN verification.
    - **Google Play Prominent Disclosure (`SecurityConsentDialog`):** Non-dismissible upfront dialog explaining SMS data access, direct Telegram HTTPS transmission (no 3rd-party trackers), and strict ethical use terms with symmetrical, single-line action buttons. Exits via `finishAffinity()` if declined.
    - **PinLockScreen:** 4-digit PIN protection with salted SHA-256 hashed storage via `PinManager`.
-   - **AllMessagesScreen:** Filter tabs (`All`, `Pending`, `Sent`, `Delayed`), compact number formatting (`1k`, `1Lc`, `1cr`), and real-time auto-scroll to index 0 on new incoming SMS.
-   - **SettingsScreen:** Configuration for Bot Token, Chat ID, custom device tag, PIN management, live Telegram test, Background Battery Optimization exemption toggle, on-demand Privacy Disclosure review, and direct Google Play Store updates link (`https://play.google.com/store/apps/details?id=online.thensoji.smsforwarder`).
-
-    - **Internationalization & Localization Architecture:**
-      - All user-facing strings, toasts, placeholders, dialogs, and accessibility descriptions are managed through `res/values*/strings.xml`.
-      - Supports 16 languages across `values` (Base English), `values-es`, `values-fr`, `values-de`, `values-pt`, `values-ru`, `values-hi`, `values-zh`, `values-ar` (RTL), `values-ja`, `values-it`, `values-in`/`values-id`, `values-tr`, `values-ko`, and `values-vi`.
-      - Composable UI consumes strings via `stringResource(R.string.<id>, ...formatArgs)` and callbacks use `context.getString(R.string.<id>, ...formatArgs)`.
+   - **AllMessagesScreen:** Filter tabs (`All`, `Pending`, `Sent`, `Delayed`), compact number formatting (`1k`, `1Lc`, `1cr`), swipe/pull refresh with full inbox sync, and real-time auto-scroll to index 0 on new incoming SMS.
+   - **DeveloperScreen:** Hidden screen (unlocked by tapping version 7x in Settings) for heartbeat bot token configuration, interval selection, and diagnostic ping testing.
+   - **SettingsScreen:** Configuration for Bot Token, Chat ID, custom device tag, Keep-Alive service toggle, Auto-start deep-link, PIN management, live Telegram test, Background Battery Optimization exemption toggle, on-demand Privacy Disclosure review, and direct Google Play Store updates link (`https://play.google.com/store/apps/details?id=online.thensoji.smsforwarder`).
+   - **Internationalization & Localization Architecture:**
+     - All user-facing strings, toasts, placeholders, dialogs, and accessibility descriptions are managed through `res/values*/strings.xml`.
+     - Supports 16 languages across `values` (Base English), `values-es`, `values-fr`, `values-de`, `values-pt`, `values-ru`, `values-hi`, `values-zh`, `values-ar` (RTL), `values-ja`, `values-it`, `values-in`/`values-id`, `values-tr`, `values-ko`, and `values-vi`.
+     - Composable UI consumes strings via `stringResource(R.string.<id>, ...formatArgs)` and callbacks use `context.getString(R.string.<id>, ...formatArgs)`.
 
 6. **Automated CI/CD & 4-Stage Release Pipeline (`.github/workflows/release.yml`)**
    - **Visual 4-Stage Sequential Flow**:
@@ -151,6 +155,9 @@ All actions that modify code must be verified against Gradle build tools from th
 - **Resource Lookups:** Always use `stringResource(R.string.<id>)` in Compose and `context.getString(R.string.<id>)` in non-composable contexts.
 - **XML Consistency:** When adding a new string key, add it to the base `res/values/strings.xml` and mirror translations across all 15 locale directories (`values-es`, `values-fr`, `values-de`, `values-pt`, `values-ru`, `values-hi`, `values-zh`, `values-ar`, `values-ja`, `values-it`, `values-in`, `values-id`, `values-tr`, `values-ko`, `values-vi`).
 - **Positional Specifiers:** Use positional format arguments (`%1$s`, `%2$s`, `%1$d`) rather than generic `%s` to guarantee error-free translations across varying sentence structures.
+
+### Centralized Constants
+- **`AppConstants.kt`:** All SharedPreferences names and keys, WorkManager identifiers/prefixes, Notification channel and IDs, API endpoints, and timing thresholds (dedup tolerance, timeouts, debounces) must be centralized in [`AppConstants.kt`](file:///d:/Documents/AndroidStudioProjects/SMSforwarder/app/src/main/java/online/thensoji/smsforwarder/util/AppConstants.kt). Never define raw literal strings for shared preference keys or work names in individual classes.
 
 ---
 

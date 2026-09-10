@@ -11,6 +11,7 @@ import online.thensoji.smsforwarder.BuildConfig
 import online.thensoji.smsforwarder.network.api.TelegramApiService
 import online.thensoji.smsforwarder.network.datasource.TelegramRemoteDataSource
 import online.thensoji.smsforwarder.network.datasource.TelegramRemoteDataSourceImpl
+import online.thensoji.smsforwarder.util.AppConstants
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
@@ -19,8 +20,6 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
-
-    private const val TELEGRAM_BASE_URL = "https://api.telegram.org/"
 
     @Provides
     @Singleton
@@ -35,9 +34,9 @@ object NetworkModule {
         }
 
         return OkHttpClient.Builder()
-            .connectTimeout(30, TimeUnit.SECONDS)
-            .readTimeout(30, TimeUnit.SECONDS)
-            .writeTimeout(30, TimeUnit.SECONDS)
+            .connectTimeout(AppConstants.HTTP_TIMEOUT_SECONDS, TimeUnit.SECONDS)
+            .readTimeout(AppConstants.HTTP_TIMEOUT_SECONDS, TimeUnit.SECONDS)
+            .writeTimeout(AppConstants.HTTP_TIMEOUT_SECONDS, TimeUnit.SECONDS)
             .connectionPool(ConnectionPool())
             .addInterceptor(logging)
             .build()
@@ -47,7 +46,7 @@ object NetworkModule {
     @Singleton
     fun provideRetrofit(okHttpClient: OkHttpClient): Retrofit {
         return Retrofit.Builder()
-            .baseUrl(TELEGRAM_BASE_URL)
+            .baseUrl(AppConstants.TELEGRAM_BASE_URL)
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
