@@ -16,6 +16,8 @@ import androidx.work.OutOfQuotaPolicy
 import androidx.work.WorkManager
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import online.thensoji.smsforwarder.data.ForwardedMessage
 import online.thensoji.smsforwarder.repository.MessageRepository
@@ -31,10 +33,9 @@ class SmsInboxSyncHelper @Inject constructor(
 
     companion object {
         private const val TAG = "SMSF SmsInboxSyncHelper"
-        private const val PREFS_NAME = "sms_forwarder_prefs"
-        private const val KEY_LAST_INBOX_SYNC_TIME = "last_inbox_sync_timestamp"
-        private const val DEFAULT_LOOKBACK_MILLIS = 48 * 60 * 60 * 1000L // 48 hours fallback
     }
+
+    private val syncMutex = Mutex()
 
     /**
      * Reconciles Android's Telephony SMS Inbox with Room persistence.
@@ -47,95 +48,102 @@ class SmsInboxSyncHelper @Inject constructor(
             return@withContext 0
         }
 
-        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        val now = System.currentTimeMillis()
-        val lastSync = prefs.getLong(KEY_LAST_INBOX_SYNC_TIME, 0L)
-        val lookbackLimit = now - DEFAULT_LOOKBACK_MILLIS
-        val minTimestamp = if (forceFullWindow || lastSync == 0L) {
-            lookbackLimit
-        } else {
-            // Check from 5 minutes before last sync to handle clock jitter / delayed carrier writes
-            (lastSync - 5 * 60 * 1000L).coerceAtLeast(lookbackLimit)
-        }
-
-        Log.d(TAG, "Scanning device SMS inbox for messages since timestamp: $minTimestamp")
-
-        var newlyIngestedCount = 0
-        val projection = arrayOf(
-            Telephony.Sms._ID,
-            Telephony.Sms.ADDRESS,
-            Telephony.Sms.BODY,
-            Telephony.Sms.DATE,
-            Telephony.Sms.SUBSCRIPTION_ID
-        )
-        val selection = "${Telephony.Sms.DATE} >= ?"
-        val selectionArgs = arrayOf(minTimestamp.toString())
-        val sortOrder = "${Telephony.Sms.DATE} ASC"
-
-        try {
-            context.contentResolver.query(
-                Telephony.Sms.Inbox.CONTENT_URI,
-                projection,
-                selection,
-                selectionArgs,
-                sortOrder
-            )?.use { cursor ->
-                val idCol = cursor.getColumnIndex(Telephony.Sms._ID)
-                val addressCol = cursor.getColumnIndex(Telephony.Sms.ADDRESS)
-                val bodyCol = cursor.getColumnIndex(Telephony.Sms.BODY)
-                val dateCol = cursor.getColumnIndex(Telephony.Sms.DATE)
-                val subIdCol = cursor.getColumnIndex(Telephony.Sms.SUBSCRIPTION_ID)
-
-                while (cursor.moveToNext()) {
-                    val smsId = if (idCol >= 0) cursor.getLong(idCol) else -1L
-                    val sender = if (addressCol >= 0) cursor.getString(addressCol) else "Unknown"
-                    val rawBody = if (bodyCol >= 0) cursor.getString(bodyCol) else ""
-                    val timestamp = if (dateCol >= 0) cursor.getLong(dateCol) else System.currentTimeMillis()
-                    val subId = if (subIdCol >= 0) cursor.getInt(subIdCol) else -1
-
-                    if (rawBody.isBlank()) continue
-
-                    // Deduplicate against existing Room database using native systemSmsId
-                    if (smsId != -1L && repository.existsBySystemSmsId(smsId)) {
-                        continue
-                    }
-
-                    // Fallback content-based deduplication
-                    val isDuplicate = repository.isDuplicateOrNearby(sender, rawBody, timestamp)
-                    if (isDuplicate) {
-                        continue
-                    }
-
-                    // Newly discovered message!
-                    val simSlot = resolveSimSlotFromSubId(subId)
-                    Log.d(TAG, "[SMSF-DEBUG] Discovered new SMS in system inbox (systemId: $smsId, sender: $sender, date: $timestamp). Ingesting...")
-
-                    val initialForwarded = ForwardedMessage(
-                        systemSmsId = if (smsId != -1L) smsId else null,
-                        sender = sender,
-                        body = rawBody,
-                        timestamp = timestamp,
-                        isSent = false,
-                        telegramMessageId = null
-                    )
-                    val insertedId = repository.insertMessage(initialForwarded)
-                    val fullMessage = MessageFormatter.format(context, sender, simSlot, timestamp, rawBody, messageId = insertedId)
-                    repository.updateMessage(initialForwarded.copy(id = insertedId, body = fullMessage))
-                    newlyIngestedCount++
-
-                    // Dispatch via unique WorkManager
-                    dispatchIngestedMessage(insertedId)
-                }
+        syncMutex.withLock {
+            val prefs = context.getSharedPreferences(AppConstants.PREFS_MAIN, Context.MODE_PRIVATE)
+            val now = System.currentTimeMillis()
+            val lastSync = prefs.getLong(AppConstants.KEY_LAST_INBOX_SYNC_TIME, 0L)
+            val lookbackLimit = now - AppConstants.INBOX_LOOKBACK_DEFAULT_MS
+            val minTimestamp = if (forceFullWindow || lastSync == 0L) {
+                lookbackLimit
+            } else {
+                // Check from jitter window before last sync to handle clock jitter / delayed carrier writes
+                (lastSync - AppConstants.INBOX_CLOCK_JITTER_MS).coerceAtLeast(lookbackLimit)
             }
 
-            // Update watermark
-            prefs.edit().putLong(KEY_LAST_INBOX_SYNC_TIME, now).apply()
-            Log.d(TAG, "[SMSF-DEBUG] Inbox scan complete. Ingested and queued $newlyIngestedCount new message(s).")
-        } catch (e: Exception) {
-            Log.e(TAG, "Error scanning system SMS inbox", e)
-        }
+            Log.d(TAG, "Scanning device SMS inbox for messages since timestamp: $minTimestamp")
 
-        newlyIngestedCount
+            var newlyIngestedCount = 0
+            val projection = arrayOf(
+                Telephony.Sms._ID,
+                Telephony.Sms.ADDRESS,
+                Telephony.Sms.BODY,
+                Telephony.Sms.DATE,
+                Telephony.Sms.SUBSCRIPTION_ID
+            )
+            val selection = "${Telephony.Sms.DATE} >= ?"
+            val selectionArgs = arrayOf(minTimestamp.toString())
+            val sortOrder = "${Telephony.Sms.DATE} ASC"
+
+            try {
+                context.contentResolver.query(
+                    Telephony.Sms.Inbox.CONTENT_URI,
+                    projection,
+                    selection,
+                    selectionArgs,
+                    sortOrder
+                )?.use { cursor ->
+                    val idCol = cursor.getColumnIndex(Telephony.Sms._ID)
+                    val addressCol = cursor.getColumnIndex(Telephony.Sms.ADDRESS)
+                    val bodyCol = cursor.getColumnIndex(Telephony.Sms.BODY)
+                    val dateCol = cursor.getColumnIndex(Telephony.Sms.DATE)
+                    val subIdCol = cursor.getColumnIndex(Telephony.Sms.SUBSCRIPTION_ID)
+
+                    while (cursor.moveToNext()) {
+                        val smsId = if (idCol >= 0) cursor.getLong(idCol) else -1L
+                        val sender = if (addressCol >= 0) cursor.getString(addressCol) else "Unknown"
+                        val rawBody = if (bodyCol >= 0) cursor.getString(bodyCol) else ""
+                        val timestamp = if (dateCol >= 0) cursor.getLong(dateCol) else System.currentTimeMillis()
+                        val subId = if (subIdCol >= 0) cursor.getInt(subIdCol) else -1
+
+                        if (rawBody.isBlank()) continue
+
+                        // Deduplicate against existing Room database using native systemSmsId
+                        if (smsId != -1L && repository.existsBySystemSmsId(smsId)) {
+                            continue
+                        }
+
+                        // Check if this message was already ingested (e.g. by SmsReceiver fallback without systemSmsId)
+                        val existingMatch = repository.findMatchingNearbyMessage(sender, rawBody, timestamp, toleranceMillis = AppConstants.DEDUP_TOLERANCE_MS)
+                        if (existingMatch != null) {
+                            // If it exists without a systemSmsId, link it to prevent any future duplicate sync
+                            if (smsId != -1L && existingMatch.systemSmsId == null) {
+                                repository.updateMessage(existingMatch.copy(systemSmsId = smsId))
+                                Log.d(TAG, "[SMSF-DEBUG] Linked systemSmsId $smsId to existing message #${existingMatch.id}.")
+                            }
+                            continue
+                        }
+
+                        // Newly discovered message!
+                        val simSlot = resolveSimSlotFromSubId(subId)
+                        Log.d(TAG, "[SMSF-DEBUG] Discovered new SMS in system inbox (systemId: $smsId, sender: $sender, date: $timestamp). Ingesting...")
+
+                        val initialForwarded = ForwardedMessage(
+                            systemSmsId = if (smsId != -1L) smsId else null,
+                            sender = sender,
+                            body = rawBody,
+                            timestamp = timestamp,
+                            isSent = false,
+                            telegramMessageId = null
+                        )
+                        val insertedId = repository.insertMessage(initialForwarded)
+                        val fullMessage = MessageFormatter.format(context, sender, simSlot, timestamp, rawBody, messageId = insertedId)
+                        repository.updateMessage(initialForwarded.copy(id = insertedId, body = fullMessage))
+                        newlyIngestedCount++
+
+                        // Dispatch via unique WorkManager
+                        dispatchIngestedMessage(insertedId)
+                    }
+                }
+
+                // Update watermark
+                prefs.edit().putLong(AppConstants.KEY_LAST_INBOX_SYNC_TIME, now).apply()
+                Log.d(TAG, "[SMSF-DEBUG] Inbox scan complete. Ingested and queued $newlyIngestedCount new message(s).")
+            } catch (e: Exception) {
+                Log.e(TAG, "Error scanning system SMS inbox", e)
+            }
+
+            newlyIngestedCount
+        }
     }
 
     private fun resolveSimSlotFromSubId(subId: Int): Int {
@@ -154,9 +162,9 @@ class SmsInboxSyncHelper @Inject constructor(
             .setRequiredNetworkType(NetworkType.CONNECTED)
             .build()
 
-            val input = Data.Builder()
-                .putLong("messageId", messageId)
-                .build()
+        val input = Data.Builder()
+            .putLong(AppConstants.KEY_WORK_MESSAGE_ID, messageId)
+            .build()
 
         val work = OneTimeWorkRequestBuilder<SendWorker>()
             .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
@@ -164,10 +172,10 @@ class SmsInboxSyncHelper @Inject constructor(
             .setInputData(input)
             .build()
 
-            WorkManager.getInstance(context).enqueueUniqueWork(
-                "send_sms_$messageId",
-                ExistingWorkPolicy.KEEP,
-                work
-            )
+        WorkManager.getInstance(context).enqueueUniqueWork(
+            "${AppConstants.WORK_NAME_SEND_PREFIX}$messageId",
+            ExistingWorkPolicy.KEEP,
+            work
+        )
     }
 }

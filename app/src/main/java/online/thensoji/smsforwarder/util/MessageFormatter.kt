@@ -21,8 +21,8 @@ object MessageFormatter {
     }
 
     fun getDeviceName(context: Context): String {
-        val prefs = context.getSharedPreferences("sms_forwarder_prefs", Context.MODE_PRIVATE)
-        val customName = prefs.getString("device_name", "")?.trim()
+        val prefs = context.getSharedPreferences(AppConstants.PREFS_MAIN, Context.MODE_PRIVATE)
+        val customName = prefs.getString(AppConstants.KEY_DEVICE_NAME, "")?.trim()
         return if (!customName.isNullOrEmpty()) {
             customName
         } else {
@@ -94,7 +94,7 @@ object MessageFormatter {
     }
 
     fun injectDelayTag(originalBody: String, delayMillis: Long): String {
-        if (delayMillis < 60_000L) {
+        if (delayMillis < AppConstants.ONE_MINUTE_MS) {
             return originalBody
         }
         val delayText = "⏳ [Delayed by ${formatDelayDuration(delayMillis)}]"

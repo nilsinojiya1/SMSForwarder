@@ -25,6 +25,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import online.thensoji.smsforwarder.data.ForwardedMessage
 import online.thensoji.smsforwarder.repository.MessageRepository
+import online.thensoji.smsforwarder.util.AppConstants
 import online.thensoji.smsforwarder.util.MessageFormatter
 import online.thensoji.smsforwarder.util.SmsInboxSyncHelper
 import online.thensoji.smsforwarder.worker.SendWorker
@@ -33,7 +34,6 @@ class SmsReceiver : BroadcastReceiver() {
 
     companion object {
         private const val TAG = "SMSF SmsReceiver"
-        private const val WAKELOCK_TIMEOUT_MS = 60_000L
     }
 
     @EntryPoint
@@ -78,7 +78,7 @@ class SmsReceiver : BroadcastReceiver() {
         )?.apply {
             setReferenceCounted(false)
             try {
-                acquire(WAKELOCK_TIMEOUT_MS)
+                acquire(AppConstants.WAKELOCK_TIMEOUT_MS)
             } catch (e: Exception) {
                 Log.w(TAG, "Could not acquire WakeLock: ${e.message}")
             }
@@ -89,8 +89,8 @@ class SmsReceiver : BroadcastReceiver() {
             try {
                 Log.d(TAG, "[SMSF-DEBUG] SmsReceiver doorbell triggered. Initiating Trigger & Query pipeline...")
                 
-                // Allow Android Telephony Provider ~300ms to finalize writing assembled SMS to content://sms/inbox
-                delay(300L)
+                // Allow Android Telephony Provider time to finalize writing assembled SMS to content://sms/inbox
+                delay(AppConstants.SMS_RECEIVER_TELEPHONY_DELAY_MS)
                 val syncedCount = inboxSyncHelper.syncInboxMessages()
                 Log.d(TAG, "[SMSF-DEBUG] Trigger & Query: Inbox query synced $syncedCount message(s).")
 
@@ -102,7 +102,7 @@ class SmsReceiver : BroadcastReceiver() {
                     val timestamp = firstMsg.timestampMillis
                     val combinedBody = nonNullMessages.joinToString("") { it.messageBody ?: "" }
 
-                    if (repository.isDuplicateOrNearby(sender, combinedBody, timestamp)) {
+                    if (repository.isDuplicateOrNearby(sender, combinedBody, timestamp, toleranceMillis = AppConstants.DEDUP_TOLERANCE_MS)) {
                         Log.d(TAG, "[SMSF-DEBUG] Duplicate SMS detected in fallback. Skipping.")
                     } else {
                         val initialForwarded = ForwardedMessage(
@@ -182,7 +182,7 @@ class SmsReceiver : BroadcastReceiver() {
             .build()
 
         val input = Data.Builder()
-            .putLong("messageId", messageId)
+            .putLong(AppConstants.KEY_WORK_MESSAGE_ID, messageId)
             .build()
 
         val work = OneTimeWorkRequestBuilder<SendWorker>()
@@ -192,7 +192,7 @@ class SmsReceiver : BroadcastReceiver() {
             .build()
 
         WorkManager.getInstance(context).enqueueUniqueWork(
-            "send_sms_$messageId",
+            "${AppConstants.WORK_NAME_SEND_PREFIX}$messageId",
             ExistingWorkPolicy.KEEP,
             work
         )

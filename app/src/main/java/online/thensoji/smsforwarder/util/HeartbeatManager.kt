@@ -28,52 +28,41 @@ import java.util.concurrent.TimeUnit
  */
 object HeartbeatManager {
 
-    const val WORK_NAME = "periodic_heartbeat"
-    private const val PREFS = "sms_forwarder_prefs"
-
-    const val KEY_ENABLED = "heartbeat_enabled"
-    const val KEY_TOKEN = "heartbeat_bot_token"
-    const val KEY_CHAT_ID = "heartbeat_chat_id"
-    const val KEY_INTERVAL = "heartbeat_interval_minutes"
-    const val KEY_LAST_SENT = "heartbeat_last_sent"
-    const val KEY_LAST_APP_OPEN = "last_app_open"
-
     val INTERVAL_OPTIONS = longArrayOf(15, 30, 60, 120, 300)
-    const val DEFAULT_INTERVAL_MINUTES = 15L
 
     private fun prefs(context: Context) =
-        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+        context.getSharedPreferences(AppConstants.PREFS_MAIN, Context.MODE_PRIVATE)
 
-    fun isEnabled(context: Context): Boolean = prefs(context).getBoolean(KEY_ENABLED, false)
+    fun isEnabled(context: Context): Boolean = prefs(context).getBoolean(AppConstants.KEY_HEARTBEAT_ENABLED, false)
 
-    fun getToken(context: Context): String = prefs(context).getString(KEY_TOKEN, "")?.trim().orEmpty()
+    fun getToken(context: Context): String = prefs(context).getString(AppConstants.KEY_HEARTBEAT_TOKEN, "")?.trim().orEmpty()
 
     /** Heartbeat chat id, falling back to the main forwarding chat id when unset. */
     fun getChatId(context: Context): String {
         val p = prefs(context)
-        val heartbeatChat = p.getString(KEY_CHAT_ID, "")?.trim().orEmpty()
-        return heartbeatChat.ifEmpty { p.getString("chat_id", "")?.trim().orEmpty() }
+        val heartbeatChat = p.getString(AppConstants.KEY_HEARTBEAT_CHAT_ID, "")?.trim().orEmpty()
+        return heartbeatChat.ifEmpty { p.getString(AppConstants.KEY_CHAT_ID, "")?.trim().orEmpty() }
     }
 
     fun getIntervalMinutes(context: Context): Long =
-        prefs(context).getLong(KEY_INTERVAL, DEFAULT_INTERVAL_MINUTES)
+        prefs(context).getLong(AppConstants.KEY_HEARTBEAT_INTERVAL, AppConstants.DEFAULT_HEARTBEAT_INTERVAL_MINUTES)
 
-    fun getLastSent(context: Context): Long = prefs(context).getLong(KEY_LAST_SENT, 0L)
+    fun getLastSent(context: Context): Long = prefs(context).getLong(AppConstants.KEY_HEARTBEAT_LAST_SENT, 0L)
 
     fun recordLastSent(context: Context) {
-        prefs(context).edit { putLong(KEY_LAST_SENT, System.currentTimeMillis()) }
+        prefs(context).edit { putLong(AppConstants.KEY_HEARTBEAT_LAST_SENT, System.currentTimeMillis()) }
     }
 
     fun recordAppOpen(context: Context) {
-        prefs(context).edit { putLong(KEY_LAST_APP_OPEN, System.currentTimeMillis()) }
+        prefs(context).edit { putLong(AppConstants.KEY_LAST_APP_OPEN, System.currentTimeMillis()) }
     }
 
     fun save(context: Context, enabled: Boolean, token: String, chatId: String, intervalMinutes: Long) {
         prefs(context).edit {
-            putBoolean(KEY_ENABLED, enabled)
-            putString(KEY_TOKEN, token.trim())
-            putString(KEY_CHAT_ID, chatId.trim())
-            putLong(KEY_INTERVAL, intervalMinutes)
+            putBoolean(AppConstants.KEY_HEARTBEAT_ENABLED, enabled)
+            putString(AppConstants.KEY_HEARTBEAT_TOKEN, token.trim())
+            putString(AppConstants.KEY_HEARTBEAT_CHAT_ID, chatId.trim())
+            putLong(AppConstants.KEY_HEARTBEAT_INTERVAL, intervalMinutes)
         }
     }
 
@@ -81,7 +70,7 @@ object HeartbeatManager {
     fun applySchedule(context: Context) {
         val wm = WorkManager.getInstance(context.applicationContext)
         if (!isEnabled(context) || getToken(context).isEmpty() || getChatId(context).isEmpty()) {
-            wm.cancelUniqueWork(WORK_NAME)
+            wm.cancelUniqueWork(AppConstants.WORK_NAME_HEARTBEAT)
             return
         }
         val constraints = Constraints.Builder()
@@ -91,7 +80,7 @@ object HeartbeatManager {
             getIntervalMinutes(context), TimeUnit.MINUTES
         ).setConstraints(constraints).build()
 
-        wm.enqueueUniquePeriodicWork(WORK_NAME, ExistingPeriodicWorkPolicy.UPDATE, request)
+        wm.enqueueUniquePeriodicWork(AppConstants.WORK_NAME_HEARTBEAT, ExistingPeriodicWorkPolicy.UPDATE, request)
     }
 
     fun intervalLabel(context: Context, minutes: Long): String = when (minutes) {
@@ -141,7 +130,7 @@ object HeartbeatManager {
             appendLine(context.getString(R.string.ping_interval, intervalLabel(context, getIntervalMinutes(context))))
             appendLine(context.getString(R.string.ping_battery, battery.level, chargingSuffix))
             appendLine(context.getString(R.string.ping_battery_opt, yesNo))
-            appendLine(context.getString(R.string.ping_last_open, formatTime(context, p.getLong(KEY_LAST_APP_OPEN, 0L))))
+            appendLine(context.getString(R.string.ping_last_open, formatTime(context, p.getLong(AppConstants.KEY_LAST_APP_OPEN, 0L))))
             appendLine(context.getString(R.string.ping_last_sms, formatTime(context, lastReceived)))
             appendLine(context.getString(R.string.ping_last_forward, formatTime(context, lastForwarded)))
             appendLine(context.getString(R.string.ping_pending, pending))

@@ -12,6 +12,7 @@ import online.thensoji.smsforwarder.data.AppDatabase
 import online.thensoji.smsforwarder.domain.model.SendResult
 import online.thensoji.smsforwarder.domain.usecase.SendTelegramMessageUseCase
 import online.thensoji.smsforwarder.repository.MessageRepository
+import online.thensoji.smsforwarder.util.AppConstants
 import online.thensoji.smsforwarder.util.MessageFormatter
 import online.thensoji.smsforwarder.util.NotificationHelper
 
@@ -25,7 +26,6 @@ class SendWorker @AssistedInject constructor(
 
     companion object {
         private const val TAG = "SMSF SendWorker"
-        private const val ONE_MINUTE_MILLIS = 60_000L
     }
 
     override suspend fun getForegroundInfo(): ForegroundInfo {
@@ -33,7 +33,7 @@ class SendWorker @AssistedInject constructor(
     }
 
     override suspend fun doWork(): Result {
-        val messageId = inputData.getLong("messageId", -1L)
+        val messageId = inputData.getLong(AppConstants.KEY_WORK_MESSAGE_ID, -1L)
         if (messageId == -1L) {
             Log.e(TAG, "[SMSF-DEBUG] SendWorker started with INVALID messageId: -1L")
             return Result.failure()
@@ -45,7 +45,7 @@ class SendWorker @AssistedInject constructor(
             return Result.failure()
         }
 
-        val isManualResend = inputData.getBoolean("isManualResend", false)
+        val isManualResend = inputData.getBoolean(AppConstants.KEY_WORK_IS_MANUAL_RESEND, false)
         Log.d(TAG, "[SMSF-DEBUG] SendWorker.doWork started for ID #$messageId (isManualResend: $isManualResend, isSentInDb: ${messageObj.isSent})")
 
         if (!isManualResend) {
@@ -55,33 +55,47 @@ class SendWorker @AssistedInject constructor(
                 return Result.success()
             }
 
-            // Idempotency Layer 2: Prevent sending if another row with matching content was already sent recently
-            val minTime = messageObj.timestamp - 3000L
-            val maxTime = messageObj.timestamp + 3000L
-            val alreadySentNearby = dao.getNearbyMessagesByTime(minTime, maxTime)
-                .filter { it.id != messageId && it.isSent }
+            // Idempotency Layer 2: Prevent sending if an identical message was already sent or is preceded by an earlier pending row
+            val minTime = messageObj.timestamp - AppConstants.DEDUP_TOLERANCE_MS
+            val maxTime = messageObj.timestamp + AppConstants.DEDUP_TOLERANCE_MS
+            val nearbyCandidates = dao.getNearbyMessagesByTime(minTime, maxTime)
+                .filter { it.id != messageId }
 
             val normSender = MessageRepository.normalizeSender(messageObj.sender)
             val cleanCurrentRaw = MessageFormatter.extractRawBody(messageObj.body)
-            val isDuplicateAlreadySent = alreadySentNearby.any { sentCandidate ->
-                val sentNormSender = MessageRepository.normalizeSender(sentCandidate.sender)
-                val senderMatches = normSender.isEmpty() || sentNormSender.isEmpty() || normSender == sentNormSender
+
+            // 1. Check if an identical message was already sent
+            val isDuplicateAlreadySent = nearbyCandidates.any { candidate ->
+                if (!candidate.isSent) return@any false
+                val candidateNormSender = MessageRepository.normalizeSender(candidate.sender)
+                val senderMatches = normSender.isEmpty() || candidateNormSender.isEmpty() || normSender == candidateNormSender
                 if (!senderMatches) return@any false
 
-                val sentRaw = MessageFormatter.extractRawBody(sentCandidate.body)
-                sentRaw == cleanCurrentRaw
+                val candidateRaw = MessageFormatter.extractRawBody(candidate.body)
+                candidateRaw == cleanCurrentRaw
             }
 
-            if (isDuplicateAlreadySent) {
-                Log.d(TAG, "[SMSF-DEBUG] SendWorker: Duplicate message detected for ID #$messageId within 3s. Skipping duplicate Telegram dispatch.")
+            // 2. Check if an identical message with an earlier/lower ID is also pending (race condition winner)
+            val isDuplicatePrecededByEarlierPending = nearbyCandidates.any { candidate ->
+                if (candidate.isSent || candidate.id >= messageId) return@any false
+                val candidateNormSender = MessageRepository.normalizeSender(candidate.sender)
+                val senderMatches = normSender.isEmpty() || candidateNormSender.isEmpty() || normSender == candidateNormSender
+                if (!senderMatches) return@any false
+
+                val candidateRaw = MessageFormatter.extractRawBody(candidate.body)
+                candidateRaw == cleanCurrentRaw
+            }
+
+            if (isDuplicateAlreadySent || isDuplicatePrecededByEarlierPending) {
+                Log.d(TAG, "[SMSF-DEBUG] SendWorker: Duplicate message detected for ID #$messageId (alreadySent: $isDuplicateAlreadySent, precededByEarlier: $isDuplicatePrecededByEarlierPending). Skipping duplicate Telegram dispatch.")
                 dao.update(messageObj.copy(isSent = true, errorMessage = "Skipped duplicate dispatch"))
                 return Result.success()
             }
         }
 
-        val sharedPreferences = applicationContext.getSharedPreferences("sms_forwarder_prefs", Context.MODE_PRIVATE)
-        val botToken = sharedPreferences.getString("bot_token", null)
-        val chatId = sharedPreferences.getString("chat_id", null)
+        val sharedPreferences = applicationContext.getSharedPreferences(AppConstants.PREFS_MAIN, Context.MODE_PRIVATE)
+        val botToken = sharedPreferences.getString(AppConstants.KEY_BOT_TOKEN, null)
+        val chatId = sharedPreferences.getString(AppConstants.KEY_CHAT_ID, null)
 
         if (botToken.isNullOrEmpty() || chatId.isNullOrEmpty()) {
             Log.e(TAG, "[SMSF-DEBUG] SendWorker: Bot token or chat ID is not set.")
@@ -93,7 +107,7 @@ class SendWorker @AssistedInject constructor(
         val delayMillis = (now - messageObj.timestamp).coerceAtLeast(0)
 
         // If delay is >= 1 minute, inject delayed tag into the payload
-        val payload = if (delayMillis >= ONE_MINUTE_MILLIS) {
+        val payload = if (delayMillis >= AppConstants.ONE_MINUTE_MS) {
             MessageFormatter.injectDelayTag(messageObj.body, delayMillis)
         } else {
             messageObj.body

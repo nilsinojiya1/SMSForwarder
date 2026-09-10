@@ -10,6 +10,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import online.thensoji.smsforwarder.util.AppConstants
 import online.thensoji.smsforwarder.util.SmsInboxSyncHelper
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -21,7 +22,6 @@ class SmsContentObserver @Inject constructor(
 
     companion object {
         private const val TAG = "SmsContentObserver"
-        private const val DEBOUNCE_DELAY_MS = 1000L
     }
 
     private val scope = CoroutineScope(Dispatchers.IO)
@@ -34,7 +34,7 @@ class SmsContentObserver @Inject constructor(
         // Debounce multiple rapid changes (e.g. multi-part or draft updates)
         debounceJob?.cancel()
         debounceJob = scope.launch {
-            delay(DEBOUNCE_DELAY_MS)
+            delay(AppConstants.OBSERVER_DEBOUNCE_DELAY_MS)
             try {
                 val syncedCount = inboxSyncHelper.syncInboxMessages()
                 if (syncedCount > 0) {

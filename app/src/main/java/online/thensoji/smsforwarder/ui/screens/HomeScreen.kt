@@ -67,14 +67,14 @@ fun HomeScreen(
     }
 
     val sharedPreferences = remember {
-        context.getSharedPreferences("sms_forwarder_prefs", Context.MODE_PRIVATE)
+        context.getSharedPreferences(online.thensoji.smsforwarder.util.AppConstants.PREFS_MAIN, Context.MODE_PRIVATE)
     }
 
     var botToken by remember {
-        mutableStateOf(sharedPreferences.getString("bot_token", "") ?: "")
+        mutableStateOf(sharedPreferences.getString(online.thensoji.smsforwarder.util.AppConstants.KEY_BOT_TOKEN, "") ?: "")
     }
     var chatId by remember {
-        mutableStateOf(sharedPreferences.getString("chat_id", "") ?: "")
+        mutableStateOf(sharedPreferences.getString(online.thensoji.smsforwarder.util.AppConstants.KEY_CHAT_ID, "") ?: "")
     }
     var deviceName by remember {
         mutableStateOf(MessageFormatter.getDeviceName(context))
@@ -91,8 +91,8 @@ fun HomeScreen(
     val messages by viewModel.messages.collectAsState()
 
     LaunchedEffect(Unit) {
-        botToken = sharedPreferences.getString("bot_token", "") ?: ""
-        chatId = sharedPreferences.getString("chat_id", "") ?: ""
+        botToken = sharedPreferences.getString(online.thensoji.smsforwarder.util.AppConstants.KEY_BOT_TOKEN, "") ?: ""
+        chatId = sharedPreferences.getString(online.thensoji.smsforwarder.util.AppConstants.KEY_CHAT_ID, "") ?: ""
         deviceName = MessageFormatter.getDeviceName(context)
         hasPermissions = PermissionUtils.checkAllPermissions(context)
         heartbeatEnabled = HeartbeatManager.isEnabled(context)

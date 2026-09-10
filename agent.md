@@ -156,6 +156,9 @@ All actions that modify code must be verified against Gradle build tools from th
 - **XML Consistency:** When adding a new string key, add it to the base `res/values/strings.xml` and mirror translations across all 15 locale directories (`values-es`, `values-fr`, `values-de`, `values-pt`, `values-ru`, `values-hi`, `values-zh`, `values-ar`, `values-ja`, `values-it`, `values-in`, `values-id`, `values-tr`, `values-ko`, `values-vi`).
 - **Positional Specifiers:** Use positional format arguments (`%1$s`, `%2$s`, `%1$d`) rather than generic `%s` to guarantee error-free translations across varying sentence structures.
 
+### Centralized Constants
+- **`AppConstants.kt`:** All SharedPreferences names and keys, WorkManager identifiers/prefixes, Notification channel and IDs, API endpoints, and timing thresholds (dedup tolerance, timeouts, debounces) must be centralized in [`AppConstants.kt`](file:///d:/Documents/AndroidStudioProjects/SMSforwarder/app/src/main/java/online/thensoji/smsforwarder/util/AppConstants.kt). Never define raw literal strings for shared preference keys or work names in individual classes.
+
 ---
 
 ## 5. Strict Constraints & Security Guardrails
