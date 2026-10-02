@@ -19,19 +19,13 @@ object PermissionUtils {
             Manifest.permission.READ_SMS
         ) == PackageManager.PERMISSION_GRANTED
 
-        val readPhoneState = ContextCompat.checkSelfPermission(
-            context,
-            Manifest.permission.READ_PHONE_STATE
-        ) == PackageManager.PERMISSION_GRANTED
-
-        return receiveSms && readSms && readPhoneState
+        return receiveSms && readSms
     }
 
     fun getRequiredPermissions(): Array<String> {
         val list = mutableListOf(
             Manifest.permission.RECEIVE_SMS,
-            Manifest.permission.READ_SMS,
-            Manifest.permission.READ_PHONE_STATE
+            Manifest.permission.READ_SMS
         )
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             list.add(Manifest.permission.POST_NOTIFICATIONS)

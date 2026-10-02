@@ -108,7 +108,7 @@
     <string name="consent_dialog_title">重要事項の開示とセキュリティ同意</string>
     <string name="consent_dialog_subtitle">データアクセスおよび倫理的使用規約をご確認ください</string>
     <string name="consent_sec1_title">1. SMS および通話データへのアクセス</string>
-    <string name="consent_sec1_body">SMS Forwarder は、受信した SMS 通知を指定した Telegram Bot またはチャットに自動転送するという中核機能を果たすため、実行時権限 (RECEIVE_SMS, READ_SMS, READ_PHONE_STATE) を必要とします。</string>
+    <string name="consent_sec1_body">SMS Forwarder は、受信した SMS 通知を指定した Telegram Bot またはチャットに自動転送するという中核機能を果たすため、実行時権限 (RECEIVE_SMS, READ_SMS) を必要とします。</string>
     <string name="consent_sec1_bullet1">アクセスするデータ: 送信元の電話番号、メッセージ本文、および受信タイムスタンプ。</string>
     <string name="consent_sec1_bullet2">利用目的: ご自身が指定したプライベートな Telegram エンドポイントへの自動転送。</string>
     <string name="consent_sec2_title">2. データのプライバシーと第三者提供の排除</string>

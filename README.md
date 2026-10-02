@@ -18,7 +18,7 @@ Built using modern Android architecture principles (**Jetpack Compose**, **Mater
 ## 🌟 Key Features
 
 - ⚡ **Trigger & Query Zero-Loss Ingestion:** Uses `SmsReceiver` as a real-time wake-up doorbell holding a CPU `WakeLock`, paired with automated Telephony System SMS Inbox (`content://sms/inbox`) querying and native `systemSmsId` deduplication. Even if the device was turned off, in deep Doze mode, or received multi-part carrier messages, not a single SMS is ever missed or duplicated.
-- 🛡️ **Prominent Disclosure & Ethical Use Consent:** Google Play compliant upfront disclosure explaining data access (`RECEIVE_SMS`, `READ_SMS`, `READ_PHONE_STATE`), zero 3rd-party tracking, direct Telegram API transmission, and strict anti-stalkerware terms with balanced single-line action buttons.
+- 🛡️ **Prominent Disclosure & Ethical Use Consent:** Google Play compliant upfront disclosure explaining data access (`RECEIVE_SMS`, `READ_SMS`), zero 3rd-party tracking, direct Telegram API transmission, and strict anti-stalkerware terms with balanced single-line action buttons.
 - 🔒 **4-Digit App PIN Security:** Protects app access with a secure 4-digit PIN screen (SHA-256 hashed). Prompts for setup on first launch and unlocks seamlessly on subsequent opens.
 - ✨ **Fluid Motion & Screen Transitions:** Material 3 shared-axis and slide-fade transitions across all screens (`NavHost`), modal slide-up for PIN changes, smooth scale-in on PIN unlock, and crossfading TopAppBar titles.
 - 📳 **Tactile Haptic Feedback & Interactive Press Scale:** Physical vibration pulses (`CLICK`, `TICK`, `SUCCESS`, `ERROR`) paired with responsive spring-press visual depression (`Modifier.bounceClickable`, `Modifier.pressScale`) across keypad digits, buttons, filter chips, and action cards.

@@ -108,7 +108,7 @@
     <string name="consent_dialog_title">Önemli Bildirim ve Güvenlik Sözleşmesi</string>
     <string name="consent_dialog_subtitle">Lütfen veri erişimi ve etik kullanım koşullarını inceleyin</string>
     <string name="consent_sec1_title">1. SMS ve Telefon Verilerine Erişim</string>
-    <string name="consent_sec1_body">SMS Forwarder, temel işlevini yerine getirmek için çalışma zamanı izinlerine (RECEIVE_SMS, READ_SMS, READ_PHONE_STATE) ihtiyaç duyar: gelen SMS bildirimlerinizi belirlediğiniz Telegram Botuna veya Sohbetine otomatik olarak iletmek.</string>
+    <string name="consent_sec1_body">SMS Forwarder, temel işlevini yerine getirmek için çalışma zamanı izinlerine (RECEIVE_SMS, READ_SMS) ihtiyaç duyar: gelen SMS bildirimlerinizi belirlediğiniz Telegram Botuna veya Sohbetine otomatik olarak iletmek.</string>
     <string name="consent_sec1_bullet1">Erişilen Veriler: Gönderenin telefon numarası, mesaj metin içeriği ve zaman damgası.</string>
     <string name="consent_sec1_bullet2">Amaç: Özel Telegram uç noktanıza anında otomatik yönlendirme.</string>
     <string name="consent_sec2_title">2. Veri Gizliliği ve Sıfır Üçüncü Taraf Paylaşımı</string>

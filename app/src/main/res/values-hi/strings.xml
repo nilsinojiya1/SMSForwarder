@@ -108,7 +108,7 @@
     <string name="consent_dialog_title">प्रमुख प्रकटीकरण और सुरक्षा समझौता</string>
     <string name="consent_dialog_subtitle">कृपया डेटा एक्सेस और नैतिक उपयोग की शर्तों की समीक्षा करें</string>
     <string name="consent_sec1_title">1. एसएमएस और टेलीफोनी डेटा एक्सेस</string>
-    <string name="consent_sec1_body">SMS Forwarder को अपने मुख्य कार्य को करने के लिए अनुमतियों (RECEIVE_SMS, READ_SMS, READ_PHONE_STATE) की आवश्यकता होती है: आपके आने वाले एसएमएस को आपके निर्दिष्ट टेलीग्राम बॉट या चैट पर स्वचालित रूप से फॉरवर्ड करना।</string>
+    <string name="consent_sec1_body">SMS Forwarder को अपने मुख्य कार्य को करने के लिए अनुमतियों (RECEIVE_SMS, READ_SMS) की आवश्यकता होती है: आपके आने वाले एसएमएस को आपके निर्दिष्ट टेलीग्राम बॉट या चैट पर स्वचालित रूप से फॉरवर्ड करना।</string>
     <string name="consent_sec1_bullet1">एक्सेस किया गया डेटा: प्रेषक का फोन नंबर, संदेश का टेक्स्ट और टाइमस्टैम्प।</string>
     <string name="consent_sec1_bullet2">उद्देश्य: आपके निजी टेलीग्राम एंडपॉइंट पर त्वरित स्वचालित फॉरवर्डिंग।</string>
     <string name="consent_sec2_title">2. डेटा गोपनीयता और शून्य तृतीय-पक्ष साझाकरण</string>

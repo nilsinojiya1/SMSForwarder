@@ -108,7 +108,7 @@
     <string name="consent_dialog_title">Wichtige Offenlegung &amp; Sicherheitsvereinbarung</string>
     <string name="consent_dialog_subtitle">Bitte überprüfen Sie Datenzugriff und ethische Nutzungsbedingungen</string>
     <string name="consent_sec1_title">1. SMS- &amp; Telefoniedatenzugriff</string>
-    <string name="consent_sec1_body">SMS Forwarder benötigt Laufzeitberechtigungen (RECEIVE_SMS, READ_SMS, READ_PHONE_STATE), um seine Kernfunktion auszuführen: die automatische Weiterleitung eingehender SMS-Benachrichtigungen an Ihren festgelegten Telegram-Bot oder -Chat.</string>
+    <string name="consent_sec1_body">SMS Forwarder benötigt Laufzeitberechtigungen (RECEIVE_SMS, READ_SMS), um seine Kernfunktion auszuführen: die automatische Weiterleitung eingehender SMS-Benachrichtigungen an Ihren festgelegten Telegram-Bot oder -Chat.</string>
     <string name="consent_sec1_bullet1">Zugriffsdaten: Telefonnummer des Absenders, Textinhalt der Nachricht und Zeitstempel.</string>
     <string name="consent_sec1_bullet2">Zweck: Sofortige automatisierte Weiterleitung an Ihren privaten Telegram-Endpunkt.</string>
     <string name="consent_sec2_title">2. Datenschutz &amp; keine Weitergabe an Dritte</string>

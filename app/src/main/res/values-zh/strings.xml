@@ -108,7 +108,7 @@
     <string name="consent_dialog_title">重要声明与安全协议</string>
     <string name="consent_dialog_subtitle">请仔细阅读数据访问及合规使用条款</string>
     <string name="consent_sec1_title">1. 短信与电话数据访问</string>
-    <string name="consent_sec1_body">SMS Forwarder 需要运行时权限 (RECEIVE_SMS, READ_SMS, READ_PHONE_STATE) 以执行其核心功能：自动将接收到的短信通知转发到您指定的 Telegram 机器人或聊天中。</string>
+    <string name="consent_sec1_body">SMS Forwarder 需要运行时权限 (RECEIVE_SMS, READ_SMS) 以执行其核心功能：自动将接收到的短信通知转发到您指定的 Telegram 机器人或聊天中。</string>
     <string name="consent_sec1_bullet1">访问的数据：发件人电话号码、短信文本内容以及时间戳。</string>
     <string name="consent_sec1_bullet2">使用目的：即时自动化转发至您的私人 Telegram 终端。</string>
     <string name="consent_sec2_title">2. 数据隐私与零第三方共享</string>

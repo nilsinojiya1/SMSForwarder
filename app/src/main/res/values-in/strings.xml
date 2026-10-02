@@ -108,7 +108,7 @@
     <string name="consent_dialog_title">Pengungkapan Penting &amp; Perjanjian Keamanan</string>
     <string name="consent_dialog_subtitle">Harap tinjau akses data &amp; ketentuan penggunaan etis</string>
     <string name="consent_sec1_title">1. Akses SMS &amp; Data Telepon</string>
-    <string name="consent_sec1_body">SMS Forwarder memerlukan izin runtime (RECEIVE_SMS, READ_SMS, READ_PHONE_STATE) untuk menjalankan fungsi utamanya: meneruskan pemberitahuan SMS masuk secara otomatis ke Bot atau obrolan Telegram yang Anda tentukan.</string>
+    <string name="consent_sec1_body">SMS Forwarder memerlukan izin runtime (RECEIVE_SMS, READ_SMS) untuk menjalankan fungsi utamanya: meneruskan pemberitahuan SMS masuk secara otomatis ke Bot atau obrolan Telegram yang Anda tentukan.</string>
     <string name="consent_sec1_bullet1">Data yang Diakses: Nomor telepon pengirim, teks isi pesan, dan stempel waktu.</string>
     <string name="consent_sec1_bullet2">Tujuan: Penerusan otomatis instan ke endpoint Telegram pribadi Anda.</string>
     <string name="consent_sec2_title">2. Privasi Data &amp; Tanpa Pembagian Pihak Ketiga</string>

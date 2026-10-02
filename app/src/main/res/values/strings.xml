@@ -110,7 +110,7 @@
     <string name="consent_dialog_title">Prominent Disclosure &amp; Security Agreement</string>
     <string name="consent_dialog_subtitle">Please review data access &amp; ethical use terms</string>
     <string name="consent_sec1_title">1. SMS &amp; Telephony Data Access</string>
-    <string name="consent_sec1_body">SMS Forwarder requires runtime permissions (RECEIVE_SMS, READ_SMS, READ_PHONE_STATE) to perform its core function: automatically forwarding your incoming SMS notifications to your designated Telegram Bot or Chat.</string>
+    <string name="consent_sec1_body">SMS Forwarder requires runtime permissions (RECEIVE_SMS, READ_SMS) to perform its core function: automatically forwarding your incoming SMS notifications to your designated Telegram Bot or Chat.</string>
     <string name="consent_sec1_bullet1">Accessed Data: Sender telephone number, message text content, and timestamp.</string>
     <string name="consent_sec1_bullet2">Purpose: Instant automated forwarding to your private Telegram endpoint.</string>
     <string name="consent_sec2_title">2. Data Privacy &amp; Zero Third-Party Sharing</string>

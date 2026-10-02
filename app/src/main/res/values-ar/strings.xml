@@ -108,7 +108,7 @@
     <string name="consent_dialog_title">إشعار بارز واتفاقية أمان</string>
     <string name="consent_dialog_subtitle">يرجى مراجعة شروط الوصول إلى البيانات والاستخدام الأخلاقي</string>
     <string name="consent_sec1_title">1. الوصول إلى الرسائل النصية والمهاتفة</string>
-    <string name="consent_sec1_body">يتطلب SMS Forwarder أذونات التشغيل (RECEIVE_SMS, READ_SMS, READ_PHONE_STATE) لتأدية وظيفته الأساسية: إعادة توجيه إشعارات الرسائل القصيرة تلقائياً إلى بوت أو محادثة تيليجرام المحددة.</string>
+    <string name="consent_sec1_body">يتطلب SMS Forwarder أذونات التشغيل (RECEIVE_SMS, READ_SMS) لتأدية وظيفته الأساسية: إعادة توجيه إشعارات الرسائل القصيرة تلقائياً إلى بوت أو محادثة تيليجرام المحددة.</string>
     <string name="consent_sec1_bullet1">البيانات التي يتم الوصول إليها: رقم المرسل، نص الرسالة، والطابع الزمني.</string>
     <string name="consent_sec1_bullet2">الغرض: إعادة التوجيه الفوري والآلي إلى وجهتك الخاصة على تيليجرام.</string>
     <string name="consent_sec2_title">2. خصوصية البيانات وعدم المشاركة مع أطراف ثالثة</string>
