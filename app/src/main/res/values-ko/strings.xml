@@ -108,7 +108,7 @@
     <string name="consent_dialog_title">중요 고지 및 보안 동의서</string>
     <string name="consent_dialog_subtitle">데이터 접근 및 윤리적 사용 약관을 검토해 주세요</string>
     <string name="consent_sec1_title">1. SMS 및 통화 데이터 접근</string>
-    <string name="consent_sec1_body">SMS Forwarder는 수신된 SMS 알림을 지정된 Telegram 봇 또는 채팅으로 자동 전달하는 핵심 기능을 수행하기 위해 런타임 권한(RECEIVE_SMS, READ_SMS, READ_PHONE_STATE)이 필요합니다.</string>
+    <string name="consent_sec1_body">SMS Forwarder는 수신된 SMS 알림을 지정된 Telegram 봇 또는 채팅으로 자동 전달하는 핵심 기능을 수행하기 위해 런타임 권한(RECEIVE_SMS, READ_SMS)이 필요합니다.</string>
     <string name="consent_sec1_bullet1">접근 데이터: 발신자 전화번호, 메시지 텍스트 내용 및 타임스탬프.</string>
     <string name="consent_sec1_bullet2">목적: 개인 Telegram 엔드포인트로의 즉각적인 자동 전달.</string>
     <string name="consent_sec2_title">2. 데이터 프라이버시 및 제3자 공유 금지</string>

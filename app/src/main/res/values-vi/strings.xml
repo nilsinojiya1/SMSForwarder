@@ -108,7 +108,7 @@
     <string name="consent_dialog_title">Tiết lộ thông tin quan trọng &amp; Thỏa thuận bảo mật</string>
     <string name="consent_dialog_subtitle">Vui lòng xem lại quyền truy cập dữ liệu và các điều khoản sử dụng</string>
     <string name="consent_sec1_title">1. Truy cập SMS &amp; Dữ liệu điện thoại</string>
-    <string name="consent_sec1_body">SMS Forwarder yêu cầu các quyền thực thi (RECEIVE_SMS, READ_SMS, READ_PHONE_STATE) để thực hiện chức năng cốt lõi: tự động chuyển tiếp các thông báo SMS đến của bạn tới Bot hoặc nhóm Telegram được chỉ định.</string>
+    <string name="consent_sec1_body">SMS Forwarder yêu cầu các quyền thực thi (RECEIVE_SMS, READ_SMS) để thực hiện chức năng cốt lõi: tự động chuyển tiếp các thông báo SMS đến của bạn tới Bot hoặc nhóm Telegram được chỉ định.</string>
     <string name="consent_sec1_bullet1">Dữ liệu được truy cập: Số điện thoại người gửi, nội dung văn bản và thời gian gửi.</string>
     <string name="consent_sec1_bullet2">Mục đích: Chuyển tiếp tự động và tức thì tới điểm cuối Telegram riêng tư của bạn.</string>
     <string name="consent_sec2_title">2. Quyền riêng tư dữ liệu &amp; Không chia sẻ với bên thứ ba</string>

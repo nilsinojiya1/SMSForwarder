@@ -108,7 +108,7 @@
     <string name="consent_dialog_title">Уведомление и соглашение о безопасности</string>
     <string name="consent_dialog_subtitle">Ознакомьтесь с доступом к данным и правилами использования</string>
     <string name="consent_sec1_title">1. Доступ к SMS и данным телефонии</string>
-    <string name="consent_sec1_body">SMS Forwarder требует разрешений (RECEIVE_SMS, READ_SMS, READ_PHONE_STATE) для выполнения своей основной функции: автоматической пересылки входящих SMS-уведомлений в указанный вами бот или чат Telegram.</string>
+    <string name="consent_sec1_body">SMS Forwarder требует разрешений (RECEIVE_SMS, READ_SMS) для выполнения своей основной функции: автоматической пересылки входящих SMS-уведомлений в указанный вами бот или чат Telegram.</string>
     <string name="consent_sec1_bullet1">Доступные данные: Телефонный номер отправителя, текст сообщения и время получения.</string>
     <string name="consent_sec1_bullet2">Цель: Мгновенная автоматическая пересылка в ваш приватный чат Telegram.</string>
     <string name="consent_sec2_title">2. Конфиденциальность и отсутствие передачи третьим лицам</string>

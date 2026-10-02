@@ -160,7 +160,7 @@ class SmsReceiver : BroadcastReceiver() {
                 -1
             }
         } catch (e: SecurityException) {
-            Log.w(TAG, "READ_PHONE_STATE permission not granted or restricted: ${e.message}")
+            Log.w(TAG, "Subscription info restricted or not permitted: ${e.message}")
             -1
         } catch (e: Exception) {
             Log.w(TAG, "Could not extract SIM slot info: ${e.message}")

@@ -108,7 +108,7 @@
     <string name="consent_dialog_title">Déclaration importante et accord de sécurité</string>
     <string name="consent_dialog_subtitle">Veuillez examiner l\'accès aux données et les conditions d\'utilisation éthique</string>
     <string name="consent_sec1_title">1. Accès aux SMS et aux données de téléphonie</string>
-    <string name="consent_sec1_body">SMS Forwarder nécessite des autorisations d\'exécution (RECEIVE_SMS, READ_SMS, READ_PHONE_STATE) pour exécuter sa fonction principale : transférer automatiquement vos notifications SMS entrantes vers votre bot ou chat Telegram désigné.</string>
+    <string name="consent_sec1_body">SMS Forwarder nécessite des autorisations d\'exécution (RECEIVE_SMS, READ_SMS) pour exécuter sa fonction principale : transférer automatiquement vos notifications SMS entrantes vers votre bot ou chat Telegram désigné.</string>
     <string name="consent_sec1_bullet1">Données consultées : Numéro de téléphone de l\'expéditeur, contenu du texte et horodatage.</string>
     <string name="consent_sec1_bullet2">Objectif : Transfert automatisé et instantané vers votre point de terminaison privé Telegram.</string>
     <string name="consent_sec2_title">2. Confidentialité des données et aucun partage tiers</string>
